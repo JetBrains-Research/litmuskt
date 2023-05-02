@@ -1,0 +1,9 @@
+.gradle/
+.idea/
+build/
+herd/X/
+jcstress/
+!jcstress/jcstress-tests-all-20230201.jar
+results/
+temp/
+*.bin.gz
