@@ -31,6 +31,10 @@ kotlin {
                         defFile(project.file("src/nativeInterop/kaffinity.def"))
                         headers(project.file("src/nativeInterop/kaffinity.h"))
                     }
+                    val barrier by creating {
+                        defFile(project.file("src/nativeInterop/barrier.def"))
+                        headers(project.file("src/nativeInterop/barrier.h"))
+                    }
                 }
             }
         }

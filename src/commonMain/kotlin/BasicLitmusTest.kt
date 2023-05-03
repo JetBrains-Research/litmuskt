@@ -1,3 +1,5 @@
+import barriers.Barrier
+import barriers.BarrierProducer
 import kotlin.native.concurrent.AtomicReference
 import kotlin.reflect.KClass
 import kotlin.system.getTimeMillis
@@ -42,10 +44,10 @@ abstract class BasicLitmusTest(val name: String) {
 }
 
 data class OutcomeSetupScope(
-        var accepted: Set<Any?> = emptySet(),
-        var interesting: Set<Any?> = emptySet(),
-        var forbidden: Set<Any?> = emptySet(),
-        var forbidOther: Boolean = false,
+    var accepted: Set<Any?> = emptySet(),
+    var interesting: Set<Any?> = emptySet(),
+    var forbidden: Set<Any?> = emptySet(),
+    var forbidOther: Boolean = false,
 ) {
     fun getType(outcome: Any?) = when {
         outcome in accepted -> OutcomeType.ACCEPTED
@@ -66,32 +68,33 @@ fun BasicLitmusTest.getOutcomeSetup(): OutcomeSetupScope? = testOutcomesSetup[th
 typealias AffinityMap = List<Set<Int>>
 
 data class LitmusTestParameters(
-        val affinityMap: AffinityMap,
-        val syncPeriod: Int,
-        val memShufflerProducer: (() -> MemShuffler)?,
+    val affinityMap: AffinityMap,
+    val syncPeriod: Int,
+    val memShufflerProducer: (() -> MemShuffler)?,
+    val barrierProducer: BarrierProducer,
 )
 
 enum class OutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
 
 data class OutcomeInfo(
-        val outcome: Any?,
-        val count: Int,
-        val type: OutcomeType?,
+    val outcome: Any?,
+    val count: Int,
+    val type: OutcomeType?,
 )
 
 typealias LitmusResult = List<OutcomeInfo>
 
 interface LitmusTestRunner {
     fun runTest(
-            batchSize: Int,
-            parameters: LitmusTestParameters,
-            testProducer: () -> BasicLitmusTest
+        batchSize: Int,
+        parameters: LitmusTestParameters,
+        testProducer: () -> BasicLitmusTest,
     ): LitmusResult
 
     fun runTest(
-            timeLimit: Duration,
-            parameters: LitmusTestParameters,
-            testProducer: () -> BasicLitmusTest
+        timeLimit: Duration,
+        parameters: LitmusTestParameters,
+        testProducer: () -> BasicLitmusTest,
     ): LitmusResult {
         val results = mutableListOf<OutcomeInfo>()
         val start = getTimeMillis()
