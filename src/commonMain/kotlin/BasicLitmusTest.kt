@@ -67,7 +67,7 @@ fun BasicLitmusTest.getOutcomeSetup(): OutcomeSetupScope? = testOutcomesSetup[th
 typealias AffinityMap = List<Set<Int>>
 
 data class LitmusTestParameters(
-    val affinityMap: AffinityMap,
+    val affinityMap: AffinityMap?,
     val syncPeriod: Int,
     val memShufflerProducer: (() -> MemShuffler)?,
     val barrierProducer: BarrierProducer,
@@ -103,4 +103,6 @@ interface LitmusTestRunner {
         }
         return results.merge()
     }
+
+    val cpuCoreCount: Int
 }

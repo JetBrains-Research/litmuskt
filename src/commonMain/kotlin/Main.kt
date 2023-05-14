@@ -6,13 +6,13 @@ import kotlin.time.Duration.Companion.seconds
 fun main() {
 //    distributionTest()
 
-    val testProducer = ::UPUBTest
+    val testProducer = ::SBTest
     val runner = WorkerTestRunner
 
     val param = LitmusTestParameters(
-        affinityScheduleUnrestricted(2)[0], 20, null, ::CinteropBarrier
+        null, 20, null, ::CinteropBarrier
     )
-    val res = runner.runTest(10.seconds, param, testProducer)
+    val res = runner.runTest(15.seconds, param, testProducer)
     res.prettyPrint()
 
 //    val parameters = variateParameters(
