@@ -15,7 +15,7 @@ kotlin {
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
     val nativeTarget = when {
-        hostOs == "Mac OS X" -> if(armEnabled) macosArm64("macos") else macosX64("macos")
+        hostOs == "Mac OS X" -> if (armEnabled) macosArm64("macos") else macosX64("macos")
         hostOs == "Linux" -> linuxX64("linux")
         isMingwX64 -> mingwX64("native")
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
@@ -24,16 +24,16 @@ kotlin {
     val affinitySupported = hostOs == "Linux"
 
     nativeTarget.apply {
-        if(affinitySupported) {
-            compilations.getByName("main") {
-                cinterops {
+        compilations.getByName("main") {
+            cinterops {
+                val barrier by creating {
+                    defFile(project.file("src/nativeInterop/barrier.def"))
+                    headers(project.file("src/nativeInterop/barrier.h"))
+                }
+                if (affinitySupported) {
                     val affinity by creating {
                         defFile(project.file("src/nativeInterop/kaffinity.def"))
                         headers(project.file("src/nativeInterop/kaffinity.h"))
-                    }
-                    val barrier by creating {
-                        defFile(project.file("src/nativeInterop/barrier.def"))
-                        headers(project.file("src/nativeInterop/barrier.h"))
                     }
                 }
             }
@@ -60,12 +60,14 @@ kotlin {
                     kotlin.srcDirs("src/macosMain/kotlin")
                 }
             }
+
             hostOs == "Linux" -> {
                 val linuxMain by getting {
                     dependsOn(commonMain)
                     kotlin.srcDirs("src/linuxMain/kotlin")
                 }
             }
+
             isMingwX64 -> {
                 throw GradleException("Windows is not yet supported in this project")
             }
