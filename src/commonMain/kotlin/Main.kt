@@ -11,14 +11,14 @@ fun main() {
     val param = LitmusTestParameters(
         affinityScheduleUnrestricted(2)[0], 20, null, ::CinteropBarrier
     )
-    val res = runner.runTest(5.seconds, param, testProducer)
+    val res = runner.runTest(10.seconds, param, testProducer)
     res.prettyPrint()
 
 //    val parameters = variateParameters(
 //            getAffinityManager()?.scheduleShort2().orUnrestricted(2), // affinityScheduleUnrestricted(2),
 //            generateSequence(3) { it * 3 }.take(5).toList(),
 //            listOf(null /* { MemShuffler(50_000) } */),
-//            listOf(::SpinBarrier)
+//            listOf(::CinteropBarrier)
 //    ).toList()
 //    val singleTestDuration = 1.seconds
 //

@@ -23,17 +23,17 @@ void barrier_wait(struct CSpinBarrier *barrier)
     atomic_int *passed_barriers_count_ptr = &barrier->passed_barriers_count;
     int thread_count = barrier->thread_count;
 
-    int old_passed = atomic_load(passed_barriers_count_ptr);
-    if (atomic_fetch_add(waiting_count_ptr, 1) == thread_count - 1)
+    int old_passed = atomic_load_explicit(passed_barriers_count_ptr, memory_order_relaxed);
+    if (atomic_fetch_add_explicit(waiting_count_ptr, 1, memory_order_relaxed) == thread_count - 1)
     {
-        atomic_store(waiting_count_ptr, 0);
-        atomic_fetch_add(passed_barriers_count_ptr, 1);
+        atomic_store_explicit(waiting_count_ptr, 0, memory_order_relaxed);
+        atomic_fetch_add_explicit(passed_barriers_count_ptr, 1, memory_order_relaxed);
     }
     else
     {
-        while (atomic_load(passed_barriers_count_ptr) == old_passed)
+        while (atomic_load_explicit(passed_barriers_count_ptr, memory_order_relaxed) == old_passed)
         {
-            atomic_load(passed_barriers_count_ptr); // spin
+            atomic_load_explicit(passed_barriers_count_ptr, memory_order_relaxed); // spin
         }
     }
 }
