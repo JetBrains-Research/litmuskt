@@ -1,11 +1,12 @@
 import barriers.CinteropBarrier
 import barriers.SpinBarrier
+import tests.*
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
 //    distributionTest()
 
-    val testProducer = ::JCS07_SB
+    val testProducer = ::UPUBTest
     val runner = WorkerTestRunner
 
     val param = LitmusTestParameters(
@@ -41,7 +42,7 @@ fun distributionTest() {
 
         val results = List(10) {
             parameters.map { param ->
-                runner.runTest(testCount, param, ::JCS07_SB)
+                runner.runTest(testCount, param, ::SBTest)
             }.flatten().merge()
         }
 

@@ -1,3 +1,8 @@
+package tests
+
+import BasicLitmusTest
+import setupOutcomes
+
 class KindaMP : BasicLitmusTest("kinda mp") {
 
     var x = 0

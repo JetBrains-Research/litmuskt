@@ -1,4 +1,3 @@
-import barriers.Barrier
 import barriers.BarrierProducer
 import kotlin.native.concurrent.AtomicReference
 import kotlin.reflect.KClass
@@ -47,13 +46,13 @@ data class OutcomeSetupScope(
     var accepted: Set<Any?> = emptySet(),
     var interesting: Set<Any?> = emptySet(),
     var forbidden: Set<Any?> = emptySet(),
-    var forbidOther: Boolean = false,
+    var default: OutcomeType = OutcomeType.FORBIDDEN,
 ) {
     fun getType(outcome: Any?) = when {
         outcome in accepted -> OutcomeType.ACCEPTED
         outcome in interesting -> OutcomeType.INTERESTING
-        outcome in forbidden || forbidOther -> OutcomeType.FORBIDDEN
-        else -> null
+        outcome in forbidden -> OutcomeType.FORBIDDEN
+        else -> default
     }
 }
 
