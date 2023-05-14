@@ -1,6 +1,8 @@
 package tests
 
 import BasicLitmusTest
+import kotlinx.atomicfu.locks.reentrantLock
+import kotlinx.atomicfu.locks.withLock
 import setupOutcomes
 import kotlin.concurrent.Volatile
 
@@ -91,6 +93,68 @@ class SBVolatileTest : BasicLitmusTest("store buffering + volatile") {
 }
 
 // TODO: atomicfu mutex, sb+mutex
+class MutexTest : BasicLitmusTest("atomicfu mutex") {
+    val l = reentrantLock()
+    var x = 0
+
+    var a = 0
+    var b = 0
+
+    override fun actor1() {
+        l.withLock {
+            a = ++x
+        }
+    }
+
+    override fun actor2() {
+        l.withLock {
+            b = ++x
+        }
+    }
+
+    override fun arbiter() {
+        outcome = a to b
+    }
+
+    init {
+        setupOutcomes {
+            accepted = setOf(1 to 2, 2 to 1)
+        }
+    }
+}
+
+class SBMutexTest : BasicLitmusTest("SB + atomicfu lock") {
+    val l = reentrantLock()
+    var x = 0
+    var y = 0
+
+    var a = 0
+    var b = 0
+
+    override fun actor1() {
+        l.withLock {
+            x = 1
+            a = y
+        }
+    }
+
+    override fun actor2() {
+        l.withLock {
+            y = 1
+            b = x
+        }
+    }
+
+    override fun arbiter() {
+        outcome = a to b
+    }
+
+    init {
+        setupOutcomes {
+            accepted = setOf(0 to 1, 1 to 0)
+        }
+    }
+}
 
 class MPTest : BasicLitmusTest("message passing") {
 
@@ -154,7 +218,38 @@ class MPVolatileTest : BasicLitmusTest("message passing + volatile") {
     }
 }
 
-// TODO: mp+mutex
+class MPMutexTest : BasicLitmusTest("MP + atomicfu lock") {
+    val l = reentrantLock()
+    var x = 0
+    var y = 0
+
+    var a = 0
+    var b = 0
+
+    override fun actor1() {
+        x = 1
+        l.withLock {
+            y = 1
+        }
+    }
+
+    override fun actor2() {
+        l.withLock {
+            a = y
+        }
+        b = x
+    }
+
+    override fun arbiter() {
+        outcome = a to b
+    }
+
+    init {
+        setupOutcomes {
+            accepted = setOf(0 to 0, 0 to 1, 1 to 1)
+        }
+    }
+}
 
 @OptIn(ExperimentalStdlibApi::class)
 class MP_DRF_Test : BasicLitmusTest("message passing + drf") {

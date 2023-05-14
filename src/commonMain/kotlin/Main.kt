@@ -1,5 +1,4 @@
 import barriers.CinteropBarrier
-import barriers.SpinBarrier
 import tests.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -27,8 +26,11 @@ fun main() {
         ::AtomTest,
         ::SBTest,
         ::SBVolatileTest,
+        ::MutexTest,
+        ::SBMutexTest,
         ::MPTest,
         ::MPVolatileTest,
+        ::MPMutexTest,
         ::MP_DRF_Test,
         ::CoRRTest,
         ::CoRR_CSE_Test,

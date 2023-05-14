@@ -48,6 +48,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
 //                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
             }
         }
         val commonTest by getting
