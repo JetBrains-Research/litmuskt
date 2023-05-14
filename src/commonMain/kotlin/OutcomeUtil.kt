@@ -10,10 +10,10 @@ fun LitmusResult.prettyPrint() {
     val table = this.sortedByDescending { it.count }.map {
         val freq = it.count.toDouble() / totalCount
         listOf(
-                it.outcome.toString(),
-                it.type.toString(),
-                it.count.toString(),
-                if (freq < 1e-5) "<0.001%" else "${(freq * 100).toString().take(6)}%"
+            it.outcome.toString(),
+            it.type.toString(),
+            it.count.toString(),
+            if (freq < 1e-5) "<0.001%" else "${(freq * 100).toString().take(6)}%"
         )
     }
     val tableHeader = listOf("outcome", "type", "count", "frequency")
@@ -28,4 +28,4 @@ fun List<OutcomeInfo>.mergeOutcomes(): LitmusResult {
 
 val LitmusResult.isAccepted get() = all { it.type != OutcomeType.FORBIDDEN }
 
-fun LitmusResult.countOfType(type: OutcomeType) = firstOrNull { it.type == type }?.count ?: 0
+fun LitmusResult.countOfType(type: OutcomeType) = filter { it.type == type }.sumOf { it.count }
