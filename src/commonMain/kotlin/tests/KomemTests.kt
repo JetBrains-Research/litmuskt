@@ -53,8 +53,8 @@ class SBTest : BasicLitmusTest("store buffering") {
 
     init {
         setupOutcomes {
-            accepted = setOf(0 to 1, 1 to 0, 0 to 0)
-            interesting = setOf(1 to 1)
+            accepted = setOf(0 to 1, 1 to 0, 1 to 1)
+            interesting = setOf(0 to 0)
         }
     }
 }
@@ -87,7 +87,8 @@ class SBVolatileTest : BasicLitmusTest("store buffering + volatile") {
 
     init {
         setupOutcomes {
-            accepted = setOf(0 to 1, 1 to 0, 0 to 0)
+            accepted = setOf(0 to 1, 1 to 0, 1 to 1)
+            forbidden = setOf(0 to 0)
         }
     }
 }
@@ -119,6 +120,7 @@ class MutexTest : BasicLitmusTest("atomicfu mutex") {
     init {
         setupOutcomes {
             accepted = setOf(1 to 2, 2 to 1)
+            forbidden = setOf(1 to 1)
         }
     }
 }
@@ -152,6 +154,7 @@ class SBMutexTest : BasicLitmusTest("SB + atomicfu lock") {
     init {
         setupOutcomes {
             accepted = setOf(0 to 1, 1 to 0)
+            forbidden = setOf(0 to 0, 1 to 1)
         }
     }
 }
@@ -214,6 +217,7 @@ class MPVolatileTest : BasicLitmusTest("message passing + volatile") {
     init {
         setupOutcomes {
             accepted = setOf(0 to 0, 0 to 1, 1 to 1)
+            forbidden = setOf(1 to 0)
         }
     }
 }
@@ -247,6 +251,7 @@ class MPMutexTest : BasicLitmusTest("MP + atomicfu lock") {
     init {
         setupOutcomes {
             accepted = setOf(0 to 0, 0 to 1, 1 to 1)
+            forbidden = setOf(1 to 0)
         }
     }
 }
@@ -271,12 +276,12 @@ class MP_DRF_Test : BasicLitmusTest("message passing + drf") {
 
     init {
         setupOutcomes {
-            accepted = setOf(1)
+            accepted = setOf(1, null)
         }
     }
 }
 
-// TODO: CAS an co. tests
+// TODO: CAS and co. tests
 
 class CoRRTest : BasicLitmusTest("coherence read-read") {
     var x = 0
@@ -324,12 +329,15 @@ class CoRR_CSE_Test : BasicLitmusTest("coherence cse") {
         setupOutcomes {
             accepted = setOf(
                 listOf(0, 0, 0),
+                listOf(0, 0, 1),
+                listOf(0, 1, 0),
                 listOf(0, 1, 1),
                 listOf(1, 1, 1),
                 listOf(1, 0, 1)
             )
             interesting = setOf(
-                listOf(1, 0, 0)
+                listOf(1, 0, 0),
+                listOf(1, 1, 0)
             )
         }
     }
@@ -528,7 +536,7 @@ class LBTest : BasicLitmusTest("load buffering") {
     }
 }
 
-class LBFakeDEPSTest : BasicLitmusTest("LB + fake depependency") {
+class LBFakeDEPSTest : BasicLitmusTest("LB + fake dependency") {
     var x = 0
     var y = 0
 
@@ -551,7 +559,8 @@ class LBFakeDEPSTest : BasicLitmusTest("LB + fake depependency") {
 
     init {
         setupOutcomes {
-            accepted = setOf(0 to 0)
+            accepted = setOf(0 to 0, 0 to 1)
+            forbidden = setOf(1 to 1, 1 to 0)
         }
     }
 }
@@ -584,7 +593,7 @@ class LBVolatileTest : BasicLitmusTest("load buffering + volatile") {
     init {
         setupOutcomes {
             accepted = setOf(0 to 0, 1 to 0, 0 to 1)
-            interesting = setOf(1 to 1)
+            forbidden = setOf(1 to 1)
         }
     }
 }
