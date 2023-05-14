@@ -23,25 +23,25 @@ fun main() {
     val singleTestDuration = 10.seconds
 
     val tests = listOf(
-//        ::AtomTest,
-//        ::SBTest,
+        ::AtomTest,
+        ::SBTest,
         ::SBVolatileTest,
-//        ::MutexTest,
-//        ::SBMutexTest,
-//        ::MPTest,
-//        ::MPVolatileTest,
-//        ::MPMutexTest,
+        ::MutexTest,
+        ::SBMutexTest,
+        ::MPTest,
+        ::MPVolatileTest,
+        ::MPMutexTest,
         ::MP_DRF_Test,
-//        ::CoRRTest,
+        ::CoRRTest,
         ::CoRR_CSE_Test,
-//        ::IRIWTest,
-//        ::IRIWVolatileTest,
-//        ::UPUBTest,
-//        ::UPUBCtorTest,
-//        ::LB_DEPS_Test,
-//        ::LBTest,
+        ::IRIWTest,
+        ::IRIWVolatileTest,
+        ::UPUBTest,
+        ::UPUBCtorTest,
+        ::LB_DEPS_Test,
+        ::LBTest,
         ::LBFakeDEPSTest,
-//        ::LBVolatileTest
+        ::LBVolatileTest
     )
 
     val estimateTotalDuration = singleTestDuration * parameters.size * tests.size
