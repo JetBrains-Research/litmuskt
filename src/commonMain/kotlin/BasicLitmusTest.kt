@@ -77,7 +77,7 @@ enum class OutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
 
 data class OutcomeInfo(
     val outcome: Any?,
-    val count: Int,
+    val count: Long,
     val type: OutcomeType?,
 )
 
@@ -92,6 +92,7 @@ interface LitmusTestRunner {
 
     fun runTest(
         timeLimit: Duration,
+        batchSize: Int,
         parameters: LitmusTestParameters,
         testProducer: () -> BasicLitmusTest,
     ): LitmusResult {
@@ -99,9 +100,9 @@ interface LitmusTestRunner {
         val start = getTimeMillis()
         while (getTimeMillis() - start < timeLimit.inWholeMilliseconds) {
             // TODO: fix magic number
-            results.addAll(runTest(10_000, parameters, testProducer))
+            results.addAll(runTest(batchSize, parameters, testProducer))
         }
-        return results.merge()
+        return results.mergeOutcomes()
     }
 
     val cpuCoreCount: Int

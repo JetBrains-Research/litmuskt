@@ -20,10 +20,12 @@ fun LitmusResult.prettyPrint() {
     println((listOf(tableHeader) + table).tableFormat(true))
 }
 
-fun List<OutcomeInfo>.merge(): LitmusResult {
+fun List<OutcomeInfo>.mergeOutcomes(): LitmusResult {
     return groupBy { it.outcome }.map { (outcome, infos) ->
         OutcomeInfo(outcome, infos.sumOf { it.count }, infos.first().type)
     }
 }
 
 val LitmusResult.isAccepted get() = all { it.type != OutcomeType.FORBIDDEN }
+
+fun LitmusResult.countOfType(type: OutcomeType) = firstOrNull { it.type == type }?.count ?: 0

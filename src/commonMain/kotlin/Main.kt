@@ -4,51 +4,57 @@ import tests.*
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
-//    distributionTest()
-
-    val testProducer = ::SBTest
     val runner = WorkerTestRunner
 
-    val param = LitmusTestParameters(
-        null, 20, null, ::CinteropBarrier
-    )
-    val res = runner.runTest(15.seconds, param, testProducer)
-    res.prettyPrint()
-
-//    val parameters = variateParameters(
-//            getAffinityManager()?.scheduleShort2().orUnrestricted(2), // affinityScheduleUnrestricted(2),
-//            generateSequence(3) { it * 3 }.take(5).toList(),
-//            listOf(null /* { MemShuffler(50_000) } */),
-//            listOf(::CinteropBarrier)
+//    variateParameters(
+//        getAffinityManager()?.scheduleShort2().orUnrestricted(2), // affinityScheduleUnrestricted(2),
+//        generateSequence(3) { it * 3 }.take(5).toList(),
+//        listOf(null /* { MemShuffler(50_000) } */),
+//        listOf(::CinteropBarrier)
 //    ).toList()
-//    val singleTestDuration = 1.seconds
-//
-//    println("ETA: T+ ${(singleTestDuration * parameters.size).toComponents { m, s, _ -> "$m m $s s" }}")
-//    val results = parameters.map { runner.runTest(singleTestDuration, it, testProducer) }.flatten().merge()
-//    results.prettyPrint()
-}
-
-fun distributionTest() {
-    val runner = WorkerTestRunner
     val parameters = variateParameters(
-        getAffinityManager()?.scheduleShort2().orUnrestricted(2),
-        generateSequence(2) { it * 2 }.take(8).toList(),
-        listOf(null /* { MemShuffler(50_000) } */),
-        listOf(::SpinBarrier)
+        listOf(null),
+        generateSequence(3) { it * 3 }.take(5).toList(),
+        listOf(null),
+        listOf(::CinteropBarrier)
     ).toList()
+    // TODO: on x86 manually run tests with some affinity
+    // TODO: on macos also run without parallel (just in case they interfere too much)
+    // TODO: also run release AND debug
+    val singleTestDuration = 10.seconds
 
-    for (testCount in generateSequence(1000) { it * 2 }.take(10)) {
-        println("test count: $testCount...")
+    val tests = listOf(
+        ::AtomTest,
+        ::SBTest,
+        ::SBVolatileTest,
+        ::MPTest,
+        ::MPVolatileTest,
+        ::MP_DRF_Test,
+        ::CoRRTest,
+        ::CoRR_CSE_Test,
+        ::IRIWTest,
+        ::IRIWVolatileTest,
+        ::UPUBTest,
+        ::UPUBCtorTest,
+        ::LB_DEPS_Test,
+        ::LBTest,
+        ::LBFakeDEPSTest,
+        ::LBVolatileTest
+    )
 
-        val results = List(10) {
-            parameters.map { param ->
-                runner.runTest(testCount, param, ::SBTest)
-            }.flatten().merge()
-        }
-
-        val outcomes = results.map { it.map { it.outcome }.toSet() }.reduce(Set<Any?>::union).toList()
-        val samples = results.map { r -> outcomes.map { o -> r.firstOrNull { it.outcome == o }?.count ?: 0 } }
-        val accepted = chiSquaredTest(samples)
-        println(if (accepted) "accepted" else "rejected")
+    val estimateTotalDuration = singleTestDuration * parameters.size * tests.size
+    println("Total runs: ${parameters.size * tests.size}")
+    println("Total duration >= ${estimateTotalDuration.toComponents { m, s, _ -> "${m}m ${s}s" }}")
+    for (testProducer in tests) {
+        val sampleTest = testProducer()
+        print(sampleTest.name + ",")
+        val results = parameters.map {
+            runner.runTest(singleTestDuration, 100_000, it, testProducer)
+        }.flatten().mergeOutcomes()
+        val interestingCount = results.countOfType(OutcomeType.INTERESTING)
+        val forbiddenCount = results.countOfType(OutcomeType.FORBIDDEN)
+        val totalCount = results.sumOf { it.count }
+        println("$totalCount,$interestingCount,$forbiddenCount")
     }
+
 }

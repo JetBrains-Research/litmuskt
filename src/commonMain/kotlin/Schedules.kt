@@ -5,7 +5,7 @@ object SyncPeriodSchedules {
 }
 
 fun variateParameters(
-    affinitySchedule: List<AffinityMap>,
+    affinitySchedule: List<AffinityMap?>,
     syncPeriodSchedule: List<Int>,
     memShufflerProducerSchedule: List<(() -> MemShuffler)?>,
     barrierSchedule: List<BarrierProducer>

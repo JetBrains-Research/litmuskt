@@ -109,7 +109,7 @@ object WorkerTestRunner : LitmusTestRunner {
             .groupingBy { it }
             .eachCount()
             .map { (outcome, count) ->
-                OutcomeInfo(outcome, count, outcomeSetup?.getType(outcome))
+                OutcomeInfo(outcome, count.toLong(), outcomeSetup?.getType(outcome))
             }
     }
 }
