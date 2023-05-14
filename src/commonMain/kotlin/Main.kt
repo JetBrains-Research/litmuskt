@@ -57,8 +57,6 @@ fun main() {
         val forbiddenCount = results.countOfType(OutcomeType.FORBIDDEN)
         val totalCount = results.sumOf { it.count }
         println("$totalCount,$interestingCount,$forbiddenCount")
-
-        results.prettyPrint()
     }
 
 }
