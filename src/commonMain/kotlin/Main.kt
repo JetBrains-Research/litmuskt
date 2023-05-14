@@ -23,12 +23,13 @@ fun main() {
     val singleTestDuration = 3.seconds
 
     val tests = listOf(
+        ::MP_NoDRF_Test
 //        ::AtomTest,
 //        ::SBTest,
 //        ::SBVolatileTest,
 //        ::MutexTest,
 //        ::SBMutexTest,
-        ::MPTest,
+//        ::MPTest,
 //        ::MPVolatileTest,
 //        ::MPMutexTest,
 //        ::MP_DRF_Test,
@@ -57,7 +58,8 @@ fun main() {
         val forbiddenCount = results.countOfType(OutcomeType.FORBIDDEN)
         val totalCount = results.sumOf { it.count }
         println("$totalCount,$interestingCount,$forbiddenCount")
-        if(forbiddenCount != 0L) results.prettyPrint()
+//        if(forbiddenCount != 0L)
+            results.prettyPrint()
     }
 
 }
