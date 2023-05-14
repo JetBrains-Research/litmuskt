@@ -5,9 +5,9 @@ import kotlin.time.Duration.Companion.seconds
 fun main() {
     val runner = WorkerTestRunner
 
-//    variateParameters(
+//    val parameters = variateParameters(
 //        getAffinityManager()?.scheduleShort2().orUnrestricted(2), // affinityScheduleUnrestricted(2),
-//        generateSequence(3) { it * 3 }.take(5).toList(),
+//        generateSequence(2) { it * 3 }.take(5).toList(),
 //        listOf(null /* { MemShuffler(50_000) } */),
 //        listOf(::CinteropBarrier)
 //    ).toList()
@@ -20,28 +20,28 @@ fun main() {
     // TODO: on x86 manually run tests with some affinity
     // TODO: on macos also run without parallel (just in case they interfere too much)
     // TODO: also run release AND debug
-    val singleTestDuration = 10.seconds
+    val singleTestDuration = 3.seconds
 
     val tests = listOf(
-        ::AtomTest,
-        ::SBTest,
-        ::SBVolatileTest,
-        ::MutexTest,
-        ::SBMutexTest,
+//        ::AtomTest,
+//        ::SBTest,
+//        ::SBVolatileTest,
+//        ::MutexTest,
+//        ::SBMutexTest,
         ::MPTest,
-        ::MPVolatileTest,
-        ::MPMutexTest,
-        ::MP_DRF_Test,
-        ::CoRRTest,
-        ::CoRR_CSE_Test,
-        ::IRIWTest,
-        ::IRIWVolatileTest,
-        ::UPUBTest,
-        ::UPUBCtorTest,
-        ::LB_DEPS_Test,
-        ::LBTest,
-        ::LBFakeDEPSTest,
-        ::LBVolatileTest
+//        ::MPVolatileTest,
+//        ::MPMutexTest,
+//        ::MP_DRF_Test,
+//        ::CoRRTest,
+//        ::CoRR_CSE_Test,
+//        ::IRIWTest,
+//        ::IRIWVolatileTest,
+//        ::UPUBTest,
+//        ::UPUBCtorTest,
+//        ::LB_DEPS_Test,
+//        ::LBTest,
+//        ::LBFakeDEPSTest,
+//        ::LBVolatileTest
     )
 
     val estimateTotalDuration = singleTestDuration * parameters.size * tests.size
@@ -57,6 +57,7 @@ fun main() {
         val forbiddenCount = results.countOfType(OutcomeType.FORBIDDEN)
         val totalCount = results.sumOf { it.count }
         println("$totalCount,$interestingCount,$forbiddenCount")
+        if(forbiddenCount != 0L) results.prettyPrint()
     }
 
 }

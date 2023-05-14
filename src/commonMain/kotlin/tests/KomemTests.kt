@@ -164,20 +164,14 @@ class MPTest : BasicLitmusTest("message passing") {
     var x = 0
     var y = 0
 
-    var a = 0
-    var b = 0
-
     override fun actor1() {
         x = 1
         y = 1
     }
 
     override fun actor2() {
-        a = y
-        b = x
-    }
-
-    override fun arbiter() {
+        val a = y
+        val b = x
         outcome = a to b
     }
 
