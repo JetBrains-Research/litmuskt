@@ -64,7 +64,9 @@ fun BasicLitmusTest.setupOutcomes(block: OutcomeSetupScope.() -> Unit) {
 
 fun BasicLitmusTest.getOutcomeSetup(): OutcomeSetupScope? = testOutcomesSetup[this::class]
 
-typealias AffinityMap = List<Set<Int>>
+interface AffinityMap {
+    fun allowedCores(workerIndex: Int): Set<Int>
+}
 
 data class LitmusTestParameters(
     val affinityMap: AffinityMap?,
@@ -90,6 +92,12 @@ interface LitmusTestRunner {
         testProducer: () -> BasicLitmusTest,
     ): LitmusResult
 
+    fun runTestParallel(
+        batchSize: Int,
+        parameters: LitmusTestParameters,
+        testProducer: () -> BasicLitmusTest,
+    ): LitmusResult
+
     fun runTest(
         timeLimit: Duration,
         batchSize: Int,
@@ -99,11 +107,22 @@ interface LitmusTestRunner {
         val results = mutableListOf<OutcomeInfo>()
         val start = getTimeMillis()
         while (getTimeMillis() - start < timeLimit.inWholeMilliseconds) {
-            // TODO: fix magic number
             results.addAll(runTest(batchSize, parameters, testProducer))
         }
         return results.mergeOutcomes()
     }
 
-    val cpuCoreCount: Int
+    fun runTestParallel(
+        timeLimit: Duration,
+        batchSize: Int,
+        parameters: LitmusTestParameters,
+        testProducer: () -> BasicLitmusTest,
+    ): LitmusResult {
+        val results = mutableListOf<OutcomeInfo>()
+        val start = getTimeMillis()
+        while (getTimeMillis() - start < timeLimit.inWholeMilliseconds) {
+            results.addAll(runTestParallel(batchSize, parameters, testProducer))
+        }
+        return results.mergeOutcomes()
+    }
 }

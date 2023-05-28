@@ -29,3 +29,5 @@ class MemShuffler(bufferSize: Int, random: Random = Random) : ReadWriteProperty<
         buffer[propIdx[property]!!] = value
     }
 }
+
+typealias MemShufflerProducer = () -> MemShuffler

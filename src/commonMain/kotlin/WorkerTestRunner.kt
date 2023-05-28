@@ -6,8 +6,6 @@ import kotlin.native.concurrent.Worker
 
 object WorkerTestRunner : LitmusTestRunner {
 
-    override var cpuCoreCount = 12 // TODO: proper interface
-
     private data class WorkerContext(
         val tests: List<BasicLitmusTest>,
         val syncPeriod: Int,
@@ -21,41 +19,42 @@ object WorkerTestRunner : LitmusTestRunner {
     ): LitmusResult {
         BasicLitmusTest.memShuffler = parameters.memShufflerProducer?.invoke()
         val actorFunctions: List<(BasicLitmusTest) -> Any?> = testProducer().overriddenActors()
+        val testBatch = List(batchSize) { testProducer() }
+        createFutures(
+            testBatch,
+            parameters.syncPeriod,
+            parameters.barrierProducer,
+            actorFunctions,
+            parameters.affinityMap
+        ).forEach { it.result }
+        for (test in testBatch) test.arbiter()
+        return collectOutcomes(testBatch)
+    }
 
-        val affinityMap = parameters.affinityMap
-        if (affinityMap == null) {
-            // parallel run
-            val parallelFactor = cpuCoreCount / actorFunctions.size
-            // TODO: pseudorandom affinity map
-            val testBatches = List(parallelFactor) { List(batchSize) { testProducer() } }
-            List(parallelFactor) { i ->
-                createFutures(
-                    testBatches[i],
-                    parameters.syncPeriod,
-                    parameters.barrierProducer,
-                    actorFunctions,
-                    null
-                )
-            }.flatten().map { it.result }
-            val outcomes = testBatches
-                .flatten()
-                .onEach { it.arbiter() }
-                .let { collectOutcomes(it) }
-            return outcomes
-        } else {
-            require(actorFunctions.size == affinityMap.size) { "affinity parameters don't match actors" }
+    override fun runTestParallel(
+        batchSize: Int,
+        parameters: LitmusTestParameters,
+        testProducer: () -> BasicLitmusTest
+    ): LitmusResult {
+        BasicLitmusTest.memShuffler = parameters.memShufflerProducer?.invoke()
+        val actorFunctions: List<(BasicLitmusTest) -> Any?> = testProducer().overriddenActors()
 
-            val testBatch = List(batchSize) { testProducer() }
+        val parallelFactor = cpuCount() / actorFunctions.size
+        val testBatches = List(parallelFactor) { List(batchSize) { testProducer() } }
+        List(parallelFactor) { i ->
             createFutures(
-                testBatch,
+                testBatches[i],
                 parameters.syncPeriod,
                 parameters.barrierProducer,
                 actorFunctions,
-                parameters.affinityMap
-            ).forEach { it.result }
-            for (test in testBatch) test.arbiter()
-            return collectOutcomes(testBatch)
-        }
+                null
+            )
+        }.flatten().map { it.result }
+        val outcomes = testBatches
+            .flatten()
+            .onEach { it.arbiter() }
+            .let { collectOutcomes(it) }
+        return outcomes
     }
 
     private fun createFutures(
@@ -75,7 +74,7 @@ object WorkerTestRunner : LitmusTestRunner {
 
             if (affinityMap != null) {
                 getAffinityManager()?.run {
-                    val cpuSet = affinityMap[i]
+                    val cpuSet = affinityMap.allowedCores(i)
                     setAffinity(worker, cpuSet)
                     require(getAffinity(worker) == cpuSet) { "affinity setting failed" }
                 }

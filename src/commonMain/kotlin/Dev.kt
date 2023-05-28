@@ -4,7 +4,7 @@ import tests.*
 fun distributionTest() {
     val runner = WorkerTestRunner
     val parameters = variateParameters(
-        getAffinityManager()?.scheduleShort2().orUnrestricted(2),
+        getAffinityManager()?.presetShort() ?: listOf(null),
         generateSequence(2) { it * 2 }.take(8).toList(),
         listOf(null /* { MemShuffler(50_000) } */),
         listOf(::SpinBarrier)

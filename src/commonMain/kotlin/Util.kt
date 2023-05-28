@@ -1,3 +1,6 @@
+import platform.posix._SC_NPROCESSORS_ONLN
+import platform.posix.sysconf
+
 fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     val columnCount = maxOf { it.size }
     val columnSizes = (0 until columnCount).map { i ->
@@ -26,3 +29,5 @@ fun Int.pow(power: Int): Int {
     repeat(power) { result *= this@pow }
     return result
 }
+
+fun cpuCount(): Int = sysconf(_SC_NPROCESSORS_ONLN).toInt()
