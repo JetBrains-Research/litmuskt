@@ -13,7 +13,7 @@ fun main() {
     ).toList()
 
     val singleTestDuration = 3.seconds
-    val testProducer = ::SBTest
+    val testProducer = ::UPUBVolatileTest
 
     val totalDuration = singleTestDuration * parameters.size
     println("ETA: T+ ${totalDuration.toComponents { m, s, _ -> "${m}m ${s}s" }}")
