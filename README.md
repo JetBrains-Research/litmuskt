@@ -15,10 +15,14 @@ Clone the project.
 ### Running
 
 ```bash
-./gradlew runReleaseExecutableXXX # where XXX is either Linux or MacOS
+./gradlew runReleaseExecutableLinux
+# or
+./gradlew runReleaseExecutableMacos -Parm # for Arm-compatible chips 
 ```
 
 Substituting `Release` with `Debug` disables compiler `-opt` flag. Also, it is possible to simply `./gradlew build` the project and find the executables in `./build/bin/...`
+
+On MacOS, you can omit the `-Parm` parameter to get an x86 executable.
 
 ## Explanation
 
