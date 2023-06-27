@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
+
 import barriers.Barrier
 import barriers.BarrierProducer
 import kotlin.native.concurrent.Future

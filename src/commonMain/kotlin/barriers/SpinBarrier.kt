@@ -1,6 +1,6 @@
 package barriers
 
-import kotlin.native.concurrent.AtomicInt
+import kotlin.concurrent.AtomicInt
 
 class SpinBarrier(private val threadCount: Int) : Barrier {
     private val waitingCount = AtomicInt(0)
@@ -10,7 +10,7 @@ class SpinBarrier(private val threadCount: Int) : Barrier {
         val oldPassed = passedBarriersCount.value
         if (waitingCount.addAndGet(1) == threadCount) {
             waitingCount.value = 0
-            passedBarriersCount.increment()
+            passedBarriersCount.incrementAndGet()
         } else {
             while (passedBarriersCount.value == oldPassed) passedBarriersCount.value // spin
         }

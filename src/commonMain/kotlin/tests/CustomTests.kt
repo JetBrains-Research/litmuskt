@@ -53,6 +53,28 @@ class UPUBVolatileTest : BasicLitmusTest("publication + volatile") {
     }
 }
 
+class UPUBArrayTest : BasicLitmusTest("publication + array") {
+
+    var arr: Array<Int>? = null
+
+    override fun actor1() {
+        arr = Array(10) { 0 }
+    }
+
+    override fun actor2() {
+        val t = arr
+        if (t != null) {
+            outcome = t[0]
+        }
+    }
+
+    init {
+        setupOutcomes {
+            accepted = setOf(0, null)
+        }
+    }
+}
+
 class UPUBRefTest : BasicLitmusTest("publication + reference") {
     class Inner(val x: Int)
 

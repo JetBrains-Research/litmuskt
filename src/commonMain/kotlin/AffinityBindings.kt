@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
+
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 

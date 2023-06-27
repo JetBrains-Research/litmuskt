@@ -7,3 +7,5 @@ results/
 temp/
 *.bin.gz
 *.hprof
+fresh-kn-compiler/
+default/

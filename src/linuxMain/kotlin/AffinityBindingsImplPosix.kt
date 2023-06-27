@@ -1,14 +1,14 @@
+@file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
+
 import kaffinity.*
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.toKString
+import kotlinx.cinterop.*
 import platform.posix.cpu_set_t
 import platform.posix.errno
 import platform.posix.pthread_t
 import platform.posix.strerror
 import kotlin.native.concurrent.Worker
 
+@OptIn(ExperimentalForeignApi::class)
 private fun Int.callCheck() {
     if (this != 0) {
         val err = strerror(errno)!!.toKString()
@@ -16,6 +16,7 @@ private fun Int.callCheck() {
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 private fun setAffinity(thread: pthread_t, cpus: Set<Int>): Unit = memScoped {
     require(cpus.isNotEmpty())
     val set = alloc<cpu_set_t>()
@@ -23,6 +24,7 @@ private fun setAffinity(thread: pthread_t, cpus: Set<Int>): Unit = memScoped {
     set_affinity(thread, set.ptr).callCheck()
 }
 
+@OptIn(ExperimentalForeignApi::class)
 private fun getAffinity(thread: pthread_t): Set<Int> = memScoped {
     val set = alloc<cpu_set_t>()
     get_affinity(thread, set.ptr).callCheck()

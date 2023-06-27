@@ -1,5 +1,5 @@
 import barriers.BarrierProducer
-import kotlin.native.concurrent.AtomicReference
+import kotlin.concurrent.AtomicReference
 import kotlin.reflect.KClass
 import kotlin.system.getTimeMillis
 import kotlin.time.Duration
