@@ -47,7 +47,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-//                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0-RC")
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
             }
         }
