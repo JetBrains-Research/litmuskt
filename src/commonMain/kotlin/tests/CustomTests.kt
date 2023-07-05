@@ -1,10 +1,10 @@
 package tests
 
-import BasicLitmusTest
+import LitmusTest
 import setupOutcomes
 import kotlin.concurrent.Volatile
 
-class MP_NoDRF_Test : BasicLitmusTest("MP + broken DRF") {
+class MP_NoDRF_Test : LitmusTest("MP + broken DRF") {
 
     var x = 0
     var y = 0
@@ -28,7 +28,7 @@ class MP_NoDRF_Test : BasicLitmusTest("MP + broken DRF") {
     }
 }
 
-class UPUBVolatileTest : BasicLitmusTest("publication + volatile") {
+class UPUBVolatileTest : LitmusTest("publication + volatile") {
     class Holder(val x: Int)
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -53,7 +53,7 @@ class UPUBVolatileTest : BasicLitmusTest("publication + volatile") {
     }
 }
 
-class UPUBArrayTest : BasicLitmusTest("publication + array") {
+class UPUBArrayTest : LitmusTest("publication + array") {
 
     var arr: Array<Int>? = null
 
@@ -75,7 +75,7 @@ class UPUBArrayTest : BasicLitmusTest("publication + array") {
     }
 }
 
-class UPUBRefTest : BasicLitmusTest("publication + reference") {
+class UPUBRefTest : LitmusTest("publication + reference") {
     class Inner(val x: Int)
 
     class Holder(val ref: Inner)

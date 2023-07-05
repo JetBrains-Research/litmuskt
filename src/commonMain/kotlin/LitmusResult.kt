@@ -1,3 +1,6 @@
+
+typealias LitmusResult = List<OutcomeInfo>
+
 val LitmusResult.interestingFrequency: Double
     get() {
         val totalCount = sumOf { it.count }

@@ -3,7 +3,7 @@ import tests.*
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
-    val runner = WorkerTestRunner
+    val runner = WorkerRunner
 
     val parameters = variateParameters(
         affinitySchedule = getAffinityManager()?.presetShort() ?: listOf(null),
@@ -13,7 +13,7 @@ fun main() {
     ).toList()
 
     val singleTestDuration = 3.seconds
-    val testProducer = ::UPUBVolatileTest
+    val testProducer = ::UPUBTest
 
     val totalDuration = singleTestDuration * parameters.size
     println("ETA: T+ ${totalDuration.toComponents { m, s, _ -> "${m}m ${s}s" }}")

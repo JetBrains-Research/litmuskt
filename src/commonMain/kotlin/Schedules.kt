@@ -14,7 +14,7 @@ fun variateParameters(
         for (syncPeriod in syncPeriodSchedule) {
             for (memShuffler in memShufflerProducerSchedule) {
                 for (barrierProducer in barrierSchedule) {
-                    yield(LitmusTestParameters(affinity, syncPeriod, memShuffler, barrierProducer))
+                    yield(LitmusOptions(affinity, syncPeriod, memShuffler, barrierProducer))
                 }
             }
         }

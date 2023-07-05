@@ -2,7 +2,7 @@ import barriers.*
 import tests.*
 
 fun distributionTest() {
-    val runner = WorkerTestRunner
+    val runner = WorkerRunner
     val parameters = variateParameters(
         getAffinityManager()?.presetShort() ?: listOf(null),
         generateSequence(2) { it * 2 }.take(8).toList(),

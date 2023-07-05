@@ -3,6 +3,10 @@
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
+interface AffinityMap {
+    fun allowedCores(workerIndex: Int): Set<Int>
+}
+
 interface AffinityManager {
     fun setAffinity(w: Worker, cpus: Set<Int>)
     fun getAffinity(w: Worker): Set<Int>

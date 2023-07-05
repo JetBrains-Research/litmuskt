@@ -1,12 +1,12 @@
 package tests
 
-import BasicLitmusTest
+import LitmusTest
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import setupOutcomes
 import kotlin.concurrent.Volatile
 
-class AtomTest : BasicLitmusTest("access atomicity") {
+class AtomTest : LitmusTest("access atomicity") {
 
     var x = 0
 
@@ -29,7 +29,7 @@ class AtomTest : BasicLitmusTest("access atomicity") {
 //    override fun toString() = "($a, $b)"
 //}
 
-class SBTest : BasicLitmusTest("store buffering") {
+class SBTest : LitmusTest("store buffering") {
 
     var x = 0
     var y = 0
@@ -60,7 +60,7 @@ class SBTest : BasicLitmusTest("store buffering") {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-class SBVolatileTest : BasicLitmusTest("store buffering + volatile") {
+class SBVolatileTest : LitmusTest("store buffering + volatile") {
 
     @Volatile
     var x = 0
@@ -94,7 +94,7 @@ class SBVolatileTest : BasicLitmusTest("store buffering + volatile") {
 }
 
 // TODO: atomicfu mutex, sb+mutex
-class MutexTest : BasicLitmusTest("atomicfu mutex") {
+class MutexTest : LitmusTest("atomicfu mutex") {
     val l = reentrantLock()
     var x = 0
 
@@ -125,7 +125,7 @@ class MutexTest : BasicLitmusTest("atomicfu mutex") {
     }
 }
 
-class SBMutexTest : BasicLitmusTest("SB + atomicfu lock") {
+class SBMutexTest : LitmusTest("SB + atomicfu lock") {
     val l = reentrantLock()
     var x = 0
     var y = 0
@@ -159,7 +159,7 @@ class SBMutexTest : BasicLitmusTest("SB + atomicfu lock") {
     }
 }
 
-class MPTest : BasicLitmusTest("message passing") {
+class MPTest : LitmusTest("message passing") {
 
     var x = 0
     var y = 0
@@ -183,8 +183,34 @@ class MPTest : BasicLitmusTest("message passing") {
     }
 }
 
+//val producer : Builder.() -> (List<() -> LitmusOutcome>)
+//
+//producer(Builder())
+//producer(Builder())
+//producer(Builder())
+//producer(Builder())
+//
+//val MP_TEST = litmus {
+//    class Holder(var x: Int)
+//    var holder1 = Holder(0)
+//    thread {
+//        holder1 = Holder(1)
+//        x = 1
+//        y = 1
+//    }
+//    thread {
+//        val a = y
+//        val b = x
+//        outcome = a to b
+//    }
+//    outcomes {
+//        accepted = setOf(0 to 0, 0 to 1, 1 to 1)
+//        interesting = setOf(1 to 0)
+//    }
+//}
+
 @OptIn(ExperimentalStdlibApi::class)
-class MPVolatileTest : BasicLitmusTest("message passing + volatile") {
+class MPVolatileTest : LitmusTest("message passing + volatile") {
 
     var x = 0
 
@@ -216,7 +242,7 @@ class MPVolatileTest : BasicLitmusTest("message passing + volatile") {
     }
 }
 
-class MPMutexTest : BasicLitmusTest("MP + atomicfu lock") {
+class MPMutexTest : LitmusTest("MP + atomicfu lock") {
     val l = reentrantLock()
     var x = 0
     var y = 0
@@ -251,7 +277,7 @@ class MPMutexTest : BasicLitmusTest("MP + atomicfu lock") {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-class MP_DRF_Test : BasicLitmusTest("message passing + drf") {
+class MP_DRF_Test : LitmusTest("message passing + drf") {
     var x = 0
 
     @Volatile
@@ -277,7 +303,7 @@ class MP_DRF_Test : BasicLitmusTest("message passing + drf") {
 
 // TODO: CAS and co. tests
 
-class CoRRTest : BasicLitmusTest("coherence read-read") {
+class CoRRTest : LitmusTest("coherence read-read") {
     var x = 0
 
     override fun actor1() {
@@ -298,7 +324,7 @@ class CoRRTest : BasicLitmusTest("coherence read-read") {
     }
 }
 
-class CoRR_CSE_Test : BasicLitmusTest("coherence cse") {
+class CoRR_CSE_Test : LitmusTest("coherence cse") {
     class Holder(var x: Int)
 
     val holder1 = Holder(0)
@@ -337,7 +363,7 @@ class CoRR_CSE_Test : BasicLitmusTest("coherence cse") {
     }
 }
 
-class IRIWTest : BasicLitmusTest("independent reads of independent writes") {
+class IRIWTest : LitmusTest("independent reads of independent writes") {
     var x = 0
     var y = 0
 
@@ -379,7 +405,7 @@ class IRIWTest : BasicLitmusTest("independent reads of independent writes") {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-class IRIWVolatileTest : BasicLitmusTest("iriw + volatile") {
+class IRIWVolatileTest : LitmusTest("iriw + volatile") {
     @Volatile
     var x = 0
 
@@ -423,7 +449,7 @@ class IRIWVolatileTest : BasicLitmusTest("iriw + volatile") {
     }
 }
 
-class UPUBTest : BasicLitmusTest("publication") {
+class UPUBTest : LitmusTest("publication") {
     class Holder(val x: Int)
 
     var h: Holder? = null
@@ -446,7 +472,7 @@ class UPUBTest : BasicLitmusTest("publication") {
     }
 }
 
-class UPUBCtorTest : BasicLitmusTest("publication + ctor") {
+class UPUBCtorTest : LitmusTest("publication + ctor") {
     class Holder {
         val x: Int = 1
     }
@@ -473,7 +499,7 @@ class UPUBCtorTest : BasicLitmusTest("publication + ctor") {
 
 // TODO: checking if test hangs is not supported yet
 
-class LB_DEPS_Test : BasicLitmusTest("out of thin air") {
+class LB_DEPS_Test : LitmusTest("out of thin air") {
     var x = 0
     var y = 0
 
@@ -501,7 +527,7 @@ class LB_DEPS_Test : BasicLitmusTest("out of thin air") {
     }
 }
 
-class LBTest : BasicLitmusTest("load buffering") {
+class LBTest : LitmusTest("load buffering") {
     var x = 0
     var y = 0
 
@@ -530,7 +556,7 @@ class LBTest : BasicLitmusTest("load buffering") {
     }
 }
 
-class LBFakeDEPSTest : BasicLitmusTest("LB + fake dependency") {
+class LBFakeDEPSTest : LitmusTest("LB + fake dependency") {
     var x = 0
     var y = 0
 
@@ -560,7 +586,7 @@ class LBFakeDEPSTest : BasicLitmusTest("LB + fake dependency") {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-class LBVolatileTest : BasicLitmusTest("load buffering + volatile") {
+class LBVolatileTest : LitmusTest("load buffering + volatile") {
     @Volatile
     var x = 0
 
