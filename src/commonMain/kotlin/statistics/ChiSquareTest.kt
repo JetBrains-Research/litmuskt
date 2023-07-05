@@ -1,3 +1,5 @@
+package statistics
+
 // returns true if samples have the same distribution with 0.05 significance level
 // written almost completely by ChatGPT :)
 fun chiSquaredTest(sample1: List<Int>, sample2: List<Int>): Boolean {

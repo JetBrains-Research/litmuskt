@@ -23,6 +23,10 @@ class AtomTest : LitmusTest("access atomicity") {
             accepted = setOf(0, -1)
         }
     }
+
+//    @Test
+//    fun test() = this.runTest()
+
 }
 
 //data class PairOutcome(val a: Int, val b: Int) {

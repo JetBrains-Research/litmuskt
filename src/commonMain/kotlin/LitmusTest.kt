@@ -20,6 +20,14 @@ import kotlin.reflect.KClass
 //    private val shuffler ...
 //}
 
+fun LitmusTest.test() {
+    val runner = LitmusRunner()
+    val results = runner.runTest()
+    assert(results.isAccepted) {
+        println(results)
+    }
+}
+
 
 abstract class LitmusTest(val name: String) {
     // BasicLitmusTest consists of

@@ -1,5 +1,12 @@
+package statistics
+
+import WorkerRunner
 import barriers.*
+import getAffinityManager
+import mergeOutcomes
+import runTest
 import tests.*
+import variateParameters
 
 fun distributionTest() {
     val runner = WorkerRunner
