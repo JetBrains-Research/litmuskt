@@ -1,7 +1,7 @@
 package komem.litmus.tests
 
 import komem.litmus.LitmusTest
-import komem.litmus.OutcomeType
+import komem.litmus.LitmusOutcomeType
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import komem.litmus.setupOutcomes
@@ -404,7 +404,7 @@ class IRIWTest : LitmusTest("independent reads of independent writes") {
             interesting = setOf(
                 listOf(1, 0, 1, 0)
             )
-            default = OutcomeType.ACCEPTED
+            default = LitmusOutcomeType.ACCEPTED
         }
     }
 }
@@ -449,7 +449,7 @@ class IRIWVolatileTest : LitmusTest("iriw + volatile") {
             forbidden = setOf(
                 listOf(1, 0, 1, 0)
             )
-            default = OutcomeType.ACCEPTED
+            default = LitmusOutcomeType.ACCEPTED
         }
     }
 }

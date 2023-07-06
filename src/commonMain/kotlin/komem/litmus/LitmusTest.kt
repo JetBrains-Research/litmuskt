@@ -4,7 +4,6 @@ import kotlin.reflect.KClass
 
 abstract class LitmusTest(val name: String) {
 
-    // TODO: rename threads to threads
     abstract fun thread1(): Any?
     abstract fun thread2(): Any?
     open fun thread3(): Any? = Placeholder
@@ -25,7 +24,7 @@ abstract class LitmusTest(val name: String) {
         get() = outcomeRef.value
 
     // note: modifies receiver object
-    fun overriddenthreads(): List<(LitmusTest) -> Any?> {
+    fun overriddenThreads(): List<(LitmusTest) -> Any?> {
         val threads = mutableListOf(LitmusTest::thread1, LitmusTest::thread2)
         if (thread3() != Placeholder) threads.add(LitmusTest::thread3)
         if (thread4() != Placeholder) threads.add(LitmusTest::thread4)

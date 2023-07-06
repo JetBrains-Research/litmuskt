@@ -1,14 +1,13 @@
 @file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
 
-package komem.litmus
+package komem.litmus.runners
 
+import komem.litmus.*
 import komem.litmus.barriers.Barrier
-import komem.litmus.barriers.BarrierProducer
-import kotlin.native.concurrent.Future
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-object WorkerRunner : LitmusRunner {
+object WorkerTestRunner : LitmusTestRunner {
 
     private data class WorkerContext(
         val tests: List<LitmusTest>,
@@ -17,40 +16,22 @@ object WorkerRunner : LitmusRunner {
     )
 
     override fun runTest(
-        options: LitmusOptions,
+        params: RunningParams,
         testProducer: () -> LitmusTest,
     ): List<LitmusOutcome> {
-        LitmusTest.memShuffler = options.memShufflerProducer?.invoke()
-        val threadFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenthreads()
-        val testBatch = List(options.batchSize) { testProducer() }
-        createFutures(
-            testBatch,
-            options.syncPeriod,
-            options.barrierProducer,
-            threadFunctions,
-            options.affinityMap
-        ).forEach { it.result }
-        for (test in testBatch)
-            test.arbiter()
-//        val outcomeSetup = testBatch.first().getOutcomeSetup()
-        return testBatch.map { it.outcome }
-    }
+        LitmusTest.memShuffler = params.memShufflerProducer?.invoke()
 
-    private fun createFutures(
-        testBatch: List<LitmusTest>,
-        syncPeriod: Int,
-        barrierProducer: BarrierProducer,
-        threadFunctions: List<(LitmusTest) -> Any?>,
-        affinityMap: AffinityMap?
-    ): List<Future<*>> {
+        val threadFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenThreads()
+        val testBatch = List(params.batchSize) { testProducer() }
         val workerContext = WorkerContext(
             testBatch,
-            syncPeriod,
-            barrierProducer(threadFunctions.size)
+            params.syncPeriod,
+            params.barrierProducer(threadFunctions.size)
         )
         val futures = threadFunctions.mapIndexed { i, threadFun ->
             val worker = Worker.start()
 
+            val affinityMap = params.affinityMap
             if (affinityMap != null) {
                 getAffinityManager()?.run {
                     val cpuSet = affinityMap.allowedCores(i)
@@ -58,7 +39,6 @@ object WorkerRunner : LitmusRunner {
                     require(getAffinity(worker) == cpuSet) { "affinity setting failed" }
                 }
             }
-
             worker.execute(
                 TransferMode.SAFE /* ignored */,
                 { threadFun to workerContext }
@@ -77,7 +57,10 @@ object WorkerRunner : LitmusRunner {
             }
             return@mapIndexed worker.requestTermination()
         }
-        return futures
-    }
+        futures.forEach { it.result }
 
+        for (test in testBatch)
+            test.arbiter()
+        return testBatch.map { it.outcome }
+    }
 }

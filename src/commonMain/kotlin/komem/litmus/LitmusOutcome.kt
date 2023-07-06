@@ -1,32 +1,31 @@
 package komem.litmus
 typealias LitmusOutcome = Any?
 
-// TODO: rename to LitmusOutcomeType (?)
-enum class OutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
+enum class LitmusOutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
 
-data class OutcomeInfo(
+data class LitmusOutcomeInfo(
     val outcome: LitmusOutcome,
     val count: Long,
-    val type: OutcomeType?,
+    val type: LitmusOutcomeType?,
 )
 
 data class OutcomeSetupScope(
     var accepted: Set<LitmusOutcome> = emptySet(),
     var interesting: Set<LitmusOutcome> = emptySet(),
     var forbidden: Set<LitmusOutcome> = emptySet(),
-    var default: OutcomeType = OutcomeType.FORBIDDEN,
+    var default: LitmusOutcomeType = LitmusOutcomeType.FORBIDDEN,
 ) {
-    fun getType(outcome: LitmusOutcome) = when {
-        outcome in accepted -> OutcomeType.ACCEPTED
-        outcome in interesting -> OutcomeType.INTERESTING
-        outcome in forbidden -> OutcomeType.FORBIDDEN
+    fun getType(outcome: LitmusOutcome) = when (outcome) {
+        in accepted -> LitmusOutcomeType.ACCEPTED
+        in interesting -> LitmusOutcomeType.INTERESTING
+        in forbidden -> LitmusOutcomeType.FORBIDDEN
         else -> default
     }
 }
 
-fun List<LitmusOutcome>.group(outcomeSetup: OutcomeSetupScope?): List<OutcomeInfo> = this
+fun List<LitmusOutcome>.groupToInfo(outcomeSetup: OutcomeSetupScope?): List<LitmusOutcomeInfo> = this
     .groupingBy { it }
     .eachCount()
     .map { (outcome, count) ->
-        OutcomeInfo(outcome, count.toLong(), outcomeSetup?.getType(outcome))
+        LitmusOutcomeInfo(outcome, count.toLong(), outcomeSetup?.getType(outcome))
     }

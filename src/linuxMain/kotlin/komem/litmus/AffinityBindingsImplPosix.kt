@@ -1,7 +1,8 @@
 @file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
 
+package komem.litmus
+
 import kaffinity.*
-import komem.litmus.AffinityManager
 import kotlinx.cinterop.*
 import platform.posix.cpu_set_t
 import platform.posix.errno

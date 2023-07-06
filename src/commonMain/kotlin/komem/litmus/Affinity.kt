@@ -7,15 +7,15 @@ package komem.litmus
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
-interface AffinityMap {
-    fun allowedCores(workerIndex: Int): Set<Int>
+fun interface AffinityMap {
+    fun allowedCores(threadIndex: Int): Set<Int>
 }
 
 interface AffinityManager {
     fun setAffinity(w: Worker, cpus: Set<Int>)
     fun getAffinity(w: Worker): Set<Int>
 
-    fun mapShifted(shift: Int): AffinityMap = object : AffinityMap {
+    fun newShiftMap(shift: Int): AffinityMap = object : AffinityMap {
         private val cpus: List<Set<Int>>
 
         init {
@@ -29,31 +29,31 @@ interface AffinityManager {
             cpus = tmp
         }
 
-        override fun allowedCores(workerIndex: Int) = cpus[workerIndex]
+        override fun allowedCores(threadIndex: Int) = cpus[threadIndex]
     }
 
-    fun mapRandom(random: Random = Random): AffinityMap = object : AffinityMap {
-        private val cpus = (0 until cpuCount()).shuffled(random).map { setOf(it) }
-        override fun allowedCores(workerIndex: Int) = cpus[workerIndex]
+    fun newRandomMap(random: Random = Random): AffinityMap = object : AffinityMap {
+        private val cpus = (0..<cpuCount()).shuffled(random).map { setOf(it) }
+        override fun allowedCores(threadIndex: Int) = cpus[threadIndex]
     }
 
     fun presetShort(): List<AffinityMap> = listOf(
-        mapShifted(1),
-        mapShifted(2),
-        mapShifted(4),
+        newShiftMap(1),
+        newShiftMap(2),
+        newShiftMap(4),
     )
 
-    fun presetLong(): List<AffinityMap> = List(cpuCount()) { mapShifted(it) } + listOf(
+    fun presetLong(): List<AffinityMap> = List(cpuCount()) { newShiftMap(it) } + listOf(
         object : AffinityMap {
-            override fun allowedCores(workerIndex: Int) = setOf(0, 1)
+            override fun allowedCores(threadIndex: Int) = setOf(0, 1)
         },
         object : AffinityMap {
-            override fun allowedCores(workerIndex: Int) = setOf(1, 2)
+            override fun allowedCores(threadIndex: Int) = setOf(1, 2)
         },
         object : AffinityMap {
-            override fun allowedCores(workerIndex: Int) = setOf(
-                (workerIndex * 2) % cpuCount(),
-                (workerIndex * 2 + 1) % cpuCount()
+            override fun allowedCores(threadIndex: Int) = setOf(
+                (threadIndex * 2) % cpuCount(),
+                (threadIndex * 2 + 1) % cpuCount()
             )
         }
     )
