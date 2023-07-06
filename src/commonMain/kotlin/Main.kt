@@ -1,10 +1,9 @@
 import komem.litmus.barriers.CinteropSpinBarrier
-import komem.litmus.getAffinityManager
 import komem.litmus.mergeOutcomes
 import komem.litmus.prettyPrint
 import komem.litmus.runners.WorkerTestRunner
 import komem.litmus.runners.runTestParallel
-import komem.litmus.tests.*
+import komem.litmus.tests.SBTest
 import komem.litmus.variateParams
 import kotlin.time.Duration.Companion.seconds
 

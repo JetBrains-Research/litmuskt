@@ -9,7 +9,7 @@ fun chiSquaredTest(sample1: List<Int>, sample2: List<Int>): Boolean {
     val obs = Array(2) { IntArray(n) } // observed frequencies
 
     // fill in observed frequencies
-    for (i in 0 until n) {
+    for (i in 0..<n) {
         obs[0][i] = sample1[i]
         obs[1][i] = sample2[i]
     }
@@ -18,15 +18,15 @@ fun chiSquaredTest(sample1: List<Int>, sample2: List<Int>): Boolean {
     val total1 = sample1.sum()
     val total2 = sample2.sum()
     val exp = Array(2) { DoubleArray(n) }
-    for (i in 0 until n) {
+    for (i in 0..<n) {
         exp[0][i] = total1.toDouble() * (sample1[i] + sample2[i]) / (total1 + total2)
         exp[1][i] = total2.toDouble() * (sample1[i] + sample2[i]) / (total1 + total2)
     }
 
     // calculate chi-squared test statistic
     var chiSq = 0.0
-    for (i in 0 until n) {
-        for (j in 0 until 2) {
+    for (i in 0..<n) {
+        for (j in 0..<2) {
             val o = obs[j][i].toDouble()
             val e = exp[j][i]
             chiSq += (o - e) * (o - e) / e
@@ -48,16 +48,16 @@ fun chiSquaredTest(samples: List<List<Int>>): Boolean {
     val totalCol = List(k) { samples[it].sum() }
     val totalRow = List(n) { i -> samples.sumOf { it[i] } }
     val exp = Array(k) { DoubleArray(n) }
-    for (i in 0 until k) {
-        for (j in 0 until n) {
+    for (i in 0..<k) {
+        for (j in 0..<n) {
             exp[i][j] = 1.0 * totalCol[i] * totalRow[j] / totalTotal
         }
     }
 
     // calculate chi-squared test statistic
     var chiSq = 0.0
-    for (i in 0 until k) {
-        for (j in 0 until n) {
+    for (i in 0..<k) {
+        for (j in 0..<n) {
             val o = samples[i][j].toDouble()
             val e = exp[i][j]
             chiSq += (o - e) * (o - e) / e

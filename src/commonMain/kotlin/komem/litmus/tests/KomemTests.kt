@@ -1,10 +1,10 @@
 package komem.litmus.tests
 
-import komem.litmus.LitmusTest
 import komem.litmus.LitmusOutcomeType
+import komem.litmus.LitmusTest
+import komem.litmus.setupOutcomes
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
-import komem.litmus.setupOutcomes
 import kotlin.concurrent.Volatile
 
 class AtomTest : LitmusTest("access atomicity") {
@@ -64,7 +64,6 @@ class SBTest : LitmusTest("store buffering") {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 class SBVolatileTest : LitmusTest("store buffering + volatile") {
 
     @Volatile
@@ -214,7 +213,6 @@ class MPTest : LitmusTest("message passing") {
 //    }
 //}
 
-@OptIn(ExperimentalStdlibApi::class)
 class MPVolatileTest : LitmusTest("message passing + volatile") {
 
     var x = 0
@@ -281,7 +279,6 @@ class MPMutexTest : LitmusTest("MP + atomicfu lock") {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 class MP_DRF_Test : LitmusTest("message passing + drf") {
     var x = 0
 
@@ -409,7 +406,6 @@ class IRIWTest : LitmusTest("independent reads of independent writes") {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 class IRIWVolatileTest : LitmusTest("iriw + volatile") {
     @Volatile
     var x = 0
@@ -590,7 +586,6 @@ class LBFakeDEPSTest : LitmusTest("LB + fake dependency") {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 class LBVolatileTest : LitmusTest("load buffering + volatile") {
     @Volatile
     var x = 0

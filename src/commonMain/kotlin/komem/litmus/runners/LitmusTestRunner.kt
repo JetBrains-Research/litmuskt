@@ -1,8 +1,8 @@
 package komem.litmus.runners
 
-import komem.litmus.*
-import kotlin.time.Duration
-import kotlin.time.TimeSource
+import komem.litmus.LitmusOutcome
+import komem.litmus.LitmusTest
+import komem.litmus.RunningParams
 
 interface LitmusTestRunner {
     fun runTest(params: RunningParams, testProducer: () -> LitmusTest): List<LitmusOutcome>

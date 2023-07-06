@@ -31,7 +31,6 @@ class MP_NoDRF_Test : LitmusTest("MP + broken DRF") {
 class UPUBVolatileTest : LitmusTest("publication + volatile") {
     class Holder(val x: Int)
 
-    @OptIn(ExperimentalStdlibApi::class)
     @Volatile
     var h: Holder? = null
 

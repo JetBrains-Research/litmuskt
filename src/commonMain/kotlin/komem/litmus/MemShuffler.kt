@@ -14,7 +14,6 @@ class MemShuffler(bufferSize: Int, random: Random = Random) : ReadWriteProperty<
     var ptr = 0
     val propIdx = mutableMapOf<KProperty<*>, Int>()
 
-    @Suppress("OVERRIDE_BY_INLINE")
     inline fun provideDelegate(thisRef: LitmusTest, prop: KProperty<*>): ReadWriteProperty<LitmusTest, Int> {
         require(ptr < buffer.size) { "memshuffle buffer is exhausted" }
         propIdx[prop] = shuffledIndices[ptr++]

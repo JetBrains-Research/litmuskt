@@ -5,7 +5,7 @@ import platform.posix.sysconf
 
 fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     val columnCount = maxOf { it.size }
-    val columnSizes = (0 until columnCount).map { i ->
+    val columnSizes = (0..<columnCount).map { i ->
         this.mapNotNull { it.getOrNull(i) }.maxOf { it.length } + 2
     }
     return buildString {

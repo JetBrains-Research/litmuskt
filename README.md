@@ -9,8 +9,10 @@ The `main` branch contains some _user-friendlier_ snapshot of the project. See `
 ## Setup
 
 Clone the project.
-* On MacOS, this is enough. 
-* On Linux, after cloning go to `src/nativeInterop` directory and run the `setup.sh` script. It compiles some C source files and sets up C interop. By default, it outputs the object files to `/usr/...`, which may require `sudo`. You can change the location to any other to avoid `sudo`, but it must be an absolute path.
+* On macOS, this is enough.
+* On Linux, after cloning go to `src/nativeInterop` directory and run the `setup.sh` script. It compiles some C source
+  files and sets up C interop. By default, it outputs the object files to `/usr/...`, which may require `sudo`. You can
+  change the location to any other to avoid `sudo`, but it must be an absolute path.
 
 ### Running
 
@@ -38,7 +40,9 @@ Main function currently shows an example of how to use this project. To write a 
 
 ## Notes
 
-* Setting thread affinity is not supported on MacOS (yet?). As such, `getAffinityManager()` returns `null` on MacOS. 
-* Currently, there is no CLI or any other defined interface. The `main()` function is quite messy and likely will remain so (at least for now).
-* For some reason, running a lot of different tests in one go will drastically reduce the performance and weak outcomes frequency. For now, better avoid running for longer than 5 minutes.
+* Setting thread affinity is not supported on macOS (yet?). As such, `getAffinityManager()` returns `null` on macOS.
+* Currently, there is no CLI or any other defined interface. The `main()` function is quite messy and likely will remain
+  so (at least for now).
+* For some reason, running a lot of different tests in one go will drastically reduce the performance and weak outcomes'
+  frequency. For now, better avoid running for longer than 5 minutes.
 * All cases of currently found weak behaviors can be consistently found in under a minute. 

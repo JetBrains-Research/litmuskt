@@ -30,9 +30,9 @@ private fun setAffinity(thread: pthread_t, cpus: Set<Int>): Unit = memScoped {
 private fun getAffinity(thread: pthread_t): Set<Int> = memScoped {
     val set = alloc<cpu_set_t>()
     get_affinity(thread, set.ptr).callCheck()
-    return (0 until cpu_setsize())
-            .filter { cpu_isset(it, set.ptr) != 0 }
-            .toSet()
+    return (0..<cpu_setsize())
+        .filter { cpu_isset(it, set.ptr) != 0 }
+        .toSet()
 }
 
 @OptIn(ExperimentalStdlibApi::class)
