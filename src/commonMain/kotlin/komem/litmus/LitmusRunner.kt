@@ -1,3 +1,5 @@
+package komem.litmus
+
 import kotlin.system.getTimeMillis
 import kotlin.time.Duration
 
@@ -44,16 +46,16 @@ fun LitmusRunner.runTestParallel(
 //    testProducer: () -> BasicLitmusTest,
 //): LitmusResult {
 //    BasicLitmusTest.memShuffler = parameters.memShufflerProducer?.invoke()
-//    val actorFunctions: List<(BasicLitmusTest) -> Any?> = testProducer().overriddenActors()
+//    val threadFunctions: List<(BasicLitmusTest) -> Any?> = testProducer().overriddenthreads()
 //
-//    val parallelFactor = cpuCount() / actorFunctions.size
-//    val testBatches = List(parallelFactor) { List(batchSize) { testProducer() } }
-//    List(parallelFactor) { i ->
+//    val parallelFthread = cpuCount() / threadFunctions.size
+//    val testBatches = List(parallelFthread) { List(batchSize) { testProducer() } }
+//    List(parallelFthread) { i ->
 //        createFutures(
 //            testBatches[i],
 //            parameters.syncPeriod,
 //            parameters.barrierProducer,
-//            actorFunctions,
+//            threadFunctions,
 //            null
 //        )
 //    }.flatten().map { it.result }

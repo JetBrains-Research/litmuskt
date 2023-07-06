@@ -1,20 +1,21 @@
-package tests
+package komem.litmus.tests
 
-import LitmusTest
+import komem.litmus.LitmusTest
+import komem.litmus.OutcomeType
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
-import setupOutcomes
+import komem.litmus.setupOutcomes
 import kotlin.concurrent.Volatile
 
 class AtomTest : LitmusTest("access atomicity") {
 
     var x = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = -1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         outcome = x
     }
 
@@ -41,12 +42,12 @@ class SBTest : LitmusTest("store buffering") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         a = y
     }
 
-    override fun actor2() {
+    override fun thread2() {
         y = 1
         b = x
     }
@@ -75,12 +76,12 @@ class SBVolatileTest : LitmusTest("store buffering + volatile") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         a = y
     }
 
-    override fun actor2() {
+    override fun thread2() {
         y = 1
         b = x
     }
@@ -105,13 +106,13 @@ class MutexTest : LitmusTest("atomicfu mutex") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         l.withLock {
             a = ++x
         }
     }
 
-    override fun actor2() {
+    override fun thread2() {
         l.withLock {
             b = ++x
         }
@@ -137,14 +138,14 @@ class SBMutexTest : LitmusTest("SB + atomicfu lock") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         l.withLock {
             x = 1
             a = y
         }
     }
 
-    override fun actor2() {
+    override fun thread2() {
         l.withLock {
             y = 1
             b = x
@@ -168,12 +169,12 @@ class MPTest : LitmusTest("message passing") {
     var x = 0
     var y = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         y = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         val a = y
         val b = x
         outcome = a to b
@@ -224,12 +225,12 @@ class MPVolatileTest : LitmusTest("message passing + volatile") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         y = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         a = y
         b = x
     }
@@ -254,14 +255,14 @@ class MPMutexTest : LitmusTest("MP + atomicfu lock") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         l.withLock {
             y = 1
         }
     }
 
-    override fun actor2() {
+    override fun thread2() {
         l.withLock {
             a = y
         }
@@ -287,12 +288,12 @@ class MP_DRF_Test : LitmusTest("message passing + drf") {
     @Volatile
     var y = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
         y = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         if (y != 0) {
             outcome = x
         }
@@ -310,11 +311,11 @@ class MP_DRF_Test : LitmusTest("message passing + drf") {
 class CoRRTest : LitmusTest("coherence read-read") {
     var x = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         val a = x
         val b = x
         outcome = a to b
@@ -334,11 +335,11 @@ class CoRR_CSE_Test : LitmusTest("coherence cse") {
     val holder1 = Holder(0)
     val holder2 = holder1
 
-    override fun actor1() {
+    override fun thread1() {
         holder1.x = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         val h1 = holder1
         val h2 = holder2
 
@@ -376,21 +377,21 @@ class IRIWTest : LitmusTest("independent reads of independent writes") {
     var c = 0
     var d = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         a = x
         b = y
     }
 
-    override fun actor3() {
+    override fun thread3() {
         c = y
         d = x
     }
 
-    override fun actor4() {
+    override fun thread4() {
         y = 1
     }
 
@@ -421,21 +422,21 @@ class IRIWVolatileTest : LitmusTest("iriw + volatile") {
     var c = 0
     var d = 0
 
-    override fun actor1() {
+    override fun thread1() {
         x = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         a = x
         b = y
     }
 
-    override fun actor3() {
+    override fun thread3() {
         c = y
         d = x
     }
 
-    override fun actor4() {
+    override fun thread4() {
         y = 1
     }
 
@@ -458,11 +459,11 @@ class UPUBTest : LitmusTest("publication") {
 
     var h: Holder? = null
 
-    override fun actor1() {
+    override fun thread1() {
         h = Holder(0)
     }
 
-    override fun actor2() {
+    override fun thread2() {
         val t = h
         if (t != null) {
             outcome = t.x
@@ -483,11 +484,11 @@ class UPUBCtorTest : LitmusTest("publication + ctor") {
 
     var h: Holder? = null
 
-    override fun actor1() {
+    override fun thread1() {
         h = Holder()
     }
 
-    override fun actor2() {
+    override fun thread2() {
         val t = h
         if (t != null) {
             outcome = t.x
@@ -510,12 +511,12 @@ class LB_DEPS_Test : LitmusTest("out of thin air") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         a = x
         y = a
     }
 
-    override fun actor2() {
+    override fun thread2() {
         b = y
         x = b
     }
@@ -538,12 +539,12 @@ class LBTest : LitmusTest("load buffering") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         a = x
         y = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         b = y
         x = 1
     }
@@ -567,12 +568,12 @@ class LBFakeDEPSTest : LitmusTest("LB + fake dependency") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         a = x
         y = 1 + a * 0
     }
 
-    override fun actor2() {
+    override fun thread2() {
         b = y
         x = b
     }
@@ -600,12 +601,12 @@ class LBVolatileTest : LitmusTest("load buffering + volatile") {
     var a = 0
     var b = 0
 
-    override fun actor1() {
+    override fun thread1() {
         a = x
         y = 1
     }
 
-    override fun actor2() {
+    override fun thread2() {
         b = y
         x = 1
     }

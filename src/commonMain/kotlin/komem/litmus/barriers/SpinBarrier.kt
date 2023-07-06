@@ -1,4 +1,4 @@
-package barriers
+package komem.litmus.barriers
 
 import kotlin.concurrent.AtomicInt
 

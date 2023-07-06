@@ -1,5 +1,9 @@
 @file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
 
+package komem.litmus
+
+// TODO: add documentation
+
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 

@@ -1,12 +1,14 @@
-package statistics
+package komem.litmus.statistics
 
-import WorkerRunner
+import komem.litmus.WorkerRunner
 import barriers.*
-import getAffinityManager
-import mergeOutcomes
-import runTest
+import komem.litmus.getAffinityManager
+import komem.litmus.barriers.SpinBarrier
+import komem.litmus.mergeOutcomes
+import komem.litmus.runTest
+import komem.litmus.tests.SBTest
 import tests.*
-import variateParameters
+import komem.litmus.variateParameters
 
 fun distributionTest() {
     val runner = WorkerRunner

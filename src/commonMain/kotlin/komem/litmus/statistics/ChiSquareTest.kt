@@ -1,4 +1,4 @@
-package statistics
+package komem.litmus.statistics
 
 // returns true if samples have the same distribution with 0.05 significance level
 // written almost completely by ChatGPT :)

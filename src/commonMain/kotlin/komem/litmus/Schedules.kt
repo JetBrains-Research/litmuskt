@@ -1,4 +1,6 @@
-import barriers.BarrierProducer
+package komem.litmus
+
+import komem.litmus.barriers.BarrierProducer
 
 object SyncPeriodSchedules {
     fun quadGrowing(until: Int) = generateSequence(1) { (it * 1.2).toInt() + 1 }.takeWhile { it < until }.toList()

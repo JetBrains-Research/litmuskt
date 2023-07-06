@@ -1,4 +1,4 @@
-package barriers
+package komem.litmus.barriers
 
 interface Barrier {
     fun wait()

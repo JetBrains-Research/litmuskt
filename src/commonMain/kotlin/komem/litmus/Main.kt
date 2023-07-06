@@ -1,5 +1,7 @@
-import barriers.CinteropBarrier
-import tests.*
+package komem.litmus
+
+import komem.litmus.barriers.CinteropSpinBarrier
+import komem.litmus.tests.UPUBTest
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
@@ -9,7 +11,7 @@ fun main() {
         affinitySchedule = getAffinityManager()?.presetShort() ?: listOf(null),
         syncPeriodSchedule = generateSequence(3) { it * 4 }.take(3).toList(),
         memShufflerProducerSchedule = listOf(null),
-        barrierSchedule = listOf(::CinteropBarrier)
+        barrierSchedule = listOf(::CinteropSpinBarrier)
     ).toList()
 
     val singleTestDuration = 3.seconds

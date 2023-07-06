@@ -1,4 +1,4 @@
-import statistics.chiSquaredTest
+import komem.litmus.statistics.chiSquaredTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

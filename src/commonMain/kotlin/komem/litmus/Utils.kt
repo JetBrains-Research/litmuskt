@@ -1,3 +1,5 @@
+package komem.litmus
+
 import platform.posix._SC_NPROCESSORS_ONLN
 import platform.posix.sysconf
 

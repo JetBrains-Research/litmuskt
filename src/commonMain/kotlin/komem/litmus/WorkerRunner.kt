@@ -1,7 +1,9 @@
 @file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
 
-import barriers.Barrier
-import barriers.BarrierProducer
+package komem.litmus
+
+import komem.litmus.barriers.Barrier
+import komem.litmus.barriers.BarrierProducer
 import kotlin.native.concurrent.Future
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
@@ -19,13 +21,13 @@ object WorkerRunner : LitmusRunner {
         testProducer: () -> LitmusTest,
     ): List<LitmusOutcome> {
         LitmusTest.memShuffler = options.memShufflerProducer?.invoke()
-        val actorFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenActors()
+        val threadFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenthreads()
         val testBatch = List(options.batchSize) { testProducer() }
         createFutures(
             testBatch,
             options.syncPeriod,
             options.barrierProducer,
-            actorFunctions,
+            threadFunctions,
             options.affinityMap
         ).forEach { it.result }
         for (test in testBatch)
@@ -38,15 +40,15 @@ object WorkerRunner : LitmusRunner {
         testBatch: List<LitmusTest>,
         syncPeriod: Int,
         barrierProducer: BarrierProducer,
-        actorFunctions: List<(LitmusTest) -> Any?>,
+        threadFunctions: List<(LitmusTest) -> Any?>,
         affinityMap: AffinityMap?
     ): List<Future<*>> {
         val workerContext = WorkerContext(
             testBatch,
             syncPeriod,
-            barrierProducer(actorFunctions.size)
+            barrierProducer(threadFunctions.size)
         )
-        val futures = actorFunctions.mapIndexed { i, actorFun ->
+        val futures = threadFunctions.mapIndexed { i, threadFun ->
             val worker = Worker.start()
 
             if (affinityMap != null) {
@@ -59,8 +61,8 @@ object WorkerRunner : LitmusRunner {
 
             worker.execute(
                 TransferMode.SAFE /* ignored */,
-                { actorFun to workerContext }
-            ) { (actorFun, workerContext) ->
+                { threadFun to workerContext }
+            ) { (threadFun, workerContext) ->
                 workerContext.apply {
                     var cnt = 0
                     for (test in tests) {
@@ -68,7 +70,7 @@ object WorkerRunner : LitmusRunner {
                             cnt = 0
                             barrier.wait()
                         }
-                        actorFun(test)
+                        threadFun(test)
                         cnt++
                     }
                 }

@@ -1,4 +1,4 @@
-
+package komem.litmus
 typealias LitmusResult = List<OutcomeInfo>
 
 val LitmusResult.interestingFrequency: Double

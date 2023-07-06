@@ -1,10 +1,10 @@
-package barriers
+package komem.litmus.barriers
 
 import barrier.*
 import kotlinx.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
-class CinteropBarrier(private val thread_count: Int) : Barrier {
+class CinteropSpinBarrier(private val thread_count: Int) : Barrier {
 
     private val barrierStruct: CPointer<CSpinBarrier>? = create_barrier(thread_count)
 

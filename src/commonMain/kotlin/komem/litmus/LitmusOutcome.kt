@@ -1,4 +1,4 @@
-
+package komem.litmus
 typealias LitmusOutcome = Any?
 
 // TODO: rename to LitmusOutcomeType (?)

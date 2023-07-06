@@ -1,6 +1,6 @@
-// TODO: put code into package!!!
+package komem.litmus// TODO: put code into package!!!
 
-import barriers.BarrierProducer
+import komem.litmus.barriers.BarrierProducer
 
 data class LitmusOptions(
     val batchSize: Int,

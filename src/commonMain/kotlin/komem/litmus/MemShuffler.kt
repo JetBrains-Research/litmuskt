@@ -1,3 +1,5 @@
+package komem.litmus
+
 import kotlin.properties.ReadWriteProperty
 import kotlin.random.Random
 import kotlin.reflect.KProperty
