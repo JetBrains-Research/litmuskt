@@ -7,39 +7,46 @@ import komem.litmus.runners.WorkerTestRunner
 import komem.litmus.tests.SBTest
 import komem.litmus.variateRunParams
 import kotlin.time.Duration.Companion.seconds
+import komem.litmus.dslTest.*
 import kotlin.time.measureTime
 
 fun main() {
 
-//    val sb = litmusTest {
-//        var x = 0
-//        var y = 0
-//        thread {
-//            x = 1
-//            o1 = y
-//        }
-//        thread {
-//            y = 1
-//            o2 = x
-//        }
-//    }
-//    measureTime {
-//        sb.run(10_000_000)
-//    }.let { println("${it.inWholeSeconds} seconds") }
+    class Data {
+        var x = 0
+        var y = 0
+    }
 
-    val runner = WorkerTestRunner
+    val sb = litmusTest<Data> {
+        init {
+            Data()
+        }
+        thread {
+            x = 1
+            o1 = y
+        }
+        thread {
+            y = 1
+            o2 = x
+        }
+    }
     measureTime {
-        runner.runTest(
-            RunParams(
-                10_000_000,
-                10,
-                null,
-                null,
-                ::SpinBarrier
-            ),
-            ::SBTest
-        ).groupIntoInfo(SBTest().getOutcomeSetup()).prettyPrint()
-    }.let { println("and ${it.inWholeSeconds} seconds") }
+        sb.run(10_000)
+    }.let { println("${it.inWholeSeconds} seconds") }
+
+//    val runner = WorkerTestRunner
+//    measureTime {
+//        runner.runTest(
+//            RunningParams(
+//                10_000_000,
+//                10,
+//                null,
+//                null,
+//                ::SpinBarrier
+//            ),
+//            ::SBTest
+//        ).groupToInfo(SBTest().getOutcomeSetup()).prettyPrint()
+//    }.let { println("and ${it.inWholeSeconds} seconds") }
 
 //    val paramsList = variateParams(
 //        batchSizeSchedule = listOf(100_000),

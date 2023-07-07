@@ -8,47 +8,59 @@ import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-interface LTContext {
-    fun thread(code: () -> Unit)
+interface LTContext<T> {
+    fun thread(code: T.() -> Unit)
     var o1: Any?
     var o2: Any?
+
+    fun init(producer: () -> T)
 }
 
-class LTContainer : LTContext {
-    val threadFs = mutableListOf<() -> Unit>()
+class LTContainer<T> : LTContext<T> {
+    val threadFs = mutableListOf<T.() -> Unit>()
     override var o1: Any? = null
     override var o2: Any? = null
 
-    override fun thread(code: () -> Unit) {
+    override fun thread(code: T.() -> Unit) {
         threadFs.add(code)
     }
 
     val threadCount get() = threadFs.size
+
+    lateinit var dataProducer: () -> T
+
+    override fun init(producer: () -> T) {
+        dataProducer = producer
+    }
 }
 
-data class WorkerCtx(
+data class WorkerCtx<T>(
     val n: Int,
     val ownIndex: Int,
     val barrier: Barrier,
-    val containers: List<LTContainer>,
+    val containers: List<LTContainer<T>>,
+    val data: List<T>,
 )
 
 @OptIn(ObsoleteWorkersApi::class)
-class LTDef(
-    private val def: LTContext.() -> Unit
+class LTDef<T>(
+    private val def: LTContext<T>.() -> Unit
 ) {
     fun run(n: Int) {
+        val infoContainer = LTContainer<T>().also(def)
         val containers = List(n) {
-            LTContainer().also { it.def() }
+            LTContainer<T>().also { it.def() }
         }
-        val infoContainer = LTContainer().also(def)
+        val data = List(n) {
+            infoContainer.dataProducer()
+        }
         val barrier = SpinBarrier(infoContainer.threadCount)
         val workers = infoContainer.threadFs.map { Worker.start() }
         val futures = workers.mapIndexed { wi, w ->
-            val _ctx = WorkerCtx(n, wi, barrier, containers)
+            val _ctx = WorkerCtx(n, wi, barrier, containers, data)
             w.execute(TransferMode.SAFE, { _ctx }) { ctx ->
                 ctx.containers.forEachIndexed { ci, c ->
-                    c.threadFs[ctx.ownIndex]()
+                    c.threadFs[ctx.ownIndex](ctx.data[ci])
                     if (ci % 10 == 0) {
                         ctx.barrier.wait()
                     }
@@ -62,4 +74,4 @@ class LTDef(
     }
 }
 
-fun litmusTest(def: LTContext.() -> Unit): LTDef = LTDef(def)
+fun<T> litmusTest(def: LTContext<T>.() -> Unit): LTDef<T> = LTDef(def)
