@@ -14,6 +14,7 @@ interface LTContext<T> {
     var o2: Any?
 
     fun init(producer: () -> T)
+    fun after(code: T.() -> Unit)
 }
 
 class LTContainer<T> : LTContext<T> {
@@ -23,6 +24,11 @@ class LTContainer<T> : LTContext<T> {
 
     override fun thread(code: T.() -> Unit) {
         threadFs.add(code)
+    }
+
+    var afterF: (T.() -> Unit)? = null
+    override fun after(code: T.() -> Unit) {
+        afterF = code
     }
 
     val threadCount get() = threadFs.size
@@ -69,6 +75,9 @@ class LTDef<T>(
         }
         for (w in workers) w.requestTermination(true)
         for (f in futures) f.result
+        for ((c, d) in containers zip data) {
+            c.afterF?.invoke(d)
+        }
         val results = containers.map { it.o1 to it.o2 }.groupingBy { it }.eachCount()
         println(results)
     }

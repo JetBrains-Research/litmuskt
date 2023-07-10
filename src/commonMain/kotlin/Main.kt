@@ -30,8 +30,77 @@ fun main() {
             o2 = x
         }
     }
+
+    val mp = litmusTest<Data> {
+        init { Data() }
+        thread {
+            x = 321321321
+            y = 123123123
+        }
+        thread {
+            o1 = y
+            o2 = x
+        }
+        // interesting: [1, 0]
+    }
+
+    val corr = litmusTest<Data> {
+        thread {
+            x = 1
+        }
+        thread {
+            o1 = x
+            o2 = x
+        }
+        // interesting: [1, 0]
+    }
+
+    class Holder(var x: Int)
+    class CorrCseData(val h1: Holder, val h2: Holder)
+
+    val corrCse = litmusTest<CorrCseData> {
+        init {
+            val h = Holder(0)
+            CorrCseData(h, h)
+        }
+        thread {
+            h1.x = 1
+        }
+        thread {
+            val a = h1.x
+            val b = h2.x
+            val c = h1.x
+            o1 = listOf(a, b, c)
+        }
+        // interesting: [1, 0, 0], [1, 1, 0]
+    }
+
+    data class IriwData(var x: Int, var y: Int, var a: Int, var b: Int, var c: Int, var d: Int)
+
+    val iriw = litmusTest<IriwData> {
+        init { IriwData(0, 0, 0, 0, 0, 0) }
+        thread {
+            x = 1
+        }
+        thread {
+            a = x
+            b = y
+        }
+        thread {
+            c = y
+            d = x
+        }
+        thread {
+            y = 1
+        }
+        after {
+            o1 = listOf(a, b, c, d)
+        }
+    }
+
+    println("start")
     measureTime {
-        sb.run(10_000)
+        mp.run(10_000_000)
     }.let { println("${it.inWholeSeconds} seconds") }
 
 //    val runner = WorkerTestRunner
