@@ -100,3 +100,34 @@ class UPUBRefTest : LitmusTest("publication + reference") {
         }
     }
 }
+
+class UPUBCtorLeakingTest : BasicLitmusTest("publication + leaking 'this'") {
+
+    var h: Holder? = null
+
+    inner class Holder {
+        val x: Int
+
+        init {
+            x = 1
+            h = this
+        }
+    }
+
+    override fun actor1() {
+        h = Holder()
+    }
+
+    override fun actor2() {
+        val t = h
+        if (t != null) {
+            outcome = t.x
+        }
+    }
+
+    init {
+        setupOutcomes {
+            accepted = setOf(0, 1, null)
+        }
+    }
+}

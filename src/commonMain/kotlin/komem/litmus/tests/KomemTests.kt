@@ -335,23 +335,23 @@ class IRIWTest : LitmusTest("independent reads of independent writes") {
     var x = 0
     var y = 0
 
-    var a = 0
-    var b = 0
-    var c = 0
-    var d = 0
+    var ab = 0 to 0
+    var cd = 0 to 0
 
     override fun thread1() {
         x = 1
     }
 
     override fun thread2() {
-        a = x
-        b = y
+        val a = x
+        val b = y
+        ab = a to b
     }
 
     override fun thread3() {
-        c = y
-        d = x
+        val c = y
+        val d = x
+        cd = c to d
     }
 
     override fun thread4() {
@@ -359,6 +359,8 @@ class IRIWTest : LitmusTest("independent reads of independent writes") {
     }
 
     override fun arbiter() {
+        val (a, b) = ab
+        val (c, d) = cd
         outcome = listOf(a, b, c, d)
     }
 
