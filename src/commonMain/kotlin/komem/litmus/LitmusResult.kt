@@ -2,13 +2,6 @@ package komem.litmus
 
 typealias LitmusResult = List<LitmusOutcomeInfo>
 
-val LitmusResult.interestingFrequency: Double
-    get() {
-        val totalCount = sumOf { it.count }
-        val interestingCount = filter { it.type == LitmusOutcomeType.INTERESTING }.sumOf { it.count }
-        return interestingCount.toDouble() / totalCount
-    }
-
 fun LitmusResult.prettyPrint() {
     val totalCount = sumOf { it.count }
     val table = this.sortedByDescending { it.count }.map {
@@ -29,7 +22,3 @@ fun List<LitmusOutcomeInfo>.mergeOutcomes(): LitmusResult {
         LitmusOutcomeInfo(outcome, infos.sumOf { it.count }, infos.first().type)
     }
 }
-
-val LitmusResult.isAccepted get() = all { it.type != LitmusOutcomeType.FORBIDDEN }
-
-fun LitmusResult.countOfType(type: LitmusOutcomeType) = filter { it.type == type }.sumOf { it.count }

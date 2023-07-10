@@ -4,13 +4,10 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.random.Random
 import kotlin.reflect.KProperty
 
-class MemShuffler(bufferSize: Int, random: Random = Random) : ReadWriteProperty<LitmusTest, Int> {
+class MemoryShuffler(bufferSize: Int, random: Random = Random) : ReadWriteProperty<LitmusTest, Int> {
     val buffer = MutableList(bufferSize) { 0 }
     val shuffledIndices = buffer.indices.shuffled(random)
-//    val shuffledIndices = run {
-//        require(bufferSize % 7 != 0)
-//        generateSequence(0) { ((it + 7) % bufferSize).takeUnless { it == 0 } }.toList()
-//    }
+
     var ptr = 0
     val propIdx = mutableMapOf<KProperty<*>, Int>()
 
@@ -31,4 +28,4 @@ class MemShuffler(bufferSize: Int, random: Random = Random) : ReadWriteProperty<
     }
 }
 
-typealias MemShufflerProducer = () -> MemShuffler
+typealias MemShufflerProducer = () -> MemoryShuffler

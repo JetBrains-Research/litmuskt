@@ -2,15 +2,15 @@ package komem.litmus
 
 import komem.litmus.barriers.BarrierProducer
 
-data class RunningParams(
+data class RunParams(
     val batchSize: Int,
     val syncPeriod: Int,
     val affinityMap: AffinityMap?,
-    val memShufflerProducer: (() -> MemShuffler)?,
+    val memoryShufflerProducer: (() -> MemoryShuffler)?,
     val barrierProducer: BarrierProducer,
 )
 
-fun variateParams(
+fun variateRunParams(
     batchSizeSchedule: List<Int>,
     affinityMapSchedule: List<AffinityMap?>,
     syncPeriodSchedule: List<Int>,
@@ -23,11 +23,11 @@ fun variateParams(
                 for (memShufflerProducer in memShufflerProducerSchedule) {
                     for (barrierProducer in barrierSchedule) {
                         yield(
-                            RunningParams(
+                            RunParams(
                                 batchSize = batchSize,
                                 syncPeriod = syncPeriod,
                                 affinityMap = affinityMap,
-                                memShufflerProducer = memShufflerProducer,
+                                memoryShufflerProducer = memShufflerProducer,
                                 barrierProducer = barrierProducer
                             )
                         )

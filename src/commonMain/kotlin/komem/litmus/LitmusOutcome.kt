@@ -1,4 +1,5 @@
 package komem.litmus
+
 typealias LitmusOutcome = Any?
 
 enum class LitmusOutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
@@ -9,7 +10,7 @@ data class LitmusOutcomeInfo(
     val type: LitmusOutcomeType?,
 )
 
-data class OutcomeSetupScope(
+data class LitmusOutcomeSetupScope(
     var accepted: Set<LitmusOutcome> = emptySet(),
     var interesting: Set<LitmusOutcome> = emptySet(),
     var forbidden: Set<LitmusOutcome> = emptySet(),
@@ -23,7 +24,7 @@ data class OutcomeSetupScope(
     }
 }
 
-fun List<LitmusOutcome>.groupToInfo(outcomeSetup: OutcomeSetupScope?): List<LitmusOutcomeInfo> = this
+fun List<LitmusOutcome>.groupIntoInfo(outcomeSetup: LitmusOutcomeSetupScope?): List<LitmusOutcomeInfo> = this
     .groupingBy { it }
     .eachCount()
     .map { (outcome, count) ->

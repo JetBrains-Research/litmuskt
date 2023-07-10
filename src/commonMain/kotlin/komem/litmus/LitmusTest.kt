@@ -36,16 +36,16 @@ abstract class LitmusTest(val name: String) {
     }
 
     companion object {
-        var memShuffler: MemShuffler? = null
+        var memoryShuffler: MemoryShuffler? = null
 
         private object Placeholder
     }
 }
 
-private val testOutcomesSetup = mutableMapOf<KClass<*>, OutcomeSetupScope>()
+private val testOutcomesSetup = mutableMapOf<KClass<*>, LitmusOutcomeSetupScope>()
 
-fun LitmusTest.setupOutcomes(block: OutcomeSetupScope.() -> Unit) {
-    testOutcomesSetup[this::class] = OutcomeSetupScope().apply(block)
+fun LitmusTest.setupOutcomes(block: LitmusOutcomeSetupScope.() -> Unit) {
+    testOutcomesSetup[this::class] = LitmusOutcomeSetupScope().apply(block)
 }
 
-fun LitmusTest.getOutcomeSetup(): OutcomeSetupScope? = testOutcomesSetup[this::class]
+fun LitmusTest.getOutcomeSetup(): LitmusOutcomeSetupScope? = testOutcomesSetup[this::class]

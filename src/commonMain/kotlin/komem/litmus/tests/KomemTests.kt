@@ -24,15 +24,7 @@ class AtomTest : LitmusTest("access atomicity") {
             accepted = setOf(0, -1)
         }
     }
-
-//    @Test
-//    fun test() = this.runTest()
-
 }
-
-//data class PairOutcome(val a: Int, val b: Int) {
-//    override fun toString() = "($a, $b)"
-//}
 
 class SBTest : LitmusTest("store buffering") {
 
@@ -186,32 +178,6 @@ class MPTest : LitmusTest("message passing") {
         }
     }
 }
-
-//val producer : Builder.() -> (List<() -> LitmusOutcome>)
-//
-//producer(Builder())
-//producer(Builder())
-//producer(Builder())
-//producer(Builder())
-//
-//val MP_TEST = litmus {
-//    class Holder(var x: Int)
-//    var holder1 = Holder(0)
-//    thread {
-//        holder1 = Holder(1)
-//        x = 1
-//        y = 1
-//    }
-//    thread {
-//        val a = y
-//        val b = x
-//        outcome = a to b
-//    }
-//    outcomes {
-//        accepted = setOf(0 to 0, 0 to 1, 1 to 1)
-//        interesting = setOf(1 to 0)
-//    }
-//}
 
 class MPVolatileTest : LitmusTest("message passing + volatile") {
 

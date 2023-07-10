@@ -2,8 +2,11 @@
 
 package komem.litmus.runners
 
-import komem.litmus.*
+import komem.litmus.LitmusOutcome
+import komem.litmus.LitmusTest
+import komem.litmus.RunParams
 import komem.litmus.barriers.Barrier
+import komem.litmus.getAffinityManager
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
@@ -16,10 +19,10 @@ object WorkerTestRunner : LitmusTestRunner {
     )
 
     override fun runTest(
-        params: RunningParams,
+        params: RunParams,
         testProducer: () -> LitmusTest,
     ): List<LitmusOutcome> {
-        LitmusTest.memShuffler = params.memShufflerProducer?.invoke()
+        LitmusTest.memoryShuffler = params.memoryShufflerProducer?.invoke()
 
         val threadFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenThreads()
         val testBatch = List(params.batchSize) { testProducer() }
