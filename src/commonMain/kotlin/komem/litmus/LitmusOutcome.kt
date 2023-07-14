@@ -11,9 +11,9 @@ data class LitmusOutcomeInfo(
 )
 
 data class LitmusOutcomeSetupScope(
-    var accepted: Set<LitmusOutcome> = emptySet(),
-    var interesting: Set<LitmusOutcome> = emptySet(),
-    var forbidden: Set<LitmusOutcome> = emptySet(),
+    var accepted: Set<LitmusOutcome> = mutableSetOf(),
+    var interesting: Set<LitmusOutcome> = mutableSetOf(),
+    var forbidden: Set<LitmusOutcome> = mutableSetOf(),
     var default: LitmusOutcomeType = LitmusOutcomeType.FORBIDDEN,
 ) {
     fun getType(outcome: LitmusOutcome) = when (outcome) {
