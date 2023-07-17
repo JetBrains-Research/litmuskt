@@ -26,21 +26,3 @@ class LTDefinition<S>(
 }
 
 fun <S> litmusTest(stateProducer: () -> S) = LTDefinition(stateProducer)
-
-fun haha() {
-    litmusTest {
-        object {
-            var x = 3
-        }
-    }.thread {
-        x = 1
-        return@thread 4
-    }.thread {
-        x = 1
-    }.finalizeOutcome {
-        x + 1
-    }.outcomeSetup {
-        accepted = setOf(5)
-        default = LitmusOutcomeType.INTERESTING
-    }
-}

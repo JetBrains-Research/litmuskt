@@ -12,15 +12,14 @@ fun <S> LitmusTestRunner.runTest(
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): LitmusResult {
-    val results = mutableListOf<LitmusOutcomeInfo>()
+): List<LitmusOutcome> {
+    val results = mutableListOf<LitmusOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
         val outcomes = runTest(params, test)
-        val outcomeSetup = test.outcomeSetup
-        results.addAll(outcomes.groupIntoInfo(outcomeSetup))
+        results.addAll(outcomes)
     }
-    return results.mergeOutcomes()
+    return results
 }
 
 /*
@@ -54,28 +53,26 @@ fun <S> LitmusTestRunner.runTestParallel(
     test
 )
 
-
 fun <S> LitmusTestRunner.runTestParallel(
     instances: Int,
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): LitmusResult {
-    val results = mutableListOf<LitmusOutcomeInfo>()
+): List<LitmusOutcome> {
+    val results = mutableListOf<LitmusOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
         val outcomes = runTestParallel(instances, params, test)
-        val outcomeSetup = test.outcomeSetup
-        results.addAll(outcomes.groupIntoInfo(outcomeSetup))
+        results.addAll(outcomes)
     }
-    return results.mergeOutcomes()
+    return results
 }
 
 fun <S> LitmusTestRunner.runTestParallel(
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): LitmusResult = runTestParallel(
+): List<LitmusOutcome> = runTestParallel(
     cpuCount() / test.threadCount,
     timeLimit,
     params,
