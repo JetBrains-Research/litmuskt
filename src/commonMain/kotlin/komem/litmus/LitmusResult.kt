@@ -1,8 +1,8 @@
 package komem.litmus
 
-typealias LitmusResult = List<LitmusOutcomeInfo>
+typealias LTResult = List<LTOutcomeStats>
 
-fun LitmusResult.prettyPrint() {
+fun LTResult.prettyPrint() {
     val totalCount = sumOf { it.count }
     val table = this.sortedByDescending { it.count }.map {
         val freq = it.count.toDouble() / totalCount
@@ -17,8 +17,8 @@ fun LitmusResult.prettyPrint() {
     println((listOf(tableHeader) + table).tableFormat(true))
 }
 
-fun List<LitmusOutcomeInfo>.mergeOutcomes(): LitmusResult {
+fun List<LTOutcomeStats>.mergeStats(): LTResult {
     return groupBy { it.outcome }.map { (outcome, infos) ->
-        LitmusOutcomeInfo(outcome, infos.sumOf { it.count }, infos.first().type)
+        LTOutcomeStats(outcome, infos.sumOf { it.count }, infos.first().type)
     }
 }

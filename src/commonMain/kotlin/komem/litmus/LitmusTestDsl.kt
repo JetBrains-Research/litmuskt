@@ -1,28 +1,41 @@
 package komem.litmus
 
-class LTDefinition<S>(
-    internal val stateProducer: () -> S
+data class LTDefinition<S>(
+    val stateProducer: () -> S,
+    val threadFunctions: List<S.() -> Any?>,
+    val outcomeFinalizer: (S.() -> LTOutcome),
+    val outcomeSpec: LTOutcomeSpec
 ) {
-    internal val threadFunctions = mutableListOf<S.() -> Any?>()
-    internal var outcomeFinalizer: (S.() -> LitmusOutcome)? = null
-    internal var outcomeSetup = LitmusOutcomeSetupScope()
+    val threadCount = threadFunctions.size
+}
+
+class LTDefinitionScope<S>(
+    private val stateProducer: () -> S
+) {
+    private val threadFunctions = mutableListOf<S.() -> Any?>()
+    private lateinit var outcomeFinalizer: S.() -> LTOutcome
+    private var outcomeSpec = LTOutcomeSpecScope()
 
     // outcome is the returned value
-    // dev note: T just in order to return Unit neatly (i.e. to remove compile error when nothing is returned)
-    fun <T> thread(function: S.() -> T) = this.also {
+    fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
     }
 
-    // if present, thread outcomes should be ignored (to save memory)
-    fun finalizeOutcome(function: S.() -> LitmusOutcome) = this.also {
+    fun outcome(function: S.() -> LTOutcome) {
         outcomeFinalizer = function
     }
 
-    fun outcomeSetup(setup: LitmusOutcomeSetupScope.() -> Unit) = this.also {
-        outcomeSetup.setup()
+    fun spec(setup: LTOutcomeSpecScope.() -> Unit) {
+        outcomeSpec.setup()
+    }
+
+    fun build(): LTDefinition<S> {
+        if (!::outcomeFinalizer.isInitialized) throw IllegalStateException("outcome not set")
+        return LTDefinition(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
 
     val threadCount get() = threadFunctions.size
 }
 
-fun <S> litmusTest(stateProducer: () -> S) = LTDefinition(stateProducer)
+fun <S> litmusTest(stateProducer: () -> S, setup: LTDefinitionScope<S>.() -> Unit) =
+    LTDefinitionScope(stateProducer).apply(setup).build()

@@ -5,15 +5,15 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 interface LitmusTestRunner {
-    fun <S> runTest(params: RunParams, test: LTDefinition<S>): List<LitmusOutcome>
+    fun <S> runTest(params: RunParams, test: LTDefinition<S>): List<LTOutcome>
 }
 
 fun <S> LitmusTestRunner.runTest(
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): List<LitmusOutcome> {
-    val results = mutableListOf<LitmusOutcome>()
+): List<LTOutcome> {
+    val results = mutableListOf<LTOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
         val outcomes = runTest(params, test)
@@ -31,7 +31,7 @@ fun <S> LitmusTestRunner.runTestParallel(
     instances: Int,
     params: RunParams,
     test: LTDefinition<S>,
-): List<LitmusOutcome> {
+): List<LTOutcome> {
     val allOutcomes = List(instances) { instanceIndex ->
         val newAffinityMap = params.affinityMap?.let { oldMap ->
             AffinityMap { threadIndex ->
@@ -47,7 +47,7 @@ fun <S> LitmusTestRunner.runTestParallel(
 fun <S> LitmusTestRunner.runTestParallel(
     params: RunParams,
     test: LTDefinition<S>
-): List<LitmusOutcome> = runTestParallel(
+): List<LTOutcome> = runTestParallel(
     cpuCount() / test.threadCount,
     params,
     test
@@ -58,8 +58,8 @@ fun <S> LitmusTestRunner.runTestParallel(
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): List<LitmusOutcome> {
-    val results = mutableListOf<LitmusOutcome>()
+): List<LTOutcome> {
+    val results = mutableListOf<LTOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
         val outcomes = runTestParallel(instances, params, test)
@@ -72,7 +72,7 @@ fun <S> LitmusTestRunner.runTestParallel(
     timeLimit: Duration,
     params: RunParams,
     test: LTDefinition<S>,
-): List<LitmusOutcome> = runTestParallel(
+): List<LTOutcome> = runTestParallel(
     cpuCount() / test.threadCount,
     timeLimit,
     params,
