@@ -1,7 +1,7 @@
 package komem.litmus.barriers
 
 interface Barrier {
-    fun wait()
+    fun await()
 }
 
 typealias BarrierProducer = (Int) -> Barrier

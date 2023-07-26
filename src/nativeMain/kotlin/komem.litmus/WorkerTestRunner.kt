@@ -1,10 +1,6 @@
-package komem.litmus.runners
+package komem.litmus
 
-import komem.litmus.LTDefinition
-import komem.litmus.LTOutcome
-import komem.litmus.RunParams
 import komem.litmus.barriers.Barrier
-import komem.litmus.getAffinityManager
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
@@ -49,7 +45,7 @@ object WorkerTestRunner : LitmusTestRunner {
                 { workerContext }
             ) { (states, threadFunction, syncPeriod, barrier) ->
                 for (i in states.indices) {
-                    if (i % syncPeriod == 0) barrier.wait()
+                    if (i % syncPeriod == 0) barrier.await()
                     states[i].threadFunction()
                 }
             }

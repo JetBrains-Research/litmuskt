@@ -1,10 +1,5 @@
-import komem.litmus.RunParams
+import komem.litmus.*
 import komem.litmus.barriers.CinteropSpinBarrier
-import komem.litmus.calcStats
-import komem.litmus.litmusTest
-import komem.litmus.prettyPrint
-import komem.litmus.runners.LitmusTestRunner
-import komem.litmus.runners.WorkerTestRunner
 import kotlin.time.measureTime
 
 fun main() {
@@ -41,7 +36,7 @@ fun main() {
     val test = sb
     val params = RunParams(
         batchSize = 10_000_000,
-        syncPeriod = 10,
+        syncPeriod = 10000,
         affinityMap = null,
         barrierProducer = ::CinteropSpinBarrier
     )

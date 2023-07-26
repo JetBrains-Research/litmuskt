@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     kotlin("multiplatform") version "1.9.0-RC"
 }
@@ -9,20 +11,34 @@ repositories {
     mavenCentral()
 }
 
+@OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
-    val armEnabled = findProperty("arm") != null
+    targetHierarchy.default {
+        common {
+            withJvm()
+            withNative()
+            withLinux()
+            withMacos()
+        }
+    }
 
+    val armEnabled = findProperty("arm") != null
     val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
+//    val isMingwX64 = hostOs.startsWith("Windows")
+
     val nativeTarget = when {
-        hostOs == "Mac OS X" -> if (armEnabled) macosArm64("macos") else macosX64("macos")
-        hostOs == "Linux" -> linuxX64("linux")
-        isMingwX64 -> mingwX64("native")
-        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+        hostOs == "Mac OS X" -> if (armEnabled) macosArm64() else macosX64()
+        hostOs == "Linux" -> linuxX64()
+        else -> throw GradleException("Host OS is not supported")
+    }
+    val jvmTarget = jvm().apply {
+        // executable by default
+        mainRun {
+            mainClass.set("JvmMainKt")
+        }
     }
 
     val affinitySupported = hostOs == "Linux"
-
     nativeTarget.apply {
         compilations.getByName("main") {
             cinterops {
@@ -52,6 +68,12 @@ kotlin {
         }
         val commonTest by getting
 
+        val nativeMain by getting
+        val nativeTest by getting
+
+        val jvmMain by getting
+        val jvmTest by getting
+
         when {
             hostOs == "Mac OS X" -> {
                 val macosMain by getting {
@@ -65,10 +87,6 @@ kotlin {
                     dependsOn(commonMain)
                     kotlin.srcDirs("src/linuxMain/kotlin")
                 }
-            }
-
-            isMingwX64 -> {
-                throw GradleException("Windows is not yet supported in this project")
             }
         }
     }

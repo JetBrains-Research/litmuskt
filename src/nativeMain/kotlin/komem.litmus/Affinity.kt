@@ -7,10 +7,6 @@ package komem.litmus
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
-fun interface AffinityMap {
-    fun allowedCores(threadIndex: Int): Set<Int>
-}
-
 interface AffinityManager {
     fun setAffinity(w: Worker, cpus: Set<Int>)
     fun getAffinity(w: Worker): Set<Int>

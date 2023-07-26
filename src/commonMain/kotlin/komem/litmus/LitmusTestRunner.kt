@@ -1,6 +1,5 @@
-package komem.litmus.runners
+package komem.litmus
 
-import komem.litmus.*
 import kotlin.time.Duration
 import kotlin.time.TimeSource
 
@@ -33,12 +32,13 @@ fun <S> LitmusTestRunner.runTestParallel(
     test: LTDefinition<S>,
 ): List<LTOutcome> {
     val allOutcomes = List(instances) { instanceIndex ->
-        val newAffinityMap = params.affinityMap?.let { oldMap ->
-            AffinityMap { threadIndex ->
-                oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
-            }
-        }
-        val newParams = params.copy(affinityMap = newAffinityMap)
+        // TODO: JVM target removed AffinityMap from commonMain
+//        val newAffinityMap = params.affinityMap?.let { oldMap ->
+//            AffinityMap { threadIndex ->
+//                oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
+//            }
+//        }
+        val newParams = params.copy(/*affinityMap = newAffinityMap*/)
         runTest(newParams, test)
     }
     return allOutcomes.flatten()
