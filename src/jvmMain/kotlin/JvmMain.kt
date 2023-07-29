@@ -31,17 +31,19 @@ fun main() {
             listOf(a, b, c, d)
         }
         spec {
-            interesting = setOf(
-                listOf(1, 0, 1, 0),
-                listOf(0, 1, 0, 1),
-            )
-            default = LTOutcomeType.ACCEPTED
+//            interesting = setOf(
+//                listOf(1, 0, 1, 0),
+//                listOf(0, 1, 0, 1),
+//            )
+            interesting(1, 0, 1, 0)
+            interesting(0, 1, 0, 1)
+            defaultTo = LTOutcomeType.ACCEPTED
         }
     }
     val runner: LTRunner = JvmThreadRunner
     val test = iriw
 
-    val syncEverySchedule = generateSequence(50) { (it * 1.2).toInt() }.takeWhile { it < 100000 }.toList()
+    val syncEverySchedule = generateSequence(100) { (it * 1.4).toInt() }.takeWhile { it < 100000 }.toList()
     println("len = ${syncEverySchedule.size}")
 
     syncEverySchedule.map { sync ->
@@ -51,7 +53,7 @@ fun main() {
             affinityMap = null,
             barrierProducer = ::JvmBarrier
         )
-        runner.runTest(params, test).calcStats(test.outcomeSpec)
+        runner.runTest(params, test)
     }.mergeResults().prettyPrint()
 }
 

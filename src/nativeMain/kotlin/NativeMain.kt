@@ -25,12 +25,16 @@ fun main() {
 //            listOf(r1, r2)
 //        }
         spec {
-            accepted = setOf(
-                listOf(1, 1), listOf(0, 0), listOf(0, 1)
-            )
-            interesting = setOf(
-                listOf(1, 0)
-            )
+//            accepted = setOf(
+//                listOf(1, 1), listOf(0, 0), listOf(0, 1)
+//            )
+//            interesting = setOf(
+//                listOf(1, 0)
+//            )
+            accept(1, 1)
+            accept(0, 0)
+            accept(0, 1)
+            interesting(1, 0)
         }
     }
     val runner: LTRunner = WorkerRunner

@@ -25,12 +25,36 @@ data class LTOutcomeSpec(
 }
 
 class LTOutcomeSpecScope {
-    var accepted = setOf<LTOutcome>()
-    var interesting = setOf<LTOutcome>()
-    var forbidden = setOf<LTOutcome>()
-    var default: LTOutcomeType = LTOutcomeType.FORBIDDEN
+    private val accepted = mutableSetOf<LTOutcome>()
+    private val interesting = mutableSetOf<LTOutcome>()
+    private val forbidden = mutableSetOf<LTOutcome>()
+    var defaultTo: LTOutcomeType = LTOutcomeType.FORBIDDEN
 
-    fun build() = LTOutcomeSpec(accepted, interesting, forbidden, default)
+    fun accept(outcome: LTOutcome) {
+        accepted.add(outcome)
+    }
+
+    fun accept(vararg outcome: LTOutcome) {
+        accepted.add(outcome.toList())
+    }
+
+    fun interesting(outcome: LTOutcome) {
+        interesting.add(outcome)
+    }
+
+    fun interesting(vararg outcome: LTOutcome) {
+        interesting.add(outcome.toList())
+    }
+
+    fun forbid(outcome: LTOutcome) {
+        forbidden.add(outcome)
+    }
+
+    fun forbid(vararg outcome: LTOutcome) {
+        forbidden.add(outcome.toList())
+    }
+
+    fun build() = LTOutcomeSpec(accepted, interesting, forbidden, defaultTo)
 }
 
 typealias LTResult = List<LTOutcomeStats>
