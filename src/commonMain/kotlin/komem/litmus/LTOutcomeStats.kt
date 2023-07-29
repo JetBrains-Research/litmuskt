@@ -50,13 +50,6 @@ fun LTResult.prettyPrint() {
     println((listOf(tableHeader) + table).tableFormat(true))
 }
 
-fun List<LTOutcome>.calcStats(outcomeSpec: LTOutcomeSpec): LTResult = this
-    .groupingBy { it }
-    .eachCount()
-    .map { (outcome, count) ->
-        LTOutcomeStats(outcome, count.toLong(), outcomeSpec.getType(outcome))
-    }
-
 fun List<LTResult>.mergeResults(): LTResult {
     data class LTOutcomeStatTempData(var count: Long, var type: LTOutcomeType?)
 

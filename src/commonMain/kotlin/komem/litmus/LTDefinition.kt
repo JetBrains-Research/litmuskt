@@ -29,7 +29,14 @@ class LTDefinitionScope<S>(
     }
 
     fun build(): LTDefinition<S> {
-        if (!::outcomeFinalizer.isInitialized) throw IllegalStateException("outcome not set")
+        val outcomeFinalizer: S.() -> LTOutcome = when {
+            ::outcomeFinalizer.isInitialized -> outcomeFinalizer
+            stateProducer() is AutoOutcome -> {
+                { (this as AutoOutcome).getOutcome() }
+            }
+
+            else -> error("outcome not specified")
+        }
         return LTDefinition(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
 }

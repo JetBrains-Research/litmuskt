@@ -6,13 +6,13 @@ import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-object WorkerRunner : LTRunner {
+object WorkerRunner : LTRunner() {
 
     @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
     override fun <S> runTest(
         params: LTRunParams,
         test: LTDefinition<S>,
-    ): List<LTOutcome> {
+    ): LTResult {
 
         data class WorkerContext(
             val states: List<S>,
@@ -54,6 +54,7 @@ object WorkerRunner : LTRunner {
 
         val outcomes = states.map { it.outcomeFinalizer() }
         assert(outcomes.size == params.batchSize)
-        return outcomes
+
+        return outcomes.calcStats(test.outcomeSpec)
     }
 }

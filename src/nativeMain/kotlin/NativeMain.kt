@@ -1,49 +1,49 @@
 import komem.litmus.*
 import komem.litmus.barriers.CinteropSpinBarrier
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 fun main() {
 
-    class Data {
-        var x = 0
-        var y = 0
-        var a = 0
-        var b = 0
-    }
-
-    val sb = litmusTest(::Data) {
+    val mp = litmusTest({
+        object : IIOutcome() {
+            var x = 0
+            var y = 0
+//            var r1 = 0
+//            var r2 = 0
+        }
+    }) {
         thread {
             x = 1
-            a = y
+            y = 1
         }
         thread {
-            y = 1
-            b = x
+            r1 = y
+            r2 = x
         }
-        outcome {
-            listOf(a, b)
-        }
+//        outcome {
+//            listOf(r1, r2)
+//        }
         spec {
             accepted = setOf(
-                listOf(1, 1), listOf(1, 0), listOf(0, 1)
+                listOf(1, 1), listOf(0, 0), listOf(0, 1)
             )
             interesting = setOf(
-                listOf(0, 0)
+                listOf(1, 0)
             )
         }
     }
     val runner: LTRunner = WorkerRunner
-    val test = sb
+    val test = mp
     val params = LTRunParams(
-        batchSize = 10_000_000,
-        syncPeriod = 10000,
+        batchSize = 1_000_000,
+        syncPeriod = 100,
         affinityMap = null,
         barrierProducer = ::CinteropSpinBarrier
     )
 
     measureTime {
-        val outcomes = runner.runTest(params, test)
-        outcomes.calcStats(test.outcomeSpec).prettyPrint()
+        runner.runTest(10.seconds, params, test).prettyPrint()
     }.let { println("${it.inWholeSeconds} seconds") }
 
 }
