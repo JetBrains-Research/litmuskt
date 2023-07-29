@@ -39,3 +39,15 @@ fun List<LTOutcome>.calcStats(outcomeSpec: LTOutcomeSpec): List<LTOutcomeStats> 
     .map { (outcome, count) ->
         LTOutcomeStats(outcome, count.toLong(), outcomeSpec.getType(outcome))
     }
+
+fun List<List<LTOutcomeStats>>.mergeStats(): List<LTOutcomeStats> {
+    data class LTOutcomeStatTempData(var count: Long, var type: LTOutcomeType?)
+
+    val statMap = mutableMapOf<LTOutcome, LTOutcomeStatTempData>()
+    for (stat in this.flatten()) {
+        val tempData = statMap.getOrPut(stat.outcome) { LTOutcomeStatTempData(0L, stat.type) }
+        if (tempData.type != stat.type) error("merging conflicting stats: ${stat.outcome} is both ${stat.type} and ${tempData.type}")
+        tempData.count += stat.count
+    }
+    return statMap.map { (outcome, tempData) -> LTOutcomeStats(outcome, tempData.count, tempData.type) }
+}

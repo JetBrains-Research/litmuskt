@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
-    kotlin("multiplatform") version "1.9.0-RC"
+    kotlin("multiplatform") version "1.9.0"
 }
 
-group = "me.denis"
+group = "komem.litmus"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -66,7 +66,11 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
             }
         }
-        val commonTest by getting
+        val commonTest by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
+            }
+        }
 
         val nativeMain by getting
         val nativeTest by getting
