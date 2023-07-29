@@ -16,7 +16,6 @@ class LTDefinitionScope<S>(
     private lateinit var outcomeFinalizer: S.() -> LTOutcome
     private var outcomeSpec = LTOutcomeSpecScope()
 
-    // outcome is the returned value
     fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
     }
@@ -33,8 +32,6 @@ class LTDefinitionScope<S>(
         if (!::outcomeFinalizer.isInitialized) throw IllegalStateException("outcome not set")
         return LTDefinition(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
-
-    val threadCount get() = threadFunctions.size
 }
 
 fun <S> litmusTest(stateProducer: () -> S, setup: LTDefinitionScope<S>.() -> Unit) =

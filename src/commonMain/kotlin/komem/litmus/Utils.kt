@@ -23,10 +23,4 @@ fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     }
 }
 
-fun Int.pow(power: Int): Int {
-    var result = 1
-    repeat(power) { result *= this@pow }
-    return result
-}
-
 expect fun cpuCount(): Int

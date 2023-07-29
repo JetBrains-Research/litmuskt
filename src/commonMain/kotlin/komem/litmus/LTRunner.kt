@@ -3,13 +3,13 @@ package komem.litmus
 import kotlin.time.Duration
 import kotlin.time.TimeSource
 
-interface LitmusTestRunner {
-    fun <S> runTest(params: RunParams, test: LTDefinition<S>): List<LTOutcome>
+interface LTRunner {
+    fun <S> runTest(params: LTRunParams, test: LTDefinition<S>): List<LTOutcome>
 }
 
-fun <S> LitmusTestRunner.runTest(
+fun <S> LTRunner.runTest(
     timeLimit: Duration,
-    params: RunParams,
+    params: LTRunParams,
     test: LTDefinition<S>,
 ): List<LTOutcome> {
     val results = mutableListOf<LTOutcome>()
@@ -26,26 +26,25 @@ fun <S> LitmusTestRunner.runTest(
  * Example: for a map [ [0], [1], [2], [3] ],a test with 2 threads, and 2 instances, the
  * first instance will have a [ [0], [1] ] map and the second one will have [ [2], [3] ].
  */
-fun <S> LitmusTestRunner.runTestParallel(
+fun <S> LTRunner.runTestParallel(
     instances: Int,
-    params: RunParams,
+    params: LTRunParams,
     test: LTDefinition<S>,
 ): List<LTOutcome> {
     val allOutcomes = List(instances) { instanceIndex ->
-        // TODO: JVM target removed AffinityMap from commonMain
-//        val newAffinityMap = params.affinityMap?.let { oldMap ->
-//            AffinityMap { threadIndex ->
-//                oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
-//            }
-//        }
-        val newParams = params.copy(/*affinityMap = newAffinityMap*/)
+        val newAffinityMap = params.affinityMap?.let { oldMap ->
+            AffinityMap { threadIndex ->
+                oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
+            }
+        }
+        val newParams = params.copy(affinityMap = newAffinityMap)
         runTest(newParams, test)
     }
     return allOutcomes.flatten()
 }
 
-fun <S> LitmusTestRunner.runTestParallel(
-    params: RunParams,
+fun <S> LTRunner.runTestParallel(
+    params: LTRunParams,
     test: LTDefinition<S>
 ): List<LTOutcome> = runTestParallel(
     cpuCount() / test.threadCount,
@@ -53,10 +52,10 @@ fun <S> LitmusTestRunner.runTestParallel(
     test
 )
 
-fun <S> LitmusTestRunner.runTestParallel(
+fun <S> LTRunner.runTestParallel(
     instances: Int,
     timeLimit: Duration,
-    params: RunParams,
+    params: LTRunParams,
     test: LTDefinition<S>,
 ): List<LTOutcome> {
     val results = mutableListOf<LTOutcome>()
@@ -68,9 +67,9 @@ fun <S> LitmusTestRunner.runTestParallel(
     return results
 }
 
-fun <S> LitmusTestRunner.runTestParallel(
+fun <S> LTRunner.runTestParallel(
     timeLimit: Duration,
-    params: RunParams,
+    params: LTRunParams,
     test: LTDefinition<S>,
 ): List<LTOutcome> = runTestParallel(
     cpuCount() / test.threadCount,

@@ -38,21 +38,21 @@ fun main() {
             default = LTOutcomeType.ACCEPTED
         }
     }
-    val runner: LitmusTestRunner = JvmThreadRunner
+    val runner: LTRunner = JvmThreadRunner
     val test = iriw
 
     val syncEverySchedule = generateSequence(50) { (it * 1.2).toInt() }.takeWhile { it < 100000 }.toList()
     println("len = ${syncEverySchedule.size}")
 
     syncEverySchedule.map { sync ->
-        val params = RunParams(
+        val params = LTRunParams(
             batchSize = 10_000_000,
             syncPeriod = sync,
             affinityMap = null,
             barrierProducer = ::JvmBarrier
         )
         runner.runTest(params, test).calcStats(test.outcomeSpec)
-    }.mergeStats().prettyPrint()
+    }.mergeResults().prettyPrint()
 }
 
 private data class IntAlphabet(

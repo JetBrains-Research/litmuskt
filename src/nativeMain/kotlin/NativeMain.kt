@@ -32,9 +32,9 @@ fun main() {
             )
         }
     }
-    val runner: LitmusTestRunner = WorkerTestRunner
+    val runner: LTRunner = WorkerRunner
     val test = sb
-    val params = RunParams(
+    val params = LTRunParams(
         batchSize = 10_000_000,
         syncPeriod = 10000,
         affinityMap = null,

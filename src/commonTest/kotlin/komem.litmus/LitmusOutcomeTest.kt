@@ -26,7 +26,7 @@ class LitmusOutcomeTest {
                 LTOutcomeStats(0, 30, LTOutcomeType.ACCEPTED),
                 LTOutcomeStats(2, 1, LTOutcomeType.INTERESTING),
             ),
-            stats.mergeStats().toSet()
+            stats.mergeResults().toSet()
         )
     }
 }

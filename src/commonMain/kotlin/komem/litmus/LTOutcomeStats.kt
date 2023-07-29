@@ -33,14 +33,31 @@ class LTOutcomeSpecScope {
     fun build() = LTOutcomeSpec(accepted, interesting, forbidden, default)
 }
 
-fun List<LTOutcome>.calcStats(outcomeSpec: LTOutcomeSpec): List<LTOutcomeStats> = this
+typealias LTResult = List<LTOutcomeStats>
+
+fun LTResult.prettyPrint() {
+    val totalCount = sumOf { it.count }
+    val table = this.sortedByDescending { it.count }.map {
+        val freq = it.count.toDouble() / totalCount
+        listOf(
+            it.outcome.toString(),
+            it.type.toString(),
+            it.count.toString(),
+            if (freq < 1e-5) "<0.001%" else "${(freq * 100).toString().take(6)}%"
+        )
+    }
+    val tableHeader = listOf("outcome", "type", "count", "frequency")
+    println((listOf(tableHeader) + table).tableFormat(true))
+}
+
+fun List<LTOutcome>.calcStats(outcomeSpec: LTOutcomeSpec): LTResult = this
     .groupingBy { it }
     .eachCount()
     .map { (outcome, count) ->
         LTOutcomeStats(outcome, count.toLong(), outcomeSpec.getType(outcome))
     }
 
-fun List<List<LTOutcomeStats>>.mergeStats(): List<LTOutcomeStats> {
+fun List<LTResult>.mergeResults(): LTResult {
     data class LTOutcomeStatTempData(var count: Long, var type: LTOutcomeType?)
 
     val statMap = mutableMapOf<LTOutcome, LTOutcomeStatTempData>()

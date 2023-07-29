@@ -2,7 +2,7 @@ package komem.litmus.barriers
 
 import kotlin.concurrent.AtomicInt
 
-class SpinBarrier(private val threadCount: Int) : Barrier {
+class KotlinSpinBarrier(private val threadCount: Int) : Barrier {
     private val waitingCount = AtomicInt(0)
     private val passedBarriersCount = AtomicInt(0)
 
