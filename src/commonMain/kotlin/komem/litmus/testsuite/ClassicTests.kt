@@ -283,6 +283,9 @@ val UPUBCtor: LTDefinition<*> = litmusTest({
     thread {
         o = h?.x ?: -1
     }
+    outcome {
+        o
+    }
     spec {
         accept(1)
         accept(-1)
