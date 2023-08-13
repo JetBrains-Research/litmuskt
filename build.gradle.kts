@@ -31,7 +31,7 @@ kotlin {
         hostOs == "Linux" -> linuxX64()
         else -> throw GradleException("Host OS is not supported")
     }
-    val jvmTarget = jvm().apply {
+    val jvmTarget = jvm {
         // executable by default
         mainRun {
             mainClass.set("JvmMainKt")

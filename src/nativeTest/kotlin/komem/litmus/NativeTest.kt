@@ -6,7 +6,7 @@ import kotlin.test.Test
 
 class NativeTest {
     @Test
-    fun hehe() {
+    fun stubTest() { // TODO: common default runner function for all tests
         val test = ATOM
         val runner = WorkerRunner
         val params = LTRunParams(1_000_000, 100, null, ::CinteropSpinBarrier)

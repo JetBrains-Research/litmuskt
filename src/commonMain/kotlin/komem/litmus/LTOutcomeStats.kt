@@ -24,6 +24,14 @@ data class LTOutcomeSpec(
     }
 }
 
+/**
+ * For convenience, it is possible to use `accept(vararg values)` if test outcome is a `List`.
+ * This is true for [AutoOutcome].
+ *
+ * Use `accept(value)` otherwise. Notice that `accept(a, b)` is NOT the same as `accept(a); accept(b)`.
+ *
+ * The same applies to `interesting()` and `forbid()`.
+ */
 class LTOutcomeSpecScope {
     private val accepted = mutableSetOf<LTOutcome>()
     private val interesting = mutableSetOf<LTOutcome>()
