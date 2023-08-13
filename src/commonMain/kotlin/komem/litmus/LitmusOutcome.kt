@@ -1,32 +1,41 @@
 package komem.litmus
 
-typealias LitmusOutcome = Any?
+typealias LTOutcome = Any?
 
-enum class LitmusOutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
+enum class LTOutcomeType { ACCEPTED, INTERESTING, FORBIDDEN }
 
-data class LitmusOutcomeInfo(
-    val outcome: LitmusOutcome,
+data class LTOutcomeStats(
+    val outcome: LTOutcome,
     val count: Long,
-    val type: LitmusOutcomeType?,
+    val type: LTOutcomeType?,
 )
 
-data class LitmusOutcomeSetupScope(
-    var accepted: Set<LitmusOutcome> = emptySet(),
-    var interesting: Set<LitmusOutcome> = emptySet(),
-    var forbidden: Set<LitmusOutcome> = emptySet(),
-    var default: LitmusOutcomeType = LitmusOutcomeType.FORBIDDEN,
+data class LTOutcomeSpec(
+    val accepted: Set<LTOutcome>,
+    val interesting: Set<LTOutcome>,
+    val forbidden: Set<LTOutcome>,
+    val default: LTOutcomeType,
 ) {
-    fun getType(outcome: LitmusOutcome) = when (outcome) {
-        in accepted -> LitmusOutcomeType.ACCEPTED
-        in interesting -> LitmusOutcomeType.INTERESTING
-        in forbidden -> LitmusOutcomeType.FORBIDDEN
+    fun getType(outcome: LTOutcome) = when (outcome) {
+        in accepted -> LTOutcomeType.ACCEPTED
+        in interesting -> LTOutcomeType.INTERESTING
+        in forbidden -> LTOutcomeType.FORBIDDEN
         else -> default
     }
 }
 
-fun List<LitmusOutcome>.groupIntoInfo(outcomeSetup: LitmusOutcomeSetupScope?): List<LitmusOutcomeInfo> = this
+class LTOutcomeSpecScope {
+    var accepted = setOf<LTOutcome>()
+    var interesting = setOf<LTOutcome>()
+    var forbidden = setOf<LTOutcome>()
+    var default: LTOutcomeType = LTOutcomeType.FORBIDDEN
+
+    fun build() = LTOutcomeSpec(accepted, interesting, forbidden, default)
+}
+
+fun List<LTOutcome>.calcStats(outcomeSpec: LTOutcomeSpec): List<LTOutcomeStats> = this
     .groupingBy { it }
     .eachCount()
     .map { (outcome, count) ->
-        LitmusOutcomeInfo(outcome, count.toLong(), outcomeSetup?.getType(outcome))
+        LTOutcomeStats(outcome, count.toLong(), outcomeSpec.getType(outcome))
     }

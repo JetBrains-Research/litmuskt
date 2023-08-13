@@ -1,69 +1,63 @@
-@file:OptIn(kotlin.native.concurrent.ObsoleteWorkersApi::class)
-
 package komem.litmus.runners
 
-import komem.litmus.LitmusOutcome
-import komem.litmus.LitmusTest
+import komem.litmus.LTDefinition
+import komem.litmus.LTOutcome
 import komem.litmus.RunParams
 import komem.litmus.barriers.Barrier
 import komem.litmus.getAffinityManager
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
 object WorkerTestRunner : LitmusTestRunner {
 
-    private data class WorkerContext(
-        val tests: List<LitmusTest>,
-        val syncPeriod: Int,
-        val barrier: Barrier,
-    )
-
-    override fun runTest(
+    @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
+    override fun <S> runTest(
         params: RunParams,
-        testProducer: () -> LitmusTest,
-    ): List<LitmusOutcome> {
-        LitmusTest.memoryShuffler = params.memoryShufflerProducer?.invoke()
+        test: LTDefinition<S>,
+    ): List<LTOutcome> {
 
-        val threadFunctions: List<(LitmusTest) -> Any?> = testProducer().overriddenThreads()
-        val testBatch = List(params.batchSize) { testProducer() }
-        val workerContext = WorkerContext(
-            testBatch,
-            params.syncPeriod,
-            params.barrierProducer(threadFunctions.size)
+        data class WorkerContext(
+            val states: List<S>,
+            val threadFunction: S.() -> Any?,
+            val syncPeriod: Int,
+            val barrier: Barrier,
         )
-        val futures = threadFunctions.mapIndexed { i, threadFun ->
-            val worker = Worker.start()
 
-            val affinityMap = params.affinityMap
-            if (affinityMap != null) {
+        val states = List(params.batchSize) { test.stateProducer() }
+        val barrier = params.barrierProducer(test.threadCount)
+        val outcomeFinalizer = test.outcomeFinalizer
+        val workers = List(test.threadCount) { Worker.start() }
+
+        workers.mapIndexed { threadIndex, worker ->
+            params.affinityMap?.let { affinityMap ->
                 getAffinityManager()?.run {
-                    val cpuSet = affinityMap.allowedCores(i)
+                    val cpuSet = affinityMap.allowedCores(threadIndex)
                     setAffinity(worker, cpuSet)
                     require(getAffinity(worker) == cpuSet) { "affinity setting failed" }
                 }
             }
+            val workerContext = WorkerContext(
+                states,
+                test.threadFunctions[threadIndex],
+                params.syncPeriod,
+                barrier,
+            )
             worker.execute(
                 TransferMode.SAFE /* ignored */,
-                { threadFun to workerContext }
-            ) { (threadFun, workerContext) ->
-                workerContext.apply {
-                    var cnt = 0
-                    for (test in tests) {
-                        if (cnt == this.syncPeriod) {
-                            cnt = 0
-                            barrier.wait()
-                        }
-                        threadFun(test)
-                        cnt++
-                    }
+                { workerContext }
+            ) { (states, threadFunction, syncPeriod, barrier) ->
+                for (i in states.indices) {
+                    if (i % syncPeriod == 0) barrier.wait()
+                    states[i].threadFunction()
                 }
             }
-            return@mapIndexed worker.requestTermination()
-        }
-        futures.forEach { it.result }
+            worker.requestTermination()
+        }.forEach { it.result } // await all workers
 
-        for (test in testBatch)
-            test.arbiter()
-        return testBatch.map { it.outcome }
+        val outcomes = states.map { it.outcomeFinalizer() }
+        assert(outcomes.size == params.batchSize)
+        return outcomes
     }
 }

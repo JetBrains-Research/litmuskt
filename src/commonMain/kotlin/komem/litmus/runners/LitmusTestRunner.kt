@@ -5,22 +5,21 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 interface LitmusTestRunner {
-    fun runTest(params: RunParams, testProducer: () -> LitmusTest): List<LitmusOutcome>
+    fun <S> runTest(params: RunParams, test: LTDefinition<S>): List<LTOutcome>
 }
 
-fun LitmusTestRunner.runTest(
+fun <S> LitmusTestRunner.runTest(
     timeLimit: Duration,
     params: RunParams,
-    testProducer: () -> LitmusTest,
-): LitmusResult {
-    val results = mutableListOf<LitmusOutcomeInfo>()
+    test: LTDefinition<S>,
+): List<LTOutcome> {
+    val results = mutableListOf<LTOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
-        val outcomes = runTest(params, testProducer)
-        val outcomeSetup = testProducer().getOutcomeSetup()
-        results.addAll(outcomes.groupIntoInfo(outcomeSetup))
+        val outcomes = runTest(params, test)
+        results.addAll(outcomes)
     }
-    return results.mergeOutcomes()
+    return results
 }
 
 /*
@@ -28,57 +27,54 @@ fun LitmusTestRunner.runTest(
  * Example: for a map [ [0], [1], [2], [3] ],a test with 2 threads, and 2 instances, the
  * first instance will have a [ [0], [1] ] map and the second one will have [ [2], [3] ].
  */
-fun LitmusTestRunner.runTestParallel(
+fun <S> LitmusTestRunner.runTestParallel(
     instances: Int,
     params: RunParams,
-    testProducer: () -> LitmusTest,
-): List<LitmusOutcome> {
-    val threadCount = testProducer().overriddenThreads().size
+    test: LTDefinition<S>,
+): List<LTOutcome> {
     val allOutcomes = List(instances) { instanceIndex ->
         val newAffinityMap = params.affinityMap?.let { oldMap ->
             AffinityMap { threadIndex ->
-                oldMap.allowedCores(instanceIndex * threadCount + threadIndex)
+                oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
             }
         }
         val newParams = params.copy(affinityMap = newAffinityMap)
-        runTest(newParams, testProducer)
+        runTest(newParams, test)
     }
     return allOutcomes.flatten()
 }
 
-fun LitmusTestRunner.runTestParallel(
+fun <S> LitmusTestRunner.runTestParallel(
     params: RunParams,
-    testProducer: () -> LitmusTest,
-): List<LitmusOutcome> = runTestParallel(
-    cpuCount() / testProducer().overriddenThreads().size,
+    test: LTDefinition<S>
+): List<LTOutcome> = runTestParallel(
+    cpuCount() / test.threadCount,
     params,
-    testProducer
+    test
 )
 
-
-fun LitmusTestRunner.runTestParallel(
+fun <S> LitmusTestRunner.runTestParallel(
     instances: Int,
     timeLimit: Duration,
     params: RunParams,
-    testProducer: () -> LitmusTest,
-): LitmusResult {
-    val results = mutableListOf<LitmusOutcomeInfo>()
+    test: LTDefinition<S>,
+): List<LTOutcome> {
+    val results = mutableListOf<LTOutcome>()
     val start = TimeSource.Monotonic.markNow()
     while (start.elapsedNow() < timeLimit) {
-        val outcomes = runTestParallel(instances, params, testProducer)
-        val outcomeSetup = testProducer().getOutcomeSetup()
-        results.addAll(outcomes.groupIntoInfo(outcomeSetup))
+        val outcomes = runTestParallel(instances, params, test)
+        results.addAll(outcomes)
     }
-    return results.mergeOutcomes()
+    return results
 }
 
-fun LitmusTestRunner.runTestParallel(
+fun <S> LitmusTestRunner.runTestParallel(
     timeLimit: Duration,
     params: RunParams,
-    testProducer: () -> LitmusTest,
-): LitmusResult = runTestParallel(
-    cpuCount() / testProducer().overriddenThreads().size,
+    test: LTDefinition<S>,
+): List<LTOutcome> = runTestParallel(
+    cpuCount() / test.threadCount,
     timeLimit,
     params,
-    testProducer
+    test
 )
