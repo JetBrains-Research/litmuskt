@@ -46,10 +46,10 @@ val SB: LTDefinition<*> = litmusTest({
     }
     // no need for explicit outcome{}
     spec {
-        accept(0, 0)
         accept(0, 1)
+        accept(1, 0)
         accept(1, 1)
-        interesting(1, 0)
+        interesting(0, 0)
     }
 }
 
@@ -72,8 +72,8 @@ val SBVolatile: LTDefinition<*> = litmusTest({
     }
     // no need for explicit outcome{}
     spec {
-        accept(0, 0)
         accept(0, 1)
+        accept(1, 0)
         accept(1, 1)
     }
 }

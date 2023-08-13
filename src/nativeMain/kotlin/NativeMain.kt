@@ -1,16 +1,16 @@
 import komem.litmus.*
 import komem.litmus.barriers.CinteropSpinBarrier
-import komem.litmus.testsuite.MP
+import komem.litmus.testsuite.IRIWVolatile
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     val runner: LTRunner = WorkerRunner
-    val test = MP
+    val test = IRIWVolatile
     val params = LTRunParams(
         batchSize = 1_000_000,
-        syncPeriod = 100,
+        syncPeriod = 10,
         affinityMap = null,
         barrierProducer = ::CinteropSpinBarrier
     )
-    runner.runTest(10.seconds, params, test).prettyPrint()
+    runner.runTest(30.seconds, params, test).prettyPrint()
 }
