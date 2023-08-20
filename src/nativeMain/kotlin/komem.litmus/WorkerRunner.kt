@@ -1,22 +1,18 @@
-package komem.litmus.runners
+package komem.litmus
 
-import komem.litmus.LTDefinition
-import komem.litmus.LTOutcome
-import komem.litmus.RunParams
 import komem.litmus.barriers.Barrier
-import komem.litmus.getAffinityManager
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-object WorkerTestRunner : LitmusTestRunner {
+object WorkerRunner : LTRunner() {
 
     @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
     override fun <S> runTest(
-        params: RunParams,
+        params: LTRunParams,
         test: LTDefinition<S>,
-    ): List<LTOutcome> {
+    ): LTResult {
 
         data class WorkerContext(
             val states: List<S>,
@@ -49,7 +45,7 @@ object WorkerTestRunner : LitmusTestRunner {
                 { workerContext }
             ) { (states, threadFunction, syncPeriod, barrier) ->
                 for (i in states.indices) {
-                    if (i % syncPeriod == 0) barrier.wait()
+                    if (i % syncPeriod == 0) barrier.await()
                     states[i].threadFunction()
                 }
             }
@@ -58,6 +54,7 @@ object WorkerTestRunner : LitmusTestRunner {
 
         val outcomes = states.map { it.outcomeFinalizer() }
         assert(outcomes.size == params.batchSize)
-        return outcomes
+
+        return outcomes.calcStats(test.outcomeSpec)
     }
 }

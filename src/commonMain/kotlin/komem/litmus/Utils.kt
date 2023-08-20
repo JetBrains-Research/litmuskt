@@ -1,8 +1,5 @@
 package komem.litmus
 
-import platform.posix._SC_NPROCESSORS_ONLN
-import platform.posix.sysconf
-
 fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     val columnCount = maxOf { it.size }
     val columnSizes = (0..<columnCount).map { i ->
@@ -26,10 +23,4 @@ fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     }
 }
 
-fun Int.pow(power: Int): Int {
-    var result = 1
-    repeat(power) { result *= this@pow }
-    return result
-}
-
-fun cpuCount(): Int = sysconf(_SC_NPROCESSORS_ONLN).toInt()
+expect fun cpuCount(): Int

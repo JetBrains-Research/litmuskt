@@ -11,7 +11,7 @@ class CinteropSpinBarrier(threadCount: Int) : Barrier {
 
     private val barrierStruct: CPointer<CSpinBarrier>? = create_barrier(threadCount)
 
-    override fun wait() {
+    override fun await() {
         barrier_wait(barrierStruct)
     }
 }

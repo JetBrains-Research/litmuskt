@@ -14,27 +14,35 @@ class LTDefinitionScope<S>(
 ) {
     private val threadFunctions = mutableListOf<S.() -> Any?>()
     private lateinit var outcomeFinalizer: S.() -> LTOutcome
-    private var outcomeSpec = LTOutcomeSpecScope()
+    private lateinit var outcomeSpec: LTOutcomeSpecScope
 
-    // outcome is the returned value
     fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
     }
 
     fun outcome(function: S.() -> LTOutcome) {
+        if (::outcomeFinalizer.isInitialized) error("cannot set outcome more than once")
         outcomeFinalizer = function
     }
 
     fun spec(setup: LTOutcomeSpecScope.() -> Unit) {
-        outcomeSpec.setup()
+        if (::outcomeSpec.isInitialized) error("cannot set spec more than once")
+        outcomeSpec = LTOutcomeSpecScope().apply(setup)
     }
 
     fun build(): LTDefinition<S> {
-        if (!::outcomeFinalizer.isInitialized) throw IllegalStateException("outcome not set")
+        if (threadFunctions.size < 2) error("tests require at least two threads")
+        if (!::outcomeSpec.isInitialized) error("spec not specified")
+        val outcomeFinalizer: S.() -> LTOutcome = when {
+            ::outcomeFinalizer.isInitialized -> outcomeFinalizer
+            stateProducer() is AutoOutcome -> {
+                { (this as AutoOutcome).getOutcome() }
+            }
+
+            else -> error("outcome not specified")
+        }
         return LTDefinition(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
-
-    val threadCount get() = threadFunctions.size
 }
 
 fun <S> litmusTest(stateProducer: () -> S, setup: LTDefinitionScope<S>.() -> Unit) =

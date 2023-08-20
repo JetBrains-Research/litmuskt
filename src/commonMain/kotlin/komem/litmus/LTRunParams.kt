@@ -2,7 +2,7 @@ package komem.litmus
 
 import komem.litmus.barriers.BarrierProducer
 
-data class RunParams(
+data class LTRunParams(
     val batchSize: Int,
     val syncPeriod: Int,
     val affinityMap: AffinityMap?,
@@ -20,7 +20,7 @@ fun variateRunParams(
             for (syncPeriod in syncPeriodSchedule) {
                 for (barrierProducer in barrierSchedule) {
                     yield(
-                        RunParams(
+                        LTRunParams(
                             batchSize = batchSize,
                             syncPeriod = syncPeriod,
                             affinityMap = affinityMap,
