@@ -245,7 +245,6 @@ val IRIWVolatile: LTDefinition<*> = litmusTest({
     }
     spec {
         forbid(1, 0, 1, 0)
-        forbid(0, 1, 0, 1)
         defaultTo = LTOutcomeType.ACCEPTED
     }
 }
