@@ -49,4 +49,7 @@ class ClassicTests {
 
     @Test
     fun lbVolatile() = LBVolatile.run()
+
+    @Test
+    fun volatileAsFence() = VolatileAsFence.run()
 }

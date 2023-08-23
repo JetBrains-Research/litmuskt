@@ -380,3 +380,38 @@ val LBFakeDEPS: LTDefinition<*> = litmusTest({
         accept(0, 1)
     }
 }
+
+val VolatileAsFence: LTDefinition<*> = litmusTest({
+    object : IIIIOutcome() {
+        @Volatile var x: Int = 0
+        @Volatile var y: Int = 0
+    }
+}) {
+    class Local(@Volatile var z: Int = 0)
+    fun fakeFence() = Local().run { z = 1 }
+
+    thread {
+        r1 = x
+        fakeFence()
+        r2 = x
+    }
+    thread {
+        r3 = y
+        fakeFence()
+        r4 = y
+    }
+    thread {
+        x = 2
+        fakeFence()
+        y = 1
+    }
+    thread {
+        y = 2
+        fakeFence()
+        x = 1
+    }
+    spec {
+        forbid(1, 2, 1, 2)
+        defaultTo = LTOutcomeType.ACCEPTED
+    }
+}
