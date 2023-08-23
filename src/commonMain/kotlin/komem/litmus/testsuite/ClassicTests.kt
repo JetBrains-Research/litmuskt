@@ -381,15 +381,15 @@ val LBFakeDEPS: LTDefinition<*> = litmusTest({
     }
 }
 
+class Local(@Volatile var z: Int = 0)
+inline fun fakeFence() = Local().run { z = 1 }
+
 val VolatileAsFence: LTDefinition<*> = litmusTest({
     object : IIIIOutcome() {
-        @Volatile var x: Int = 0
-        @Volatile var y: Int = 0
+        var x: Int = 0
+        var y: Int = 0
     }
 }) {
-    class Local(@Volatile var z: Int = 0)
-    fun fakeFence() = Local().run { z = 1 }
-
     thread {
         r1 = x
         fakeFence()
