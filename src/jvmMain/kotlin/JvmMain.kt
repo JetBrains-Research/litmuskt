@@ -4,20 +4,21 @@ import komem.litmus.testsuite.IRIWVolatile
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
+    // example of iterating through multiple parameters and aggregating the results
     val runner: LTRunner = JvmThreadRunner
     val test = IRIWVolatile
 
-    val syncEverySchedule = generateSequence(10) { (it * 1.7).toInt() }.takeWhile { it < 1000 }.toList()
-    println("len = ${syncEverySchedule.size}")
+    val paramsList = variateRunParams(
+        batchSizeSchedule = listOf(100_000, 1_000_000),
+        affinityMapSchedule = listOf(null), // not available on JVM
+        syncPeriodSchedule = generateSequence(100) { (it * 1.5).toInt() }.takeWhile { it < 3000 }.toList(),
+        barrierSchedule = listOf(::JvmSpinBarrier)
+    ).toList()
+    val singleTestDuration = 10.seconds
 
-    syncEverySchedule.map { sync ->
-        val params = LTRunParams(
-            batchSize = 1_000_000,
-            syncPeriod = sync,
-            affinityMap = null,
-            barrierProducer = ::JvmSpinBarrier
-        )
-        println("one less")
-        runner.runTest(10.seconds, params, test)
+    println("ETA: T+${singleTestDuration * paramsList.size}")
+
+    paramsList.map { params ->
+        runner.runTest(singleTestDuration, params, test)
     }.mergeResults().prettyPrint()
 }
