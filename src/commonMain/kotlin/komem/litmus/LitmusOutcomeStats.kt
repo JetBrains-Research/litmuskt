@@ -32,7 +32,7 @@ data class LitmusOutcomeSpec(
  *
  * The same applies to `interesting()` and `forbid()`.
  */
-class LTOutcomeSpecScope {
+class LitmusOutcomeSpecScope {
     private val accepted = mutableSetOf<LitmusOutcome>()
     private val interesting = mutableSetOf<LitmusOutcome>()
     private val forbidden = mutableSetOf<LitmusOutcome>()

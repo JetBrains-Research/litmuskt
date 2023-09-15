@@ -14,7 +14,7 @@ class LitmusTestScope<S>(
 ) {
     private val threadFunctions = mutableListOf<S.() -> Any?>()
     private lateinit var outcomeFinalizer: S.() -> LitmusOutcome
-    private lateinit var outcomeSpec: LTOutcomeSpecScope
+    private lateinit var outcomeSpec: LitmusOutcomeSpecScope
 
     fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
@@ -25,9 +25,9 @@ class LitmusTestScope<S>(
         outcomeFinalizer = function
     }
 
-    fun spec(setup: LTOutcomeSpecScope.() -> Unit) {
+    fun spec(setup: LitmusOutcomeSpecScope.() -> Unit) {
         if (::outcomeSpec.isInitialized) error("cannot set spec more than once")
-        outcomeSpec = LTOutcomeSpecScope().apply(setup)
+        outcomeSpec = LitmusOutcomeSpecScope().apply(setup)
     }
 
     fun build(): LitmusTest<S> {
