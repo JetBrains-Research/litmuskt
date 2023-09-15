@@ -1,1 +1,0 @@
-actual fun getAffinityManager(): AffinityManager? = null

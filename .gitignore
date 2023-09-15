@@ -1,9 +1,6 @@
 .gradle/
 .idea/
 build/
-herd/
-jcstress/
-results/
 temp/
-*.bin.gz
 *.hprof
+gitignored/

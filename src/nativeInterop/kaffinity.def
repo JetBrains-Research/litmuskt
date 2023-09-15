@@ -1,1 +1,1 @@
-linkerOpts.linux = /usr/include/kaffinity/kaffinity_gnu.o
+linkerOpts.linux = /home/denis/.komem-litmus/kaffinity_gnu.o
