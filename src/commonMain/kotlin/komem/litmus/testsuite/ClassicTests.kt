@@ -9,7 +9,7 @@ class IntHolderCtor {
     val x = 1
 }
 
-val ATOM: LTDefinition<*> = litmusTest({
+val ATOM: LitmusTest<*> = litmusTest({
     object {
         var x = 0
         var o = 0
@@ -30,8 +30,8 @@ val ATOM: LTDefinition<*> = litmusTest({
     }
 }
 
-val SB: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val SB: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -53,8 +53,8 @@ val SB: LTDefinition<*> = litmusTest({
     }
 }
 
-val SBVolatile: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val SBVolatile: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -78,8 +78,8 @@ val SBVolatile: LTDefinition<*> = litmusTest({
     }
 }
 
-val MP: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val MP: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -100,8 +100,8 @@ val MP: LTDefinition<*> = litmusTest({
     }
 }
 
-val MPVolatile: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val MPVolatile: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -124,7 +124,7 @@ val MPVolatile: LTDefinition<*> = litmusTest({
     }
 }
 
-val MP_DRF: LTDefinition<*> = litmusTest({
+val MP_DRF: LitmusTest<*> = litmusTest({
     object {
         var x = 0
 
@@ -149,8 +149,8 @@ val MP_DRF: LTDefinition<*> = litmusTest({
     }
 }
 
-val CoRR: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val CoRR: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         var x = 0
     }
 }) {
@@ -169,9 +169,9 @@ val CoRR: LTDefinition<*> = litmusTest({
     }
 }
 
-val CoRR_CSE: LTDefinition<*> = litmusTest({
+val CoRR_CSE: LitmusTest<*> = litmusTest({
     data class Holder(var x: Int)
-    object : IIIOutcome() {
+    object : LitmusIIIOutcome() {
         val holder1 = Holder(0)
         val holder2 = holder1
     }
@@ -189,12 +189,12 @@ val CoRR_CSE: LTDefinition<*> = litmusTest({
     spec {
         interesting(1, 0, 0)
         interesting(1, 1, 0)
-        defaultTo = LTOutcomeType.ACCEPTED
+        defaultTo = LitmusOutcomeType.ACCEPTED
     }
 }
 
-val IRIW: LTDefinition<*> = litmusTest({
-    object : IIIIOutcome() {
+val IRIW: LitmusTest<*> = litmusTest({
+    object : LitmusIIIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -216,12 +216,12 @@ val IRIW: LTDefinition<*> = litmusTest({
     spec {
         interesting(1, 0, 1, 0)
         interesting(0, 1, 0, 1)
-        defaultTo = LTOutcomeType.ACCEPTED
+        defaultTo = LitmusOutcomeType.ACCEPTED
     }
 }
 
-val IRIWVolatile: LTDefinition<*> = litmusTest({
-    object : IIIIOutcome() {
+val IRIWVolatile: LitmusTest<*> = litmusTest({
+    object : LitmusIIIIOutcome() {
         @Volatile
         var x = 0
 
@@ -245,11 +245,11 @@ val IRIWVolatile: LTDefinition<*> = litmusTest({
     }
     spec {
         forbid(1, 0, 1, 0)
-        defaultTo = LTOutcomeType.ACCEPTED
+        defaultTo = LitmusOutcomeType.ACCEPTED
     }
 }
 
-val UPUB: LTDefinition<*> = litmusTest({
+val UPUB: LitmusTest<*> = litmusTest({
     object {
         var h: IntHolder? = null
         var o = 0
@@ -270,7 +270,7 @@ val UPUB: LTDefinition<*> = litmusTest({
     }
 }
 
-val UPUBCtor: LTDefinition<*> = litmusTest({
+val UPUBCtor: LitmusTest<*> = litmusTest({
     object {
         var h: IntHolderCtor? = null
         var o = 0
@@ -291,7 +291,7 @@ val UPUBCtor: LTDefinition<*> = litmusTest({
     }
 }
 
-val LB_DEPS_OOTA: LTDefinition<*> = litmusTest({
+val LB_DEPS_OOTA: LitmusTest<*> = litmusTest({
     object {
         var x = 0
         var y = 0
@@ -315,8 +315,8 @@ val LB_DEPS_OOTA: LTDefinition<*> = litmusTest({
     }
 }
 
-val LB: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val LB: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -337,8 +337,8 @@ val LB: LTDefinition<*> = litmusTest({
     }
 }
 
-val LBVolatile: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val LBVolatile: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -361,8 +361,8 @@ val LBVolatile: LTDefinition<*> = litmusTest({
     }
 }
 
-val LBFakeDEPS: LTDefinition<*> = litmusTest({
-    object : IIOutcome() {
+val LBFakeDEPS: LitmusTest<*> = litmusTest({
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }

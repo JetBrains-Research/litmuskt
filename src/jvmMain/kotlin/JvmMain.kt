@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     // example of iterating through multiple parameters and aggregating the results
-    val runner: LTRunner = JvmThreadRunner
+    val runner: LitmusRunner = JvmThreadRunner
     val test = IRIWVolatile
 
     val paramsList = variateRunParams(

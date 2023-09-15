@@ -1,10 +1,10 @@
 package komem.litmus.testsuite
 
-import komem.litmus.LTDefinition
+import komem.litmus.LitmusTest
 import komem.litmus.litmusTest
 import kotlin.concurrent.Volatile
 
-val UPUBVolatile: LTDefinition<*> = litmusTest({
+val UPUBVolatile: LitmusTest<*> = litmusTest({
     object {
         @Volatile
         var h: IntHolder? = null
@@ -24,7 +24,7 @@ val UPUBVolatile: LTDefinition<*> = litmusTest({
     }
 }
 
-val UPUBArray: LTDefinition<*> = litmusTest({
+val UPUBArray: LitmusTest<*> = litmusTest({
     object {
         var arr: Array<Int>? = null
         var o = 0
@@ -46,7 +46,7 @@ val UPUBArray: LTDefinition<*> = litmusTest({
 private class UPUBRefInner(val x: Int)
 private class UPUBRefHolder(val ref: UPUBRefInner)
 
-val UPUBRef: LTDefinition<*> = litmusTest({
+val UPUBRef: LitmusTest<*> = litmusTest({
     object {
         var h: UPUBRefHolder? = null
         var o = 0
@@ -80,7 +80,7 @@ private class UPUBIntHolderInnerLeaking {
     }
 }
 
-val UBUBCtorLeaking: LTDefinition<*> = litmusTest({
+val UBUBCtorLeaking: LitmusTest<*> = litmusTest({
     object {
         var h = UPUBIntHolderInnerLeaking()
         var o = 0

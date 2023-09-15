@@ -6,13 +6,13 @@ import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-object WorkerRunner : LTRunner() {
+object WorkerRunner : LitmusRunner() {
 
     @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
     override fun <S> runTest(
-        params: LTRunParams,
-        test: LTDefinition<S>,
-    ): LTResult {
+        params: LitmusRunParams,
+        test: LitmusTest<S>,
+    ): LitmusResult {
 
         data class WorkerContext(
             val states: List<S>,

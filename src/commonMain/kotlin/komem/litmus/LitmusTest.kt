@@ -1,26 +1,26 @@
 package komem.litmus
 
-data class LTDefinition<S>(
+data class LitmusTest<S>(
     val stateProducer: () -> S,
     val threadFunctions: List<S.() -> Any?>,
-    val outcomeFinalizer: (S.() -> LTOutcome),
-    val outcomeSpec: LTOutcomeSpec
+    val outcomeFinalizer: (S.() -> LitmusOutcome),
+    val outcomeSpec: LitmusOutcomeSpec
 ) {
     val threadCount = threadFunctions.size
 }
 
-class LTDefinitionScope<S>(
+class LitmusTestScope<S>(
     private val stateProducer: () -> S
 ) {
     private val threadFunctions = mutableListOf<S.() -> Any?>()
-    private lateinit var outcomeFinalizer: S.() -> LTOutcome
+    private lateinit var outcomeFinalizer: S.() -> LitmusOutcome
     private lateinit var outcomeSpec: LTOutcomeSpecScope
 
     fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
     }
 
-    fun outcome(function: S.() -> LTOutcome) {
+    fun outcome(function: S.() -> LitmusOutcome) {
         if (::outcomeFinalizer.isInitialized) error("cannot set outcome more than once")
         outcomeFinalizer = function
     }
@@ -30,20 +30,20 @@ class LTDefinitionScope<S>(
         outcomeSpec = LTOutcomeSpecScope().apply(setup)
     }
 
-    fun build(): LTDefinition<S> {
+    fun build(): LitmusTest<S> {
         if (threadFunctions.size < 2) error("tests require at least two threads")
         if (!::outcomeSpec.isInitialized) error("spec not specified")
-        val outcomeFinalizer: S.() -> LTOutcome = when {
+        val outcomeFinalizer: S.() -> LitmusOutcome = when {
             ::outcomeFinalizer.isInitialized -> outcomeFinalizer
-            stateProducer() is AutoOutcome -> {
-                { (this as AutoOutcome).getOutcome() }
+            stateProducer() is LitmusAutoOutcome -> {
+                { (this as LitmusAutoOutcome).getOutcome() }
             }
 
             else -> error("outcome not specified")
         }
-        return LTDefinition(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
+        return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
 }
 
-fun <S> litmusTest(stateProducer: () -> S, setup: LTDefinitionScope<S>.() -> Unit) =
-    LTDefinitionScope(stateProducer).apply(setup).build()
+fun <S> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
+    LitmusTestScope(stateProducer).apply(setup).build()

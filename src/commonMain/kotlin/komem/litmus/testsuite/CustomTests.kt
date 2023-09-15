@@ -1,9 +1,9 @@
 package komem.litmus.testsuite
 
-import komem.litmus.LTDefinition
+import komem.litmus.LitmusTest
 import komem.litmus.litmusTest
 
-val MPNoDRF: LTDefinition<*> = litmusTest({
+val MPNoDRF: LitmusTest<*> = litmusTest({
     object {
         var x = 0
         var y = 0
