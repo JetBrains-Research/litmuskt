@@ -189,7 +189,7 @@ val CoRR_CSE: LitmusTest<*> = litmusTest({
     spec {
         interesting(1, 0, 0)
         interesting(1, 1, 0)
-        defaultTo = LitmusOutcomeType.ACCEPTED
+        default(LitmusOutcomeType.ACCEPTED)
     }
 }
 
@@ -216,7 +216,7 @@ val IRIW: LitmusTest<*> = litmusTest({
     spec {
         interesting(1, 0, 1, 0)
         interesting(0, 1, 0, 1)
-        defaultTo = LitmusOutcomeType.ACCEPTED
+        default(LitmusOutcomeType.ACCEPTED)
     }
 }
 
@@ -245,7 +245,7 @@ val IRIWVolatile: LitmusTest<*> = litmusTest({
     }
     spec {
         forbid(1, 0, 1, 0)
-        defaultTo = LitmusOutcomeType.ACCEPTED
+        default(LitmusOutcomeType.ACCEPTED)
     }
 }
 

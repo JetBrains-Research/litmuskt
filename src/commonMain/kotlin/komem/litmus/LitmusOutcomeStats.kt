@@ -36,7 +36,7 @@ class LTOutcomeSpecScope {
     private val accepted = mutableSetOf<LitmusOutcome>()
     private val interesting = mutableSetOf<LitmusOutcome>()
     private val forbidden = mutableSetOf<LitmusOutcome>()
-    var defaultTo: LitmusOutcomeType = LitmusOutcomeType.FORBIDDEN
+    private var default: LitmusOutcomeType? = null
 
     fun accept(outcome: LitmusOutcome) {
         accepted.add(outcome)
@@ -62,7 +62,13 @@ class LTOutcomeSpecScope {
         forbidden.add(outcome.toList())
     }
 
-    fun build() = LitmusOutcomeSpec(accepted, interesting, forbidden, defaultTo)
+    fun default(outcomeType: LitmusOutcomeType) {
+        if (default != null)
+            error("cannot set default outcome type more than once")
+        default = outcomeType
+    }
+
+    fun build() = LitmusOutcomeSpec(accepted, interesting, forbidden, default ?: LitmusOutcomeType.FORBIDDEN)
 }
 
 typealias LitmusResult = List<LitmusOutcomeStats>
