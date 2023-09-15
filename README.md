@@ -117,8 +117,7 @@ Here are a few additional convenient features.
   There are a few predefined subclasses of this interface. 
   For example, the class `LitmusIIOutcome` with `II` standing for "int, int" expects two integers as an outcome. 
   This class have two fields `var r1: Int` and `var r2: Int`. 
-  These fields should be set inside litmus test's threads  
-  and then they will be automatically used to form an outcome `listOf(r1, r2)`.
+  These fields should be set inside litmus test's threads and then they will be automatically used to form an outcome `listOf(r1, r2)`.
  
 * If the outcome is a `List`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes. 
   Just use `accept(vararg outcome)` counterparts to specify expected elements.
