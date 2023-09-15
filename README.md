@@ -28,6 +28,8 @@ Substituting `Release` with `Debug` disables compiler `-opt` flag.
 
 Also, it is possible to build the project manually with Kotlin CLI compiler. You'd have to either declare several opt-ins or edit the code to remove `expect/actual` and C interop parts. There aren't many benefits to manual compilation, but it allows at least some way to read the program's LLVM IR bitcode (using `-Xtemporary-files-dir` compiler flag and then converting the `.bc` file into readable text with `llvm-dis`).
 
+On MacOS, you can omit the `-Parm` parameter to get an x86 executable.
+
 ## Explanation
 
 This tool runs custom-defined litmus tests with various parameters. It is based on techniques used in herdtools/litmus7 and JCStress. 
