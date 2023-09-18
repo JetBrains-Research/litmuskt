@@ -1,29 +1,29 @@
 package komem.litmus
 
-interface AutoOutcome {
-    fun getOutcome(): Any?
+interface LitmusAutoOutcome {
+    fun getOutcome(): LitmusOutcome
 }
 
-open class IIOutcome(
+open class LitmusIIOutcome(
     var r1: Int = 0,
     var r2: Int = 0
-) : AutoOutcome {
+) : LitmusAutoOutcome {
     override fun getOutcome() = listOf(r1, r2)
 }
 
-open class IIIOutcome(
+open class LitmusIIIOutcome(
     var r1: Int = 0,
     var r2: Int = 0,
     var r3: Int = 0,
-) : AutoOutcome {
+) : LitmusAutoOutcome {
     override fun getOutcome() = listOf(r1, r2, r3)
 }
 
-open class IIIIOutcome(
+open class LitmusIIIIOutcome(
     var r1: Int = 0,
     var r2: Int = 0,
     var r3: Int = 0,
     var r4: Int = 0,
-) : AutoOutcome {
+) : LitmusAutoOutcome {
     override fun getOutcome() = listOf(r1, r2, r3, r4)
 }

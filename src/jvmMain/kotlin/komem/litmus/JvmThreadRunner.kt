@@ -1,9 +1,9 @@
 package komem.litmus
 
 // does not support affinity
-object JvmThreadRunner : LTRunner() {
+object JvmThreadRunner : LitmusRunner() {
 
-    override fun <S> runTest(params: LTRunParams, test: LTDefinition<S>): LTResult {
+    override fun <S> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult {
 
         val states = List(params.batchSize) { test.stateProducer() }
         val barrier = params.barrierProducer(test.threadCount)

@@ -5,9 +5,9 @@ import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     // shortest example of running a test
-    val runner: LTRunner = WorkerRunner
+    val runner: LitmusRunner = WorkerRunner
     val test = SB
-    val params = LTRunParams(
+    val params = LitmusRunParams(
         batchSize = 1_000_000,
         syncPeriod = 10,
         affinityMap = null,

@@ -8,23 +8,23 @@ class LitmusOutcomeTest {
     fun mergeStatsTest() {
         val stats = listOf(
             listOf(
-                LTOutcomeStats(1, 10, LTOutcomeType.ACCEPTED),
-                LTOutcomeStats(0, 10, LTOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(1, 10, LitmusOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(0, 10, LitmusOutcomeType.ACCEPTED),
             ),
             listOf(
-                LTOutcomeStats(1, 20, LTOutcomeType.ACCEPTED),
-                LTOutcomeStats(0, 10, LTOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(1, 20, LitmusOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(0, 10, LitmusOutcomeType.ACCEPTED),
             ),
             listOf(
-                LTOutcomeStats(0, 10, LTOutcomeType.ACCEPTED),
-                LTOutcomeStats(2, 1, LTOutcomeType.INTERESTING),
+                LitmusOutcomeStats(0, 10, LitmusOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(2, 1, LitmusOutcomeType.INTERESTING),
             )
         )
         assertEquals(
             setOf(
-                LTOutcomeStats(1, 30, LTOutcomeType.ACCEPTED),
-                LTOutcomeStats(0, 30, LTOutcomeType.ACCEPTED),
-                LTOutcomeStats(2, 1, LTOutcomeType.INTERESTING),
+                LitmusOutcomeStats(1, 30, LitmusOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(0, 30, LitmusOutcomeType.ACCEPTED),
+                LitmusOutcomeStats(2, 1, LitmusOutcomeType.INTERESTING),
             ),
             stats.mergeResults().toSet()
         )

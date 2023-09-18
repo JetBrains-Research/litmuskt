@@ -9,7 +9,7 @@ class NativeTest {
     fun hehe() {
         val test = ATOM
         val runner = WorkerRunner
-        val params = LTRunParams(1_000_000, 100, null, ::CinteropSpinBarrier)
+        val params = LitmusRunParams(1_000_000, 100, null, ::CinteropSpinBarrier)
         runner.runTest(params, test).prettyPrint()
     }
 }

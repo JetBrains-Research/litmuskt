@@ -1,21 +1,21 @@
 package komem.litmus.infra
 
-import komem.litmus.LTDefinition
-import komem.litmus.LTOutcomeType
-import komem.litmus.LTRunParams
-import komem.litmus.LTRunner
+import komem.litmus.LitmusTest
+import komem.litmus.LitmusOutcomeType
+import komem.litmus.LitmusRunParams
+import komem.litmus.LitmusRunner
 import kotlin.test.assertTrue
 
-expect val defaultParams: LTRunParams
-expect val defaultRunner: LTRunner
+expect val defaultParams: LitmusRunParams
+expect val defaultRunner: LitmusRunner
 
-fun LTDefinition<*>.run(
-    params: LTRunParams = defaultParams,
-    runner: LTRunner = defaultRunner,
+fun LitmusTest<*>.run(
+    params: LitmusRunParams = defaultParams,
+    runner: LitmusRunner = defaultRunner,
 ) {
     val results = runner.runTest(params, this)
-    assertTrue { results.none { it.type == LTOutcomeType.FORBIDDEN } }
-    if (results.any { it.type == LTOutcomeType.INTERESTING }) {
+    assertTrue { results.none { it.type == LitmusOutcomeType.FORBIDDEN } }
+    if (results.any { it.type == LitmusOutcomeType.INTERESTING }) {
         println("interesting cases detected") // TODO: provide test name (?)
     }
 }

@@ -1,1 +1,1 @@
-rootProject.name = "komem-litmus"
+rootProject.name = "litmuskt"

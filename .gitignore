@@ -4,3 +4,4 @@ build/
 temp/
 *.hprof
 gitignored/
+src/nativeInterop/kaffinity.def
