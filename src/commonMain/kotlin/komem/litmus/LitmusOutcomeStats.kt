@@ -73,7 +73,7 @@ class LitmusOutcomeSpecScope {
 
 typealias LitmusResult = List<LitmusOutcomeStats>
 
-fun LitmusResult.prettyPrint() {
+fun LitmusResult.generateTable(): String {
     val totalCount = sumOf { it.count }
     val table = this.sortedByDescending { it.count }.map {
         val freq = it.count.toDouble() / totalCount
@@ -85,7 +85,7 @@ fun LitmusResult.prettyPrint() {
         )
     }
     val tableHeader = listOf("outcome", "type", "count", "frequency")
-    println((listOf(tableHeader) + table).tableFormat(true))
+    return (listOf(tableHeader) + table).tableFormat(true)
 }
 
 fun List<LitmusResult>.mergeResults(): LitmusResult {

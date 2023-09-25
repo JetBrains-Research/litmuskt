@@ -70,6 +70,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
+                implementation("com.github.ajalt.clikt:clikt:4.2.0")
             }
         }
         val commonTest by getting {
