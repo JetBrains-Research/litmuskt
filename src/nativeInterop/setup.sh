@@ -1,7 +1,10 @@
 #!/bin/bash
 
-PATH_TO_LIB_BINARY=~/.litmuskt/kaffinity_gnu.o
-mkdir -p ~/.litmuskt/
+INTEROP_FOLDER=$1
 
-gcc kaffinity_gnu.c -c -o $PATH_TO_LIB_BINARY
-echo "linkerOpts.linux = $PATH_TO_LIB_BINARY" > kaffinity.def
+BINARY_PATH="$INTEROP_FOLDER/kaffinity_gnu.o"
+DEF_FILE_PATH="$INTEROP_FOLDER/kaffinity.def"
+SOURCE_PATH="$INTEROP_FOLDER/kaffinity_gnu.c"
+
+gcc "$SOURCE_PATH" -c -o "$BINARY_PATH"
+echo "linkerOpts.linux = $BINARY_PATH" > "$DEF_FILE_PATH"

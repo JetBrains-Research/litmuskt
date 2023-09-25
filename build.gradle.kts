@@ -95,3 +95,16 @@ kotlin {
         }
     }
 }
+
+val setupCinterop by tasks.register("setupCinterop") {
+    val interopFolder = project.projectDir.resolve("src/nativeInterop")
+    if (!interopFolder.resolve("kaffinity.def").exists()) {
+        exec {
+            executable = interopFolder.resolve("setup.sh").absolutePath
+            args = listOf(interopFolder.absolutePath)
+        }
+    }
+}
+
+tasks.matching { it.name.contains("cinterop") && it.name.contains("Linux") }
+    .forEach { it.dependsOn(setupCinterop) }
