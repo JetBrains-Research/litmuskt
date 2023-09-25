@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.incremental.createDirectory
 
 plugins {
     kotlin("multiplatform") version "1.9.0"
@@ -53,6 +54,11 @@ kotlin {
                     }
                 }
             }
+            if (gradle.startParameter.taskNames.any { it.contains("bitcode") }) {
+                val tempDir = projectDir.resolve("temp/bitcode")
+                if (!tempDir.exists()) tempDir.createDirectory()
+                kotlinOptions.freeCompilerArgs = listOf("-Xtemporary-files-dir=${tempDir.absolutePath}")
+            }
         }
         binaries {
             executable {
@@ -97,14 +103,41 @@ kotlin {
 }
 
 val setupCinterop by tasks.register("setupCinterop") {
-    val interopFolder = project.projectDir.resolve("src/nativeInterop")
-    if (!interopFolder.resolve("kaffinity.def").exists()) {
-        exec {
-            executable = interopFolder.resolve("setup.sh").absolutePath
-            args = listOf(interopFolder.absolutePath)
+    group = "interop"
+    doFirst {
+        val interopFolder = project.projectDir.resolve("src/nativeInterop")
+        if (!interopFolder.resolve("kaffinity.def").exists()) {
+            exec {
+                executable = interopFolder.resolve("setup.sh").absolutePath
+                args = listOf(interopFolder.absolutePath)
+            }
         }
     }
 }
 
 tasks.matching { it.name.contains("cinterop") && it.name.contains("Linux") }
     .forEach { it.dependsOn(setupCinterop) }
+
+val bitcodeInternal by tasks.register("bitcodeInternal") {
+    val tempDir = projectDir.resolve("temp/bitcode")
+    doLast {
+        exec {
+            executable = "sh"
+            args = listOf(
+                "-c", """
+                llvm-dis -o ${tempDir.resolve("bitcode.txt")} ${tempDir.resolve("out.bc")}
+            """.trimIndent()
+            )
+        }
+    }
+}
+
+tasks.register("bitcodeDebug") {
+    dependsOn(tasks.matching { it.name.startsWith("linkDebugExecutable") })
+    finalizedBy(bitcodeInternal)
+}
+
+tasks.register("bitcodeRelease") {
+    dependsOn(tasks.matching { it.name.startsWith("linkReleaseExecutable") })
+    finalizedBy(bitcodeInternal)
+}
