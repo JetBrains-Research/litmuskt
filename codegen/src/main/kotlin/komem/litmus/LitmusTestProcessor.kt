@@ -20,7 +20,7 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
 
         val registryFile = try {
             codeGenerator.createNewFile(dependencies, "$basePackage.generated", registryFileName)
-        } catch (_: FileAlreadyExistsException) { // TODO: workaround
+        } catch (e: FileAlreadyExistsException) { // TODO: this is a workaround
             return emptyList()
         }
 
@@ -29,9 +29,10 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
         val registryCode = """
             package $basePackage.generated
             import $basePackage.testsuite.*
+            import $basePackage.LitmusTest
             
             object LitmusTestRegistry {
-                val tests = listOf(
+                val tests: List<LitmusTest<*>> = listOf(
                     ${decls.joinToString(separator = ", ") { it.simpleName.asString() }}
                 )
             }

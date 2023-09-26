@@ -145,3 +145,10 @@ tasks.register("bitcodeRelease") {
 dependencies {
     add("kspCommonMainMetadata", project(":codegen"))
 }
+
+tasks.whenTaskAdded {
+    if (name == "kspCommonMainKotlinMetadata") {
+        val kspTask = this
+        tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
+    }
+}
