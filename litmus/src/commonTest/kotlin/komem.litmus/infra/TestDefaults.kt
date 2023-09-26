@@ -1,9 +1,9 @@
 package komem.litmus.infra
 
-import komem.litmus.LitmusTest
 import komem.litmus.LitmusOutcomeType
 import komem.litmus.LitmusRunParams
 import komem.litmus.LitmusRunner
+import komem.litmus.LitmusTest
 import kotlin.test.assertTrue
 
 expect val defaultParams: LitmusRunParams

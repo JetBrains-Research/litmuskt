@@ -1,6 +1,6 @@
 import komem.litmus.*
 import komem.litmus.barriers.CinteropSpinBarrier
-import komem.litmus.testsuite.*
+import komem.litmus.testsuite.SB
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
