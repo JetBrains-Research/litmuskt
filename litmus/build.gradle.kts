@@ -68,6 +68,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
             }
+            kotlin.srcDir(buildDir.resolve("generated/ksp/metadata/commonMain/kotlin/")) // ksp
         }
         val commonTest by getting {
             dependencies {
@@ -141,10 +142,6 @@ tasks.register("bitcodeRelease") {
 
 // ======== ksp ========
 
-subprojects {
-    apply(plugin = "org.jetbrains.kotlin.multiplatform")
-}
-
 dependencies {
-    add("kspCommonMainMetadata", project(":ksp"))
+    add("kspCommonMainMetadata", project(":codegen"))
 }
