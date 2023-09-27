@@ -6,12 +6,18 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
 class LitmusTestProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return LitmusTestProcessor(environment.codeGenerator)
+        return LitmusTestProcessor(environment.codeGenerator, environment.logger)
     }
 }
 
-class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
+class LitmusTestProcessor(val codeGenerator: CodeGenerator, val logger: KSPLogger) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        generateTestRegistry(resolver)
+        generateTestStateStubs(resolver)
+        return emptyList()
+    }
+
+    private fun generateTestRegistry(resolver: Resolver) {
         val basePackage = "komem.litmus"
         val registryFileName = "LitmusTestRegistry"
 
@@ -21,7 +27,7 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
         val registryFile = try {
             codeGenerator.createNewFile(dependencies, "$basePackage.generated", registryFileName)
         } catch (e: FileAlreadyExistsException) { // TODO: this is a workaround
-            return emptyList()
+            return
         }
 
         val decls = testFiles.flatMap { it.declarations }
@@ -39,6 +45,14 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
         """.trimIndent()
 
         registryFile.write(registryCode.toByteArray())
-        return emptyList()
+    }
+
+    private fun generateTestStateStubs(resolver: Resolver) {
+        val decls = resolver.getSymbolsWithAnnotation("kotlin.concurrent.Volatile")
+            .toList()
+        logger.warn("found anno: ${decls.size}")
+//        decls.forEach { decl ->
+//            logger.warn("${decl::class}")
+//        }
     }
 }

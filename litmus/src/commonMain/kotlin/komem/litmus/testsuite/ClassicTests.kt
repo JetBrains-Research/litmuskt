@@ -53,12 +53,17 @@ val SB: LitmusTest<*> = litmusTest({
     }
 }
 
+val a = @LitmusState object {
+    var t = 0
+}
+
 val SBVolatile: LitmusTest<*> = litmusTest({
     object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
         @Volatile
+        @Haha
         var y = 0
     }
 }) {
