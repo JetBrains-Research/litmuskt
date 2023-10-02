@@ -49,6 +49,10 @@ abstract class CliCommon : CliktCommand(
     // TODO: we don't talk about memshuffler for now
 
     override fun run() {
+        echo("selected tests: \n" + tests.joinToString("\n") { " - " + LitmusTestRegistry.resolveName(it) })
+        echo("in total: ${tests.size} tests")
+        echo()
+
         val paramsList = variateRunParams(
             batchSizeSchedule = batchSizeSchedule,
             affinityMapSchedule = affinityMapSchedule,
@@ -59,12 +63,11 @@ abstract class CliCommon : CliktCommand(
             echo("parameters list is empty; ensure no empty lists are used", err = true)
             return
         }
-        echo("params list size: ${paramsList.size}")
-        echo("selected tests count: ${tests.size}")
+        echo("parameter combinations per each test: ${paramsList.size}")
         echo()
 
         for (test in tests) {
-            echo("running next test...")
+            echo("running test ${LitmusTestRegistry.resolveName(test)}...")
             // TODO: handle exceptions
             paramsList.map { params ->
                 // TODO: print ETA (later: calculate based on part of run)

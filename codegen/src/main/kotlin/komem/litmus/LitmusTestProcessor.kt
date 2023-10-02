@@ -39,15 +39,15 @@ package $basePackage.generated
 import $basePackage.LitmusTest
 
 object LitmusTestRegistry {
-    private val tests: Map<String, LitmusTest<*>> = mapOf(
+    private val tests: Set<Pair<String, LitmusTest<*>>> = setOf(
         ${namedTestsMap.entries.joinToString(",\n" + " ".repeat(8)) { (a, n) -> "\"$a\" to $n" }}
     )
     
-    operator fun get(fullName: String) = tests[fullName]!!
-     
-    operator fun get(regex: Regex) = tests.filterKeys { regex.matches(it) }.values
+    operator fun get(regex: Regex) = tests.filter { regex.matches(it.first) }.map { it.second }
     
-    fun all() = tests.values
+    fun all() = tests.map { it.second }
+    
+    fun resolveName(test: LitmusTest<*>) = tests.firstOrNull { it.second == test }?.first ?: "<unnamed>" 
 }
 
         """.trimIndent()
