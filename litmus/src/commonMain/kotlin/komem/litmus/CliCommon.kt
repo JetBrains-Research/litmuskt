@@ -1,14 +1,15 @@
 package komem.litmus
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.*
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
 import komem.litmus.barriers.BarrierProducer
+import komem.litmus.generated.LitmusTestRegistry
 import kotlin.time.Duration
 
 abstract class CliCommon : CliktCommand(
-    name = "komem-litmus",
-    printHelpOnEmptyArgs = true
+    name = "litmuskt"
 ) {
     private val batchSizeSchedule by option("-b", "--batchSize")
         .int().varargValues().default(listOf(1_000_000))
@@ -16,13 +17,19 @@ abstract class CliCommon : CliktCommand(
     private val syncEverySchedule by option("-s", "--syncEvery")
         .int().varargValues().default(listOf(100))
 
-    private val tests by option("-t", "--tests")
-        .convert { arg ->
-            val regex = arg.toRegex()
-            LitmusTestRegistry.tests.filterKeys { regex.matches(it) }.values
+    private val tests by argument("tests")
+        .multiple(required = true)
+        .transformAll { args ->
+            val regexes = args.map {
+                try {
+                    Regex(it)
+                } catch (_: IllegalArgumentException) {
+                    fail("invalid regex: $it")
+                }
+            }
+            regexes.flatMap { LitmusTestRegistry[it] }.toSet()
         }
-        .default(LitmusTestRegistry.tests.values)
-        .check("no tests were selected by regex") { it.isNotEmpty() }
+        .check("no tests were selected") { it.isNotEmpty() }
 
     private val PARALLELISM_DISABLED = Int.MAX_VALUE - 1
     private val PARALLELISM_AUTO = Int.MAX_VALUE - 2

@@ -24,18 +24,32 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
             return emptyList()
         }
 
-        val decls = testFiles.flatMap { it.declarations }
-            .filterIsInstance<KSPropertyDeclaration>()
+        val decls = testFiles.flatMap { it.declarations }.filterIsInstance<KSPropertyDeclaration>()
+        val namedTestsMap = decls.associate {
+            val relativePackage = it.packageName.asString().removePrefix("$basePackage.testsuite")
+            val testAlias = (if (relativePackage.isEmpty()) "" else "$relativePackage.") +
+                    it.containingFile!!.fileName.removeSuffix(".kt") +
+                    "." + it.simpleName.getShortName()
+            val testName = it.qualifiedName!!.asString()
+            testAlias to testName
+        }
+
         val registryCode = """
-            package $basePackage.generated
-            import $basePackage.testsuite.*
-            import $basePackage.LitmusTest
-            
-            object LitmusTestRegistry {
-                val tests: List<LitmusTest<*>> = listOf(
-                    ${decls.joinToString(separator = ", ") { it.simpleName.asString() }}
-                )
-            }
+package $basePackage.generated
+import $basePackage.LitmusTest
+
+object LitmusTestRegistry {
+    private val tests: Map<String, LitmusTest<*>> = mapOf(
+        ${namedTestsMap.entries.joinToString(",\n" + " ".repeat(8)) { (a, n) -> "\"$a\" to $n" }}
+    )
+    
+    operator fun get(fullName: String) = tests[fullName]!!
+     
+    operator fun get(regex: Regex) = tests.filterKeys { regex.matches(it) }.values
+    
+    fun all() = tests.values
+}
+
         """.trimIndent()
 
         registryFile.write(registryCode.toByteArray())
