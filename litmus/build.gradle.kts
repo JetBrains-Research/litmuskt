@@ -67,7 +67,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
-                implementation("com.github.ajalt.clikt:clikt:4.2.0")
+                implementation("com.github.ajalt.clikt:clikt:4.2.1")
             }
             kotlin.srcDir(buildDir.resolve("generated/ksp/metadata/commonMain/kotlin/")) // ksp
         }
