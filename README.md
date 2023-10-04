@@ -9,12 +9,7 @@ The tool's API is unstable and might be a subject to a further change.
 
 ## Setup
 
-Clone the project.
-* On macOS, this is enough.
-* On Linux, after cloning go to `src/nativeInterop` directory and run the `setup.sh` script. 
-  It compiles some C source files and sets up C interop. 
-  The output path must be absolute, so by default, it outputs the object files to `~/.litmuskt/`. 
-  You can change the location to any other absolute path.
+Simply clone the project and run `./gradlew build`.
 
 ### Running
 
