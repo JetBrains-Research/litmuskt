@@ -1,0 +1,2 @@
+src/nativeInterop/kaffinity.def
+src/nativeInterop/kaffinity_gnu.o
