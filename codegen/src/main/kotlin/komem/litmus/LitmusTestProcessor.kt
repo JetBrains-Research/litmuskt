@@ -2,6 +2,7 @@ package komem.litmus
 
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
 class LitmusTestProcessorProvider : SymbolProcessorProvider {
@@ -34,13 +35,27 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
             testAlias to testName
         }
 
+        // TODO: one iteration
+        val stateClasses = testFiles.flatMap { it.declarations }
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { it.superTypes.any { t -> t.resolve().toString().contains("LitmusTestState") } }
+        val stateClassesMap = stateClasses.associate {
+            val fqn = it.qualifiedName!!.asString()
+            val alias = fqn.removePrefix("$basePackage.testsuite").removePrefix(".")
+            val converterCode = "{ $fqn() }.toTest()"
+            alias to converterCode
+        }
+
+        val testEntries = (namedTestsMap + stateClassesMap).entries
+
         val registryCode = """
 package $basePackage.generated
 import $basePackage.LitmusTest
+import $basePackage.toTest
 
 object LitmusTestRegistry {
     private val tests: Set<Pair<String, LitmusTest<*>>> = setOf(
-        ${namedTestsMap.entries.joinToString(",\n" + " ".repeat(8)) { (a, n) -> "\"$a\" to $n" }}
+        ${testEntries.joinToString(",\n" + " ".repeat(8)) { (a, n) -> "\"$a\" to $n" }}
     )
     
     operator fun get(regex: Regex) = tests.filter { regex.matches(it.first) }.map { it.second }
