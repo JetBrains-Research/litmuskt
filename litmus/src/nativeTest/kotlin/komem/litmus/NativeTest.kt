@@ -10,6 +10,6 @@ class NativeTest {
         val test = ATOM
         val runner = WorkerRunner
         val params = LitmusRunParams(1_000_000, 100, null, ::CinteropSpinBarrier)
-        runner.runTest(params, test).prettyPrint()
+        runner.runTest(params, test)
     }
 }

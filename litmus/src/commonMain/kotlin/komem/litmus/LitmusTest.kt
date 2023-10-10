@@ -2,7 +2,7 @@ package komem.litmus
 
 data class LitmusTest<S>(
     val stateProducer: () -> S,
-    val threadFunctions: List<S.() -> Any?>,
+    val threadFunctions: List<S.() -> Unit>,
     val outcomeFinalizer: (S.() -> LitmusOutcome),
     val outcomeSpec: LitmusOutcomeSpec
 ) {
@@ -12,7 +12,7 @@ data class LitmusTest<S>(
 class LitmusTestScope<S>(
     private val stateProducer: () -> S
 ) {
-    private val threadFunctions = mutableListOf<S.() -> Any?>()
+    private val threadFunctions = mutableListOf<S.() -> Unit>()
     private lateinit var outcomeFinalizer: S.() -> LitmusOutcome
     private lateinit var outcomeSpec: LitmusOutcomeSpecScope
 

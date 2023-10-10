@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.incremental.createDirectory
 plugins {
     kotlin("multiplatform")
     id("com.google.devtools.ksp") version "1.9.10-1.0.13"
+    `java-library`
 }
 
 group = "komem.litmus"
@@ -34,6 +35,8 @@ kotlin {
         mainRun {
             mainClass.set("JvmMainKt")
         }
+        withSourcesJar()
+        withJava()
     }
 
     val affinitySupported = hostOs == "Linux"
@@ -152,4 +155,10 @@ tasks.whenTaskAdded {
         val kspTask = this
         tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
     }
+}
+
+tasks.register<Copy>("copyLibToJCStress") {
+    dependsOn("jvmJar")
+    from(buildDir.resolve("libs/litmus-jvm-$version.jar"))
+    into(projectDir.resolve("../jcstress/libs/"))
 }

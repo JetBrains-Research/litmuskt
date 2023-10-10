@@ -33,6 +33,8 @@ package org.sample;
 import org.openjdk.jcstress.annotations.*;
 import org.openjdk.jcstress.infra.results.II_Result;
 
+import komem.litmus.AffinityMap;
+
 // See jcstress-samples or existing tests for API introduction and testing guidelines
 
 @JCStressTest
@@ -43,7 +45,7 @@ public class ConcurrencyTest {
 
     @Actor
     public void actor1(II_Result r) {
-        // Put the code for first thread here
+
     }
 
     @Actor
