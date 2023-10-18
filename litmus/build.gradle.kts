@@ -36,7 +36,7 @@ kotlin {
             mainClass.set("JvmMainKt")
         }
         withSourcesJar()
-        withJava()
+        jvmToolchain(8)
     }
 
     val affinitySupported = hostOs == "Linux"
