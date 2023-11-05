@@ -1,105 +1,83 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.incremental.createDirectory
 
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp") version "1.9.10-1.0.13"
+    id("com.google.devtools.ksp") version "1.9.20-1.0.13"
     `java-library`
 }
 
 group = "komem.litmus"
 version = "1.0-SNAPSHOT"
 
-@OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
-    targetHierarchy.default {
-        common {
-            withJvm()
-            withNative()
-            withLinux()
-            withMacos()
-        }
-    }
+    val nativeTargets = listOf(
+        linuxX64(),
+//        linuxArm64(), // 1) no machine currently available 2) CLI library does not support
+        macosX64(),
+        macosArm64(),
+    )
 
-    val armEnabled = findProperty("arm") != null
-    val hostOs = System.getProperty("os.name")
-//    val isMingwX64 = hostOs.startsWith("Windows")
-
-    val nativeTarget = when {
-        hostOs == "Mac OS X" -> if (armEnabled) macosArm64() else macosX64()
-        hostOs == "Linux" -> linuxX64()
-        else -> throw GradleException("Host OS is not supported")
-    }
-    val jvmTarget = jvm {
-        // executable by default
-        mainRun {
-            mainClass.set("JvmMainKt")
-        }
+    jvm {
         withSourcesJar()
         jvmToolchain(8)
     }
 
+    val hostOs = System.getProperty("os.name")
     val affinitySupported = hostOs == "Linux"
-    nativeTarget.apply {
-        compilations.getByName("main") {
-            cinterops {
-                val barrier by creating {
-                    defFile(project.file("src/nativeInterop/barrier.def"))
-                    headers(project.file("src/nativeInterop/barrier.h"))
-                }
-                if (affinitySupported) {
-                    val affinity by creating {
-                        defFile(project.file("src/nativeInterop/kaffinity.def"))
-                        headers(project.file("src/nativeInterop/kaffinity.h"))
+    nativeTargets.forEach { target ->
+        target.apply {
+            compilations.getByName("main") {
+                cinterops {
+                    val barrier by creating {
+                        defFile(project.file("src/nativeInterop/barrier.def"))
+                        headers(project.file("src/nativeInterop/barrier.h"))
+                    }
+                    if (affinitySupported) {
+                        val affinity by creating {
+                            defFile(project.file("src/nativeInterop/kaffinity.def"))
+                            headers(project.file("src/nativeInterop/kaffinity.h"))
+                        }
                     }
                 }
+                if (gradle.startParameter.taskNames.any { it.contains("bitcode") }) {
+                    val tempDir = projectDir.resolve("temp/bitcode")
+                    if (!tempDir.exists()) tempDir.createDirectory()
+                    kotlinOptions.freeCompilerArgs = listOf("-Xtemporary-files-dir=${tempDir.absolutePath}")
+                }
             }
-            if (gradle.startParameter.taskNames.any { it.contains("bitcode") }) {
-                val tempDir = projectDir.resolve("temp/bitcode")
-                if (!tempDir.exists()) tempDir.createDirectory()
-                kotlinOptions.freeCompilerArgs = listOf("-Xtemporary-files-dir=${tempDir.absolutePath}")
-            }
-        }
-        binaries {
-            executable {
-                entryPoint = "main"
+            binaries {
+                executable {
+                    entryPoint = "main"
+                }
             }
         }
     }
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
                 implementation("com.github.ajalt.clikt:clikt:4.2.1")
             }
-            kotlin.srcDir(buildDir.resolve("generated/ksp/metadata/commonMain/kotlin/")) // ksp
+            kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin/")) // ksp
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
             }
         }
 
-        val nativeMain by getting
-        val nativeTest by getting
-
-        val jvmMain by getting
-        val jvmTest by getting
-
-        when {
-            hostOs == "Mac OS X" -> {
-                val macosMain by getting {
-                    dependsOn(commonMain)
-                    kotlin.srcDirs("src/macosMain/kotlin")
-                }
+        jvmMain {
+            dependencies {
+                implementation(kotlin("reflect"))
             }
+        }
 
-            hostOs == "Linux" -> {
-                val linuxMain by getting {
-                    dependsOn(commonMain)
-                    kotlin.srcDirs("src/linuxMain/kotlin")
-                }
-            }
+        macosMain {
+            kotlin.srcDirs("src/macosMain/kotlin")
+        }
+
+        linuxMain {
+            kotlin.srcDirs("src/linuxMain/kotlin")
         }
     }
 }
@@ -159,6 +137,6 @@ tasks.whenTaskAdded {
 
 tasks.register<Copy>("copyLibToJCStress") {
     dependsOn("jvmJar")
-    from(buildDir.resolve("libs/litmus-jvm-$version.jar"))
+    from(layout.buildDirectory.file("libs/litmus-jvm-$version.jar"))
     into(projectDir.resolve("../jcstress/libs/"))
 }
