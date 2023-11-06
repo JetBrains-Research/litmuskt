@@ -1,7 +1,11 @@
 import komem.litmus.LitmusAutoOutcome
+import komem.litmus.LitmusOutcomeType
 import komem.litmus.LitmusTest
 import komem.litmus.generated.LitmusTestRegistry
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.superclasses
@@ -11,7 +15,7 @@ fun main() {
     val jcstressDirectory = Path("../jcstress")
 
     val tests = LitmusTestRegistry.all()
-    val test = tests[1]
+    val test = tests[0]
 
     val javaClassName = test.name.replace('.', '_')
     val targetFile = jcstressDirectory / "src/main/java/komem/litmus/$javaClassName.java"
@@ -19,7 +23,8 @@ fun main() {
     val targetCode = generateWrapperCode(test, javaClassName)
 
     targetFile.writeText(targetCode)
-    val mvn = ProcessBuilder("mvn", "-f", jcstressDirectory.absolutePathString(), "verify")
+    val mvn = ProcessBuilder("mvn", "verify")
+        .directory(jcstressDirectory.toFile())
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start()
@@ -32,10 +37,13 @@ fun main() {
     val jcs = ProcessBuilder(
         "java",
         "-jar",
-        (jcstressDirectory / "target/jcstress.jar").absolutePathString(),
+        "target/jcstress.jar",
         "-t",
-        javaClassName
+        javaClassName,
+        "-m",
+        "quick"
     )
+        .directory(jcstressDirectory.toFile())
         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
         .redirectError(ProcessBuilder.Redirect.INHERIT)
         .start()
@@ -48,6 +56,20 @@ private fun generateWrapperCode(test: LitmusTest<*>, javaClassName: String): Str
     val stateClass = test.stateProducer()!!::class
     require(stateClass.allSuperclasses.contains(LitmusAutoOutcome::class)) {
         "to use JCStress, test state must extend some LitmusAutoOutcome (e.g. LitmusIIOutcome)"
+    }
+
+    val autoOutcomeClassList = stateClass.superclasses
+        .filter { it.isSubclassOf(LitmusAutoOutcome::class) }
+    require(autoOutcomeClassList.size == 1) { "test state should extend exactly one LitmusAutoOutcome" }
+    val outcomeTypeName = autoOutcomeClassList.first().simpleName!!
+        .removePrefix("Litmus")
+        .removeSuffix("Outcome")
+    val (outcomeVarType, outcomeVarCount) = when (outcomeTypeName) {
+        "I" -> "Integer" to 1
+        "II" -> "Integer" to 2
+        "III" -> "Integer" to 3
+        "IIII" -> "Integer" to 4
+        else -> error("unknown AutoOutcome type $outcomeTypeName")
     }
 
     fun javaTestGetter(): String {
@@ -71,29 +93,46 @@ private fun generateWrapperCode(test: LitmusTest<*>, javaClassName: String): Str
     """.trimEnd()
 
     fun javaArbiterDecl(): String {
-        val autoOutcomeClassList = stateClass.superclasses
-            .filter { it.isSubclassOf(LitmusAutoOutcome::class) }
-        require(autoOutcomeClassList.size == 1) { "test state should extend exactly one LitmusAutoOutcome" }
-        val autoOutcomeClass = autoOutcomeClassList.first()
-        val outcomeTypeName = autoOutcomeClass.simpleName!!
-            .removePrefix("Litmus")
-            .removeSuffix("Outcome")
-        val (varType, varCount) = when (outcomeTypeName) {
-            "II" -> "Integer" to 2
-            "III" -> "Integer" to 3
-            "IIII" -> "Integer" to 4
-            else -> error("unknown AutoOutcome type $outcomeTypeName")
-        }
 
         val jcstressResultClassName = outcomeTypeName + "_Result"
-        return """
+
+        return if (outcomeVarCount > 1) {
+            """
     @Arbiter
     public void a($jcstressResultClassName r) {
-        List<$varType> result = (List<$varType>) fA.invoke(state);
-${List(varCount) { "        r.r${it + 1} = result.get($it);" }.joinToString("\n")}
+        List<$outcomeVarType> result = (List<$outcomeVarType>) fA.invoke(state);
+${List(outcomeVarCount) { "        r.r${it + 1} = result.get($it);" }.joinToString("\n")}
     }
 
         """.trimEnd()
+        } else {
+            // single values are handled differently
+            """
+    @Arbiter
+    public void a($jcstressResultClassName r) {
+        r.r1 = ($outcomeVarType) fA.invoke(state);
+    }
+
+            """.trimEnd()
+        }
+    }
+
+    fun jcstressOutcomeDecls(): String {
+        val outcomes = test.outcomeSpec.accepted.associateWith { "ACCEPTABLE" } +
+                test.outcomeSpec.interesting.associateWith { "ACCEPTABLE_INTERESTING" } +
+                test.outcomeSpec.forbidden.associateWith { "FORBIDDEN" }
+
+        // since only AutoOutcome is allowed, each outcome is a list (unless it's a single value)
+        return outcomes.map { (o, t) ->
+            val oId = if (outcomeVarCount > 1) (o as List<*>).joinToString(", ") else o.toString()
+            "@Outcome(id = \"$oId\", expect = $t)"
+        }.joinToString("\n")
+    }
+
+    val jcstressDefaultOutcomeType = when (test.outcomeSpec.default) {
+        LitmusOutcomeType.ACCEPTED -> "ACCEPTABLE"
+        LitmusOutcomeType.FORBIDDEN -> "FORBIDDEN"
+        LitmusOutcomeType.INTERESTING -> "ACCEPTABLE_INTERESTING"
     }
 
     return """
@@ -107,11 +146,14 @@ import kotlin.jvm.functions.Function1;
 import org.openjdk.jcstress.annotations.*;
 import org.openjdk.jcstress.infra.results.*;
 
+import static org.openjdk.jcstress.annotations.Expect.*;
+
 import java.util.List;
 
 @JCStressTest
 @State
-@Outcome(expect = Expect.ACCEPTABLE)
+${jcstressOutcomeDecls()}
+@Outcome(expect = $jcstressDefaultOutcomeType)
 public class $javaClassName {
 
     private static final LitmusTest<Object> test = (LitmusTest<Object>) ${javaTestGetter()};

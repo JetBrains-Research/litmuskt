@@ -10,19 +10,15 @@ class IntHolderCtor {
 }
 
 val ATOM: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var x = 0
-        var o = 0
     }
 }) {
     thread {
         x = -1 // signed 0xFFFFFFFF
     }
     thread {
-        o = x
-    }
-    outcome {
-        o
+        r1 = x
     }
     spec {
         accept(0)

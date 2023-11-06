@@ -4,6 +4,12 @@ interface LitmusAutoOutcome {
     fun getOutcome(): LitmusOutcome
 }
 
+open class LitmusIOutcome(
+    var r1: Int = 0,
+) : LitmusAutoOutcome {
+    override fun getOutcome() = r1 // single values are handled differently
+}
+
 open class LitmusIIOutcome(
     var r1: Int = 0,
     var r2: Int = 0
