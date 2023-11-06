@@ -2,6 +2,7 @@ import komem.litmus.LitmusAutoOutcome
 import komem.litmus.LitmusOutcomeType
 import komem.litmus.LitmusTest
 import komem.litmus.generated.LitmusTestRegistry
+import komem.litmus.testsuite.UPUB
 import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
@@ -14,8 +15,7 @@ import kotlin.system.exitProcess
 fun main() {
     val jcstressDirectory = Path("../jcstress")
 
-    val tests = LitmusTestRegistry.all()
-    val test = tests[0]
+    val test = UPUB
 
     val javaClassName = test.name.replace('.', '_')
     val targetFile = jcstressDirectory / "src/main/java/komem/litmus/$javaClassName.java"

@@ -121,12 +121,11 @@ val MPVolatile: LitmusTest<*> = litmusTest({
 }
 
 val MP_DRF: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var x = 0
 
         @Volatile
         var y = 0
-        var o = 0
     }
 }) {
     thread {
@@ -134,10 +133,7 @@ val MP_DRF: LitmusTest<*> = litmusTest({
         y = 1
     }
     thread {
-        o = if (y != 0) x else -1
-    }
-    outcome {
-        o
+        r1 = if (y != 0) x else -1
     }
     spec {
         accept(1)
@@ -246,19 +242,15 @@ val IRIWVolatile: LitmusTest<*> = litmusTest({
 }
 
 val UPUB: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var h: IntHolder? = null
-        var o = 0
     }
 }) {
     thread {
         h = IntHolder(0)
     }
     thread {
-        o = h?.x ?: -1
-    }
-    outcome {
-        o
+        r1 = h?.x ?: -1
     }
     spec {
         accept(0)
@@ -267,19 +259,15 @@ val UPUB: LitmusTest<*> = litmusTest({
 }
 
 val UPUBCtor: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var h: IntHolderCtor? = null
-        var o = 0
     }
 }) {
     thread {
         h = IntHolderCtor()
     }
     thread {
-        o = h?.x ?: -1
-    }
-    outcome {
-        o
+        r1 = h?.x ?: -1
     }
     spec {
         accept(1)
@@ -288,23 +276,18 @@ val UPUBCtor: LitmusTest<*> = litmusTest({
 }
 
 val LB_DEPS_OOTA: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
-        var a = 0
-        var b = 0
     }
 }) {
     thread {
-        a = x
-        y = a
+        r1 = x
+        y = r1
     }
     thread {
-        b = y
-        x = b
-    }
-    outcome {
-        listOf(a, b)
+        r2 = y
+        x = r2
     }
     spec {
         accept(0, 0)
