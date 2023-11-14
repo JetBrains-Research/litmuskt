@@ -2,19 +2,16 @@ package komem.litmus
 
 import komem.litmus.barriers.Barrier
 import kotlinx.cinterop.*
-import platform.posix.errno
-import platform.posix.pthread_create
-import platform.posix.pthread_join
-import platform.posix.strerror
+import platform.posix.*
 
-class ThreadData(
+private class ThreadData(
     val states: List<Any?>,
     val function: (Any?) -> Unit,
     val syncPeriod: Int,
     val barrier: Barrier,
 )
 
-fun threadRoutine(data: ThreadData) = data.run {
+private fun threadRoutine(data: ThreadData): Unit = with(data) {
     for (i in states.indices) {
         function(states[i])
         if (i % syncPeriod == 0) barrier.await()
@@ -22,27 +19,28 @@ fun threadRoutine(data: ThreadData) = data.run {
 }
 
 @OptIn(ExperimentalForeignApi::class)
+// pthread_t = ULong
 private typealias PthreadVar = ULongVar
 
 object PthreadRunner : LitmusRunner() {
     @OptIn(ExperimentalForeignApi::class)
     override fun <S> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult = memScoped {
-
+        pthread_t
         val states = List(params.batchSize) { test.stateProducer() }
         val barrier = params.barrierProducer(test.threadCount)
 
-        fun startThread(index: Int): Pair<PthreadVar, StableRef<*>> {
+        fun startThread(threadIndex: Int): Pair<PthreadVar, StableRef<*>> {
             val function: (Any?) -> Unit = { state ->
                 // TODO: fix thread function signature
                 @Suppress("UNCHECKED_CAST")
-                test.threadFunctions[index].invoke(state as S)
+                test.threadFunctions[threadIndex].invoke(state as S)
             }
             val threadData = ThreadData(states, function, params.syncPeriod, barrier)
 
             val threadDataRef = StableRef.create(threadData)
-            val pthreadHandleVar = alloc<PthreadVar>()
+            val pthreadVar = alloc<PthreadVar>()
             val code = pthread_create(
-                __newthread = pthreadHandleVar.ptr,
+                __newthread = pthreadVar.ptr,
                 __attr = null,
                 __start_routine = staticCFunction<COpaquePointer?, COpaquePointer?> {
                     val data = it!!.asStableRef<ThreadData>().get()
@@ -51,14 +49,19 @@ object PthreadRunner : LitmusRunner() {
                 },
                 __arg = threadDataRef.asCPointer(),
             )
-            if (code != 0) error("pthread_create failed; errno=${strerror(errno)}")
-            return pthreadHandleVar to threadDataRef
+            if (code != 0) error("pthread_create failed; errno means: ${strerror(errno)?.toKString()}")
+            // TODO: I don't think there is a way to assign affinity before the thread starts (would be useful for MacOS)
+            getAffinityManager()?.let { am ->
+                val map = params.affinityMap?.allowedCores(threadIndex) ?: return@let
+                am.setAffinity(pthreadVar.value, map)
+                require(am.getAffinity(pthreadVar.value) == map) { "setting affinity failed" }
+            }
+            return pthreadVar to threadDataRef
         }
 
-        // TODO: affinity
-        val (handleVars, refsToClear) = List(test.threadCount) { startThread(it) }.unzip()
-        for (handleVar in handleVars) {
-            pthread_join(handleVar.value, null)
+        val (pthreadVars, refsToClear) = List(test.threadCount) { startThread(it) }.unzip()
+        for (pthreadVar in pthreadVars) {
+            pthread_join(pthreadVar.value, null)
         }
 
         for (ref in refsToClear) ref.dispose()

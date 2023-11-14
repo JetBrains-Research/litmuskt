@@ -4,12 +4,16 @@ package komem.litmus
 
 // TODO: add documentation
 
+import platform.posix.pthread_t
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
 interface AffinityManager {
     fun setAffinity(w: Worker, cpus: Set<Int>)
     fun getAffinity(w: Worker): Set<Int>
+
+    fun setAffinity(thread: pthread_t, cpus: Set<Int>)
+    fun getAffinity(thread: pthread_t): Set<Int>
 
     fun newShiftMap(shift: Int): AffinityMap = object : AffinityMap {
         private val cpus: List<Set<Int>>
