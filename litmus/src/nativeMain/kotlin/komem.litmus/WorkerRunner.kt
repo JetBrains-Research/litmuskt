@@ -1,18 +1,17 @@
 package komem.litmus
 
 import komem.litmus.barriers.Barrier
-import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
 object WorkerRunner : LitmusRunner() {
 
-    @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
-    override fun <S> runTest(
+    @OptIn(ObsoleteWorkersApi::class)
+    override fun <S> startTest(
         params: LitmusRunParams,
         test: LitmusTest<S>,
-    ): LitmusResult {
+    ): () -> LitmusResult {
 
         data class WorkerContext(
             val states: List<S>,
@@ -26,7 +25,7 @@ object WorkerRunner : LitmusRunner() {
         val outcomeFinalizer = test.outcomeFinalizer
         val workers = List(test.threadCount) { Worker.start() }
 
-        workers.mapIndexed { threadIndex, worker ->
+        val futures = workers.mapIndexed { threadIndex, worker ->
             params.affinityMap?.let { affinityMap ->
                 getAffinityManager()?.run {
                     val cpuSet = affinityMap.allowedCores(threadIndex)
@@ -49,12 +48,13 @@ object WorkerRunner : LitmusRunner() {
                     states[i].threadFunction()
                 }
             }
-            worker.requestTermination()
-        }.forEach { it.result } // await all workers
+        }
 
-        val outcomes = states.map { it.outcomeFinalizer() }
-        assert(outcomes.size == params.batchSize)
-
-        return outcomes.calcStats(test.outcomeSpec)
+        return {
+            futures.forEach { it.result } // await all results
+            workers.forEach { it.requestTermination().result } // waits for all workers to stop
+            val outcomes = states.map { it.outcomeFinalizer() }
+            outcomes.calcStats(test.outcomeSpec)
+        }
     }
 }

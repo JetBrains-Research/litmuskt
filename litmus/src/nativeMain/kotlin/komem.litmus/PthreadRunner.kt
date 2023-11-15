@@ -2,7 +2,10 @@ package komem.litmus
 
 import komem.litmus.barriers.Barrier
 import kotlinx.cinterop.*
-import platform.posix.*
+import platform.posix.errno
+import platform.posix.pthread_create
+import platform.posix.pthread_join
+import platform.posix.strerror
 
 private class ThreadData(
     val states: List<Any?>,
@@ -24,8 +27,7 @@ private typealias PthreadVar = ULongVar
 
 object PthreadRunner : LitmusRunner() {
     @OptIn(ExperimentalForeignApi::class)
-    override fun <S> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult = memScoped {
-        pthread_t
+    override fun <S> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
         val states = List(params.batchSize) { test.stateProducer() }
         val barrier = params.barrierProducer(test.threadCount)
 
@@ -38,7 +40,7 @@ object PthreadRunner : LitmusRunner() {
             val threadData = ThreadData(states, function, params.syncPeriod, barrier)
 
             val threadDataRef = StableRef.create(threadData)
-            val pthreadVar = alloc<PthreadVar>()
+            val pthreadVar = nativeHeap.alloc<PthreadVar>()
             val code = pthread_create(
                 __newthread = pthreadVar.ptr,
                 __attr = null,
@@ -59,13 +61,17 @@ object PthreadRunner : LitmusRunner() {
             return pthreadVar to threadDataRef
         }
 
-        val (pthreadVars, refsToClear) = List(test.threadCount) { startThread(it) }.unzip()
-        for (pthreadVar in pthreadVars) {
-            pthread_join(pthreadVar.value, null)
-        }
+        val threads = List(test.threadCount) { startThread(it) }
 
-        for (ref in refsToClear) ref.dispose()
-        val outcomes = states.map { test.outcomeFinalizer(it) }
-        return@memScoped outcomes.calcStats(test.outcomeSpec)
+        return {
+            for ((pthreadVar, threadDataRef) in threads) {
+                pthread_join(pthreadVar.value, null).syscallCheck()
+
+                nativeHeap.free(pthreadVar)
+                threadDataRef.dispose()
+            }
+            val outcomes = states.map { test.outcomeFinalizer(it) }
+            outcomes.calcStats(test.outcomeSpec)
+        }
     }
 }
