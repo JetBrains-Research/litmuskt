@@ -1,7 +1,10 @@
 package komem.litmus
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.arguments.*
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.check
+import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
 import komem.litmus.barriers.BarrierProducer
@@ -11,13 +14,18 @@ import kotlin.time.Duration
 abstract class CliCommon : CliktCommand(
     name = "litmuskt"
 ) {
-    private val batchSizeSchedule by option("-b", "--batchSize")
-        .int().varargValues().default(listOf(1_000_000))
+    companion object {
+        const val DEFAULT_BATCH_SIZE = 1_000_000
+        const val DEFAULT_SYNC_EVERY = 100
+    }
 
-    private val syncEverySchedule by option("-s", "--syncEvery")
-        .int().varargValues().default(listOf(100))
+    protected open val batchSizeSchedule by option("-b", "--batchSize")
+        .int().varargValues().default(listOf(DEFAULT_BATCH_SIZE))
 
-    private val tests by argument("tests")
+    protected open val syncEverySchedule by option("-s", "--syncEvery")
+        .int().varargValues().default(listOf(DEFAULT_SYNC_EVERY))
+
+    protected open val tests by argument("tests")
         .multiple(required = true)
         .transformAll { args ->
             val regexes = args.map {
@@ -31,15 +39,15 @@ abstract class CliCommon : CliktCommand(
         }
         .check("no tests were selected") { it.isNotEmpty() }
 
-    private val PARALLELISM_DISABLED = Int.MAX_VALUE - 1
-    private val PARALLELISM_AUTO = Int.MAX_VALUE - 2
-    private val parallelism by option("-p", "--parallelism")
+    protected val PARALLELISM_DISABLED = Int.MAX_VALUE - 1
+    protected val PARALLELISM_AUTO = Int.MAX_VALUE - 2
+    protected open val parallelism by option("-p", "--parallelism")
         .int().optionalValue(PARALLELISM_AUTO).default(PARALLELISM_DISABLED)
-        .check("value must be in range 2..100") {
-            it in 2..100 || it == PARALLELISM_DISABLED || it == PARALLELISM_AUTO
+        .check("value must be in range 2..1000") {
+            it in 2..1000 || it == PARALLELISM_DISABLED || it == PARALLELISM_AUTO
         }
 
-    private val duration by option("-d", "--duration")
+    protected open val duration by option("-d", "--duration")
         .convert { Duration.parse(it) }
         .check("value must be positive") { it.isPositive() }
 
