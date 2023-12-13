@@ -1,6 +1,6 @@
-#define _GNU_SOURCE
+---
 
-#include "kaffinity.h"
+#include <pthread.h>
 
 int set_affinity(pthread_t thread, cpu_set_t* set) {
     return pthread_setaffinity_np(thread, sizeof(*set), set);
@@ -19,5 +19,5 @@ int cpu_isset(int cpu, cpu_set_t* set) {
     CPU_ISSET(cpu, set);
 }
 int cpu_setsize() {
-    return CPU_SETSIZE; 
+    return CPU_SETSIZE;
 }

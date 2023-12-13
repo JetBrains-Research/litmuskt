@@ -35,7 +35,7 @@ kotlin {
                     if (affinitySupported) {
                         val affinity by creating {
                             defFile(project.file("src/nativeInterop/kaffinity.def"))
-                            headers(project.file("src/nativeInterop/kaffinity.h"))
+                            compilerOpts.add("-D_GNU_SOURCE")
                         }
                     }
                 }
@@ -82,21 +82,21 @@ kotlin {
     }
 }
 
-val setupCinterop by tasks.register("setupCinterop") {
-    group = "interop"
-    doFirst {
-        val interopFolder = project.projectDir.resolve("src/nativeInterop")
-        if (!interopFolder.resolve("kaffinity.def").exists()) {
-            exec {
-                executable = interopFolder.resolve("setup.sh").absolutePath
-                args = listOf(interopFolder.absolutePath)
-            }
-        }
-    }
-}
-
-tasks.matching { it.name.contains("cinterop") && it.name.contains("Linux") }
-    .forEach { it.dependsOn(setupCinterop) }
+//val setupCinterop by tasks.register("setupCinterop") {
+//    group = "interop"
+//    doFirst {
+//        val interopFolder = project.projectDir.resolve("src/nativeInterop")
+//        if (!interopFolder.resolve("kaffinity.def").exists()) {
+//            exec {
+//                executable = interopFolder.resolve("setup.sh").absolutePath
+//                args = listOf(interopFolder.absolutePath)
+//            }
+//        }
+//    }
+//}
+//
+//tasks.matching { it.name.contains("cinterop") && it.name.contains("Linux") }
+//    .forEach { it.dependsOn(setupCinterop) }
 
 val bitcodeInternal by tasks.register("bitcodeInternal") {
     val tempDir = projectDir.resolve("temp/bitcode")
