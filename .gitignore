@@ -4,3 +4,4 @@ build/
 temp/
 *.hprof
 gitignored/
+local.properties

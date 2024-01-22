@@ -49,6 +49,21 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <maven>3.2</maven>
     </prerequisites>
 
+    <repositories>
+        <repository>
+            <id>libs</id>
+            <name>libs</name>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>file://${basedir}/libs</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.openjdk.jcstress</groupId>
@@ -56,14 +71,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
             <version>${jcstress.version}</version>
         </dependency>
         <dependency>
-            <groupId>komem.litmus</groupId>
-            <artifactId>litmuskt</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>1.9.10</version>
+            <version>1.9.20</version>
+        </dependency>
+        <dependency>
+            <groupId>komem.litmus</groupId>
+            <artifactId>litmusktJvm</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
@@ -122,33 +137,53 @@ THE POSSIBILITY OF SUCH DAMAGE.
                                     <resource>META-INF/TestList</resource>
                                 </transformer>
                             </transformers>
+                            <artifactSet>
+                                <includes>
+                                    <include>*</include>
+                                </includes>
+                            </artifactSet>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <groupId>komem.litmus</groupId>
-                    <artifactId>litmuskt</artifactId>
-                    <version>1.0</version>
-                    <packaging>jar</packaging>
-                    <file>${basedir}/libs/litmus-jvm-1.0-SNAPSHOT.jar</file>
-                    <generatePom>true</generatePom>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-jar-lib</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-install-plugin</artifactId>-->
+            <!--                <version>3.1.1</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>install-litmuskt-core</id>-->
+            <!--                        <configuration>-->
+            <!--                            <groupId>komem.litmus</groupId>-->
+            <!--                            <artifactId>litmuskt-jvm</artifactId>-->
+            <!--                            <version>1.0</version>-->
+            <!--                            <packaging>jar</packaging>-->
+            <!--                            <file>${basedir}/libs/core-jvm-1.0-SNAPSHOT.jar</file>-->
+            <!--                            <generatePom>true</generatePom>-->
+            <!--                        </configuration>-->
+            <!--                        <goals>-->
+            <!--                            <goal>install-file</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>validate</phase>-->
+            <!--                    </execution>-->
+            <!--                    <execution>-->
+            <!--                        <id>install-litmuskt-jcstress-wrappers</id>-->
+            <!--                        <configuration>-->
+            <!--                            <groupId>komem.litmus</groupId>-->
+            <!--                            <artifactId>litmuskt-jcstress</artifactId>-->
+            <!--                            <version>1.0</version>-->
+            <!--                            <packaging>jar</packaging>-->
+            <!--                            <file>${basedir}/libs/jcstress-wrapper.jar</file>-->
+            <!--                            <generatePom>true</generatePom>-->
+            <!--                        </configuration>-->
+            <!--                        <goals>-->
+            <!--                            <goal>install-file</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>validate</phase>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 
