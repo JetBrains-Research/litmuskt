@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
 import jcstressDirectory
 import komem.litmus.barriers.JvmSpinBarrier
-import komem.litmus.jcstress.JCStressRunner
 
 class CliJvm : CliCommon() {
     override val runner by option("-r", "--runner")

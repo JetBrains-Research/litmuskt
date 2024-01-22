@@ -1,5 +1,6 @@
 package komem.litmus.barriers
 
+import komem.litmus.Barrier
 import java.util.concurrent.atomic.AtomicInteger
 
 class JvmSpinBarrier(private val threadCount: Int) : Barrier {

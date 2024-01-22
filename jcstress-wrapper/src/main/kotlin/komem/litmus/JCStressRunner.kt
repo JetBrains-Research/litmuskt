@@ -1,6 +1,5 @@
-package komem.litmus.jcstress
+package komem.litmus
 
-import komem.litmus.*
 import java.nio.file.Path
 import kotlin.system.exitProcess
 

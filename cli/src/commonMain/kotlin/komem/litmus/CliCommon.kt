@@ -7,7 +7,6 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
-import komem.litmus.barriers.BarrierProducer
 import komem.litmus.generated.LitmusTestRegistry
 import kotlin.time.Duration
 
@@ -38,7 +37,7 @@ abstract class CliCommon : CliktCommand(
             }
             regexes.flatMap { LitmusTestRegistry[it] }.toSet()
         }
-        .check("no tests were selected") { it.isNotEmpty() }
+        .check("no tests were selected") { it.isNotEmpty() || listOnly }
 
     protected val PARALLELISM_DISABLED = Int.MAX_VALUE - 1
     protected val PARALLELISM_AUTO = Int.MAX_VALUE - 2
@@ -57,10 +56,15 @@ abstract class CliCommon : CliktCommand(
     protected abstract val barrierProducer: BarrierProducer
     // TODO: we don't talk about memshuffler for now
 
+    protected val listOnly by option("-l", "--listOnly").flag()
     // TODO: dry run = simply list tests
 
     override fun run() {
-        echo("selected tests: \n" + tests.joinToString("\n") { " - " + LitmusTestRegistry.resolveName(it) })
+        if (listOnly) {
+            runListOnly()
+            return
+        }
+        echo("selected tests: \n" + tests.joinToString("\n") { " - " + it.name })
         echo("in total: ${tests.size} tests")
         echo()
 
@@ -117,6 +121,12 @@ abstract class CliCommon : CliktCommand(
                 }
             }
         }
+    }
+
+    private fun runListOnly() {
+        echo("all known tests:\n" + LitmusTestRegistry.all().joinToString("\n") { " * " + it.name })
+        echo()
+        echo("selected tests:\n" + tests.joinToString("\n") { " - " + it.name })
     }
 }
 

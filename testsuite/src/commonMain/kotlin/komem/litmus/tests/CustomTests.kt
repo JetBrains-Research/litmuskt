@@ -1,4 +1,4 @@
-package komem.litmus.testsuite
+package komem.litmus.tests
 
 import komem.litmus.LitmusTest
 import komem.litmus.litmusTest

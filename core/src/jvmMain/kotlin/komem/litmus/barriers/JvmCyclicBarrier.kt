@@ -1,5 +1,6 @@
 package komem.litmus.barriers
 
+import komem.litmus.Barrier
 import java.util.concurrent.CyclicBarrier
 
 class JvmCyclicBarrier(threadCount: Int) : Barrier {

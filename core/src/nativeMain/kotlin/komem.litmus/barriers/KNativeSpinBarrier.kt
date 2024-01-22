@@ -1,5 +1,6 @@
 package komem.litmus.barriers
 
+import komem.litmus.Barrier
 import kotlin.concurrent.AtomicInt
 
 class KNativeSpinBarrier(private val threadCount: Int) : Barrier {

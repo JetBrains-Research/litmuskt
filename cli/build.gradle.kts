@@ -18,12 +18,14 @@ kotlin {
     }
     jvm {
         withJava()
+        jvmToolchain(8)
     }
 
     sourceSets {
         commonMain {
             dependencies {
                 implementation(project(":core"))
+                implementation(project(":testsuite"))
                 implementation("com.github.ajalt.clikt:clikt:4.2.1")
             }
         }

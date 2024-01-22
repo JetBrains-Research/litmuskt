@@ -1,7 +1,5 @@
 package komem.litmus
 
-import komem.litmus.generated.LitmusTestRegistry
-
 data class LitmusTest<S>(
     val stateProducer: () -> S,
     val threadFunctions: List<S.() -> Unit>,
@@ -49,6 +47,3 @@ class LitmusTestScope<S>(
 
 fun <S> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
     LitmusTestScope(stateProducer).apply(setup).build()
-
-val LitmusTest<*>.name get() = LitmusTestRegistry.resolveName(this)
-val LitmusTest<*>.javaClassName get() = name.replace('.', '_')

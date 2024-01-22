@@ -1,7 +1,5 @@
 package komem.litmus
 
-import komem.litmus.barriers.BarrierProducer
-
 data class LitmusRunParams(
     val batchSize: Int,
     val syncPeriod: Int,

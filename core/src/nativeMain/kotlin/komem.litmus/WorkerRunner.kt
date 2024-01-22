@@ -1,6 +1,5 @@
 package komem.litmus
 
-import komem.litmus.barriers.Barrier
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode

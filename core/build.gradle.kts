@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.incremental.createDirectory
 
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp") version "1.9.20-1.0.13"
     `java-library`
 }
 
@@ -45,11 +44,6 @@ kotlin {
                     kotlinOptions.freeCompilerArgs = listOf("-Xtemporary-files-dir=${tempDir.absolutePath}")
                 }
             }
-            binaries {
-                executable {
-                    entryPoint = "main"
-                }
-            }
         }
     }
     sourceSets {
@@ -57,7 +51,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
             }
-            kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin/")) // ksp
         }
         commonTest {
             dependencies {
@@ -103,19 +96,6 @@ tasks.register("bitcodeDebug") {
 tasks.register("bitcodeRelease") {
     dependsOn(tasks.matching { it.name.startsWith("linkReleaseExecutable") })
     finalizedBy(bitcodeInternal)
-}
-
-// ======== ksp ========
-
-dependencies {
-    add("kspCommonMainMetadata", project(":codegen"))
-}
-
-tasks.whenTaskAdded {
-    if (name == "kspCommonMainKotlinMetadata") {
-        val kspTask = this
-        tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
-    }
 }
 
 val jcsDir: File get() = File(System.getenv("JCS_DIR") ?: error("JCS_DIR envvar is not set"))

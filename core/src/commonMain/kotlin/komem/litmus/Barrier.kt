@@ -1,4 +1,4 @@
-package komem.litmus.barriers
+package komem.litmus
 
 interface Barrier {
     fun await()
