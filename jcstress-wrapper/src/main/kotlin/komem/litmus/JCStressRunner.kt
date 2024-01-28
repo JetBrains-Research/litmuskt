@@ -7,7 +7,7 @@ import kotlin.system.exitProcess
  * Note that this 'runner' is severely different from all others.
  */
 object JCStressRunner : LitmusRunner() {
-    override fun <S> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult =
+    override fun <S : Any> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult =
         throw NotImplementedError("jcstress runner is not supposed to be used like this")
 
     fun runJCStress(

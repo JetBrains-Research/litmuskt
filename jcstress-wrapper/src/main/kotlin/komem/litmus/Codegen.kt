@@ -22,7 +22,7 @@ fun generateWrapperFile(test: LitmusTest<*>, jcstressDirectory: Path): Boolean {
 }
 
 private fun generateWrapperCode(test: LitmusTest<*>): String {
-    val stateClass = test.stateProducer()!!::class
+    val stateClass = test.stateProducer()::class
     require(stateClass.allSuperclasses.contains(LitmusAutoOutcome::class)) {
         "to use JCStress, test state must extend some LitmusAutoOutcome (e.g. LitmusIIOutcome)"
     }
@@ -65,12 +65,12 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
 
         return if (outcomeVarCount > 1) {
             """
-            @Arbiter
-            public void a($jcstressResultClassName r) {
-                List<$outcomeVarType> result = (List<$outcomeVarType>) fA.invoke(state);
-                ${List(outcomeVarCount) { "r.r${it + 1} = result.get($it);" }.joinToString("\n    ")}
-            }
-            """.trimIndent()
+@Arbiter
+public void a($jcstressResultClassName r) {
+    List<$outcomeVarType> result = (List<$outcomeVarType>) fA.invoke(state);
+    ${List(outcomeVarCount) { "r.r${it + 1} = result.get($it);" }.joinToString("\n    ")}
+}
+            """.trim()
         } else {
             // single values are handled differently
             """
@@ -135,7 +135,5 @@ public class ${test.javaClassName} {
 }
     """.trimIndent()
 }
-
-// TODO: arbiter padding is broken
 
 private fun String.padded(padding: Int) = replace("\n", "\n" + " ".repeat(padding))

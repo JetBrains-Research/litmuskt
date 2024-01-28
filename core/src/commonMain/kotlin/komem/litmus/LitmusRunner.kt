@@ -4,7 +4,7 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 abstract class LitmusRunner {
-    abstract fun <S> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult
+    abstract fun <S : Any> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult
 
     // be extremely careful due to LTOutcome = Any?
     protected fun List<LitmusOutcome>.calcStats(outcomeSpec: LitmusOutcomeSpec): LitmusResult = this
@@ -15,7 +15,7 @@ abstract class LitmusRunner {
         }
 }
 
-fun <S> LitmusRunner.runTest(
+fun <S : Any> LitmusRunner.runTest(
     timeLimit: Duration,
     params: LitmusRunParams,
     test: LitmusTest<S>,
@@ -33,7 +33,7 @@ fun <S> LitmusRunner.runTest(
  * Example: for a map [ [0], [1], [2], [3] ],a test with 2 threads, and 2 instances, the
  * first instance will have a [ [0], [1] ] map and the second one will have [ [2], [3] ].
  */
-fun <S> LitmusRunner.runTestParallel(
+fun <S : Any> LitmusRunner.runTestParallel(
     instances: Int,
     params: LitmusRunParams,
     test: LitmusTest<S>,
@@ -50,7 +50,7 @@ fun <S> LitmusRunner.runTestParallel(
     return allOutcomes.mergeResults()
 }
 
-fun <S> LitmusRunner.runTestParallel(
+fun <S : Any> LitmusRunner.runTestParallel(
     params: LitmusRunParams,
     test: LitmusTest<S>
 ): LitmusResult = runTestParallel(
@@ -59,7 +59,7 @@ fun <S> LitmusRunner.runTestParallel(
     test
 )
 
-fun <S> LitmusRunner.runTestParallel(
+fun <S : Any> LitmusRunner.runTestParallel(
     instances: Int,
     timeLimit: Duration,
     params: LitmusRunParams,
@@ -73,7 +73,7 @@ fun <S> LitmusRunner.runTestParallel(
     return results.mergeResults()
 }
 
-fun <S> LitmusRunner.runTestParallel(
+fun <S : Any> LitmusRunner.runTestParallel(
     timeLimit: Duration,
     params: LitmusRunParams,
     test: LitmusTest<S>,

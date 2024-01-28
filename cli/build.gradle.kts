@@ -39,12 +39,6 @@ kotlin {
 
 val jcsDir: File get() = File(System.getenv("JCS_DIR") ?: error("JCS_DIR envvar is not set"))
 
-//tasks.named("jvmRun") {
-//    dependsOn(":core:copyLibToJCStress")
-//    dependsOn(":jcstress-wrapper:copyLibToJCStress")
-//}
-
-// code above does not sync
 tasks.whenTaskAdded {
     if (name == "jvmRun") {
         dependsOn(":core:copyLibToJCStress")

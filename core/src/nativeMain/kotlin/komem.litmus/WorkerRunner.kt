@@ -8,7 +8,7 @@ import kotlin.native.concurrent.Worker
 object WorkerRunner : LitmusRunner() {
 
     @OptIn(ObsoleteWorkersApi::class, ExperimentalNativeApi::class)
-    override fun <S> runTest(
+    override fun <S : Any> runTest(
         params: LitmusRunParams,
         test: LitmusTest<S>,
     ): LitmusResult {

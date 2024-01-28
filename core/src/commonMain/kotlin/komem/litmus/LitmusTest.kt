@@ -1,6 +1,6 @@
 package komem.litmus
 
-data class LitmusTest<S>(
+data class LitmusTest<S : Any>(
     val stateProducer: () -> S,
     val threadFunctions: List<S.() -> Unit>,
     val outcomeFinalizer: (S.() -> LitmusOutcome),
@@ -9,7 +9,7 @@ data class LitmusTest<S>(
     val threadCount = threadFunctions.size
 }
 
-class LitmusTestScope<S>(
+class LitmusTestScope<S : Any>(
     private val stateProducer: () -> S
 ) {
     private val threadFunctions = mutableListOf<S.() -> Unit>()
@@ -45,5 +45,5 @@ class LitmusTestScope<S>(
     }
 }
 
-fun <S> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
+fun <S : Any> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
     LitmusTestScope(stateProducer).apply(setup).build()

@@ -10,7 +10,7 @@ class LitmusTestProcessorProvider : SymbolProcessorProvider {
     }
 }
 
-class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
+class LitmusTestProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val basePackage = "komem.litmus"
         val registryFileName = "LitmusTestRegistry"
