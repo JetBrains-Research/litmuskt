@@ -1,8 +1,8 @@
 # LitmusKt 
 
 **LitmusKt** is a litmus testing tool for Kotlin.
-Litmus tests are small concurrent programs exposing various relaxed behaviors,
-arising due to compiler or hardware optimizations (for example, instruction reordering).
+Litmus tests are small concurrent programs exposing various relaxed behaviors, arising due to compiler or hardware
+optimizations (for example, instruction reordering).
 
 This project is in an **experimental** stage of the development. 
 The tool's API is unstable and might be a subject to a further change.
@@ -11,27 +11,41 @@ The tool's API is unstable and might be a subject to a further change.
 
 Simply clone the project and run `./gradlew build`.
 
-### Running
+Note that for Kotlin/JVM this project relies on [jcstress](https://github.com/openjdk/jcstress), so you also need to
+set `JCS_DIR` environment variable to `/path/to/jcstress/folder`.
 
-All classic Gradle building tasks (like `run`, `build`, `-debug-` or `-release-`) work as expected. 
-The only important distinction is that on various platforms these tasks are named differently.
+Tip: if you wish to run Gradle tasks from IDEA, you need to set `JCS_DIR` for it too, and a handy way to do that is to
+run IDEA from bash: `idea & disown -a` (note the singular `&`).
+
+## Running
+
+The entry point is the CLI tool residing in `:cli` subproject. You can use the `--help` flag to find the details about
+the CLI, but most basic example requires two settings:
+
+1. Choose a runner with `-r` option
+1. After the options are specified, choose the tests to run using regex patterns
+
+### Running on Native
+
+Create an executable and run it:
 
 ```bash
-# Linux:
-./gradlew runReleaseExecutableLinuxX64
-
-# MacOS (x86):
-./gradlew runReleaseExecutableMacosX64
-# MacOS (arm):
-./gradlew runReleaseExecutableMacosArm64 -Parm # don't forget the -Parm flag!
+./gradlew :cli:linkReleaseExecutableLinuxX64
+./build/bin/linuxX64/releaseExecutable/cli.kexe --help
 ```
 
-Substituting `Release` with `Debug` disables compiler `-opt` flag.
+Depending on what you need, you can:
 
-Also, it is possible to build the project manually with Kotlin CLI compiler. 
-You'd have to either declare several opt-ins or edit the code to remove `expect/actual` and C interop parts. 
-There aren't many benefits to manual compilation, but it allows at least some way to read the program's LLVM IR bitcode 
-(using `-Xtemporary-files-dir` compiler flag and then converting the `.bc` file into readable text with `llvm-dis`).
+* Switch between `debug` and `release` (which, among other things, toggles the `-opt` compiler flag)
+* Specify the platform (`linuxX64` / `macosX64` / `macosArm64`)
+
+### Running on JVM
+
+The entry point is still the `:cli` subproject. Simply run the project with Gradle:
+
+```bash
+./gradlew :cli:jvmRun --args="--help"
+```
 
 ## Overview
 
@@ -147,38 +161,34 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
 
 ### Litmus Test Runners
 
-The tests are run with an `LitmusRunner`. 
-Currently, there are two implementations. 
-* `WorkerRunner`: runner based on `Worker` API for Kotlin/Native;
-* `JvmThreadRunner`: custom threads-based runner for Kotlin/JVM.
-* A proper, JCStress based runner for Kotlin/JVM is **in development**. 
- 
-`LitmusRunner` has several running functions:
+Litmus tests are run with a `LitmusRunner`. This interface has several running functions:
 
 * `runTest(params, test)` simply runs the test with the given parameters.
 * `runTest(duration, params, test)` repeatedly runs the test with the given parameters until the given time duration passes.
-* `runTestParallel(instances, ...)` it runs several instances of the test in parallel.
+* `runTestParallel(instances, ...)` runs several instances of the test in parallel.
 * `runTestParallel(...)` without explicit instances number will run `#{of cpu cores} / #{of threads in test}` instances.
 
-### Entry point
+The following implementations of `LitmusRunner` are available:
 
-Currently, the `main()` functions are the intended way of running particular litmus tests.
-A proper CLI interface is in development.
-
-There is also an option to run the tests with `@Test` annotation using the default parameters. 
-However, the tests are run in debug mode by the `kotlinx.test` framework.
-Running litmus tests in the debug mode can affect their results, potentially hiding some relaxed behaviors.
+* For native:
+  * `WorkerRunner`: based on K/N `Worker` API
+  * `PthreadRunner`: based on C interop pthread API
+* For JVM:
+  * `JvmThreadRunner`: a simple runner based on Java threads
+  * `JCStressRunner`: a **special** runner that delegates to JCStress. Note that many of `LitmusRunner` parameters are
+    not applicable to JCStress.
 
 ### Litmus Test Parameters
 
+There is a number of parameters that can be varied between test runs. Their influence on the results can change
+drastically depending on the particular test, hardware, and so on.
+
 * `AffinityMap`: bindings from thread to CPU cores. 
   Obtained through `AffinityManager`, which is available from `getAffinityManager()` top-level function.
-
-* `syncEvery`: the number of tests between barrier synchronizations. 
-  Practice shows that on Native the reasonable range is somewhere in the range from 10 to 100, 
-  while on JVM it works best in the range from 1000 to 10000. 
-  This also depends on the particular test.
- 
+* `syncEvery`: the number of tests between barrier synchronizations.
+  Practice shows that on Native the reasonable range is somewhere in the range from 10 to 100,
+  while on JVM it works best in the range from 1000 to 10000.
+  This highly depends on the particular test.
 * `Barrier`: can be either Kotlin-implemented (`KNativeSpinBarrier`) or C-implemented (`CinteropSpinBarrier`). 
   C-implemented might yield better results.
   On JVM, use `JvmSpinBarrier` in favor of `JvmCyclicBarrier`.
@@ -189,11 +199,24 @@ Common practice is to iterate through different parameter bundles and aggregate 
 * For results aggregation, use `List<LitmusResult>.mergeResults()`.
 * You can also use `LitmusResult.prettyPrint()` to print the results.
 
-### Notes
+### Project structure
 
+The project consists of several subprojects:
+
+* `:core` contains the core infrastructure such as `LitmusTest` and `LitmusRunner` interfaces, etc.
+* `:testsuite` contains the litmus tests themselves.
+* `:codegen` uses KSP to collect all tests from `:testsuite`.
+* `:jcstress-wrapper` contains the code to convert `LitmusTest`-s into JCStress-compatible Java wrappers.
+* `:cli` is a user-friendly entry point.
+
+## Notes
+
+* If you decide to add some litmus tests, you **must** put them into `:testsuite` subproject and
+  into `komem.litmus.tests` package. Deeper packages are allowed.
 * Setting thread affinity is not supported on macOS yet. As such, `getAffinityManager()` returns `null` on macOS.
-* For some reason, running a lot of different tests in one go will drastically reduce the performance and weak outcomes' frequency. 
-  For now, please try to avoid running tests for longer than 5 minutes.
+* It is possible to run the tests with `@Test` annotation. However, the tests are run in debug mode by
+  the `kotlinx.test` framework. Running litmus tests in the debug mode can affect their results, potentially hiding some
+  relaxed behaviors.
 * In practice, all cases of currently found relaxed behaviors can be consistently found in under a minute of running.
 * Avoid creating unnecessary objects inside threads, especially if they get shared. This not only significantly slows down the performance, but can also introduce unexpected relaxed behaviors.
 * The tool currently doesn't address the false sharing problem. The memory shuffling API is in development.
