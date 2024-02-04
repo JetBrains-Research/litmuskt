@@ -4,9 +4,20 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 abstract class LitmusRunner {
-    abstract fun <S : Any> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult
+    /**
+     * Starts threads for the test and returns a "join handle". These handles should block
+     * until the threads join and then collect and return the results. This is crucial for parallelism.
+     */
+    abstract fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult
 
-    // be extremely careful due to LTOutcome = Any?
+    /**
+     * Runs the test. Blocks the current thread until the test finishes.
+     */
+    fun <S : Any> runTest(params: LitmusRunParams, test: LitmusTest<S>): LitmusResult {
+        return startTest(params, test)()
+    }
+
+    // be extremely careful due to LitmusOutcome = Any?
     protected fun List<LitmusOutcome>.calcStats(outcomeSpec: LitmusOutcomeSpec): LitmusResult = this
         .groupingBy { it }
         .eachCount()
@@ -38,16 +49,16 @@ fun <S : Any> LitmusRunner.runTestParallel(
     params: LitmusRunParams,
     test: LitmusTest<S>,
 ): LitmusResult {
-    val allOutcomes = List(instances) { instanceIndex ->
+    val allJoinHandles = List(instances) { instanceIndex ->
         val newAffinityMap = params.affinityMap?.let { oldMap ->
             AffinityMap { threadIndex ->
                 oldMap.allowedCores(instanceIndex * test.threadCount + threadIndex)
             }
         }
         val newParams = params.copy(affinityMap = newAffinityMap)
-        runTest(newParams, test)
+        startTest(newParams, test)
     }
-    return allOutcomes.mergeResults()
+    return allJoinHandles.map { it() }.mergeResults()
 }
 
 fun <S : Any> LitmusRunner.runTestParallel(
