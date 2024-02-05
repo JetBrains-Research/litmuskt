@@ -8,8 +8,11 @@ object WorkerRunner : LitmusRunner() {
 
     @OptIn(ObsoleteWorkersApi::class)
     override fun <S : Any> startTest(
-        params: LitmusRunParams,
         test: LitmusTest<S>,
+        states: List<S>,
+        barrierProducer: BarrierProducer,
+        syncPeriod: Int,
+        affinityMap: AffinityMap?
     ): () -> LitmusResult {
 
         data class WorkerContext(
@@ -19,13 +22,12 @@ object WorkerRunner : LitmusRunner() {
             val barrier: Barrier,
         )
 
-        val states = List(params.batchSize) { test.stateProducer() }
-        val barrier = params.barrierProducer(test.threadCount)
+        val barrier = barrierProducer(test.threadCount)
         val outcomeFinalizer = test.outcomeFinalizer
         val workers = List(test.threadCount) { Worker.start() }
 
         val futures = workers.mapIndexed { threadIndex, worker ->
-            params.affinityMap?.let { affinityMap ->
+            affinityMap?.let { affinityMap ->
                 getAffinityManager()?.run {
                     val cpuSet = affinityMap.allowedCores(threadIndex)
                     setAffinity(worker, cpuSet)
@@ -35,7 +37,7 @@ object WorkerRunner : LitmusRunner() {
             val workerContext = WorkerContext(
                 states,
                 test.threadFunctions[threadIndex],
-                params.syncPeriod,
+                syncPeriod,
                 barrier,
             )
             worker.execute(

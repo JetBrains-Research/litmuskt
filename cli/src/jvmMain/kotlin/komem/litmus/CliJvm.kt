@@ -1,28 +1,47 @@
 package komem.litmus
 
-import com.github.ajalt.clikt.parameters.options.*
-import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
+import com.github.ajalt.clikt.parameters.groups.groupChoice
+import com.github.ajalt.clikt.parameters.groups.required
+import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import jcstressDirectory
 import komem.litmus.barriers.JvmSpinBarrier
 
+private sealed class RunnerOptions : OptionGroup() {
+    abstract val runner: LitmusRunner
+}
+
+private class JvmThreadRunnerOptions : RunnerOptions() {
+    override val runner = JvmThreadRunner
+}
+
+private class JCStressRunnerOptions : RunnerOptions() {
+    private val jcstressFreeArgs by option("-j", "--jcsargs")
+        .convert { it.split(" ") }
+        .default(emptyList())
+
+    override val runner = JCStressRunner(jcstressDirectory, jcstressFreeArgs)
+}
+
 class CliJvm : CliCommon() {
-    override val runner by option("-r", "--runner")
-        .choice(mapOf("thread" to JvmThreadRunner, "jcstress" to JCStressRunner))
-        .required()
+    private val runnerOptions by option("-r", "--runner").groupChoice(
+        "thread" to JvmThreadRunnerOptions(),
+        "jcstress" to JCStressRunnerOptions(),
+    ).required()
+    override val runner get() = runnerOptions.runner
+
     override val barrierProducer = ::JvmSpinBarrier
     override val affinityMapSchedule = listOf(null)
 
     private val allowJCStressReruns by option("--allow-jcs-reruns")
         .flag()
-    private val jcstressFreeArgs by option("-j", "--jcsargs")
-        .convert { it.split(" ") }
-        .default(emptyList())
 
-    override fun run() = if (runner == JCStressRunner) jcstressRun() else super.run()
+    override fun run() = if (runner is JCStressRunner) jcstressRun() else super.run()
 
     private fun jcstressRun() {
-        println("haha: $jcstressFreeArgs")
-
         val paramsList = variateRunParams(
             batchSizeSchedule = batchSizeSchedule,
             affinityMapSchedule = affinityMapSchedule,
@@ -49,16 +68,14 @@ class CliJvm : CliCommon() {
         }
 
         for (params in paramsList) {
-            val nonDefaultParams = if (
+            val jcsParams = if (
                 params.batchSize == DEFAULT_BATCH_SIZE &&
                 params.syncPeriod == DEFAULT_SYNC_EVERY
-            ) null else params // jcstress defaults are different
-            JCStressRunner.runJCStress(
-                nonDefaultParams,
-                tests,
-                jcstressDirectory,
-                jcstressFreeArgs,
-            )
+            ) JCStressRunner.DEFAULT_LITMUSKT_PARAMS else params // jcstress defaults are different
+
+            for (test in tests) {
+                runner.runTest(jcsParams, test)
+            }
         }
     }
 }

@@ -3,15 +3,20 @@ package komem.litmus
 // does not support affinity
 object JvmThreadRunner : LitmusRunner() {
 
-    override fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val states = List(params.batchSize) { test.stateProducer() }
-        val barrier = params.barrierProducer(test.threadCount)
+    override fun <S : Any> startTest(
+        test: LitmusTest<S>,
+        states: List<S>,
+        barrierProducer: BarrierProducer,
+        syncPeriod: Int,
+        affinityMap: AffinityMap?
+    ): () -> LitmusResult {
+        val barrier = barrierProducer(test.threadCount)
         val outcomeFinalizer = test.outcomeFinalizer
 
         val threads = List(test.threadCount) { threadIndex ->
             Thread {
                 val threadFunction = test.threadFunctions[threadIndex]
-                val syncPeriod = params.syncPeriod
+                val syncPeriod = syncPeriod
                 for (i in states.indices) {
                     if (i % syncPeriod == 0) barrier.await()
                     states[i].threadFunction()

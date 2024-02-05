@@ -25,10 +25,16 @@ private fun threadRoutine(data: ThreadData): Unit = with(data) {
 private typealias PthreadVar = ULongVar
 
 object PthreadRunner : LitmusRunner() {
+
     @OptIn(ExperimentalForeignApi::class)
-    override fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val states = List(params.batchSize) { test.stateProducer() }
-        val barrier = params.barrierProducer(test.threadCount)
+    override fun <S : Any> startTest(
+        test: LitmusTest<S>,
+        states: List<S>,
+        barrierProducer: BarrierProducer,
+        syncPeriod: Int,
+        affinityMap: AffinityMap?
+    ): () -> LitmusResult {
+        val barrier = barrierProducer(test.threadCount)
 
         fun startThread(threadIndex: Int): Pair<PthreadVar, StableRef<*>> {
             val function: (Any?) -> Unit = { state ->
@@ -36,7 +42,7 @@ object PthreadRunner : LitmusRunner() {
                 @Suppress("UNCHECKED_CAST")
                 test.threadFunctions[threadIndex].invoke(state as S)
             }
-            val threadData = ThreadData(states, function, params.syncPeriod, barrier)
+            val threadData = ThreadData(states, function, syncPeriod, barrier)
 
             val threadDataRef = StableRef.create(threadData)
             val pthreadVar = nativeHeap.alloc<PthreadVar>()
@@ -53,7 +59,7 @@ object PthreadRunner : LitmusRunner() {
             if (code != 0) error("pthread_create failed; errno means: ${strerror(errno)?.toKString()}")
             // TODO: I don't think there is a way to assign affinity before the thread starts (would be useful for MacOS)
             getAffinityManager()?.let { am ->
-                val map = params.affinityMap?.allowedCores(threadIndex) ?: return@let
+                val map = affinityMap?.allowedCores(threadIndex) ?: return@let
                 am.setAffinity(pthreadVar.value, map)
                 require(am.getAffinity(pthreadVar.value) == map) { "setting affinity failed" }
             }
