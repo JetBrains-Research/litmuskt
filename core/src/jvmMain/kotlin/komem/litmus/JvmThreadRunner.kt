@@ -1,7 +1,9 @@
 package komem.litmus
 
-// does not support affinity
-object JvmThreadRunner : LitmusRunner() {
+/**
+ * A simplistic runner based on JVM threads. Does not support affinity.
+ */
+class JvmThreadRunner : LitmusRunner() {
 
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
@@ -16,7 +18,6 @@ object JvmThreadRunner : LitmusRunner() {
         val threads = List(test.threadCount) { threadIndex ->
             Thread {
                 val threadFunction = test.threadFunctions[threadIndex]
-                val syncPeriod = syncPeriod
                 for (i in states.indices) {
                     if (i % syncPeriod == 0) barrier.await()
                     states[i].threadFunction()

@@ -40,30 +40,18 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
         else -> error("unknown AutoOutcome type $outcomeTypeName")
     }
 
-    fun javaTestGetter(): String {
+    val javaTestGetter: String = run {
         val parts = test.name.split(".")
         val getter = "get" + parts.last() + "()"
         val className = parts.dropLast(1).last() + "Kt"
         val packages = parts.dropLast(2)
         val packagesLine = if (packages.isEmpty()) "" else packages.joinToString(".", postfix = ".")
-        return "$packagesLine$className.$getter"
+        "$packagesLine$className.$getter"
     }
 
-    fun javaThreadFunctionDecl(index: Int) =
-        "private static final Function1<Object, Unit> fT$index = test.getThreadFunctions().get($index);"
-
-    fun javaActorDecl(index: Int) = """
-        @Actor
-        public void t$index() {
-            fT$index.invoke(state);
-        }
-        """.trimIndent()
-
-    fun javaArbiterDecl(): String {
-
+    val javaArbiterDecl: String = run {
         val jcstressResultClassName = outcomeTypeName + "_Result"
-
-        return if (outcomeVarCount > 1) {
+        if (outcomeVarCount > 1) {
             """
 @Arbiter
 public void a($jcstressResultClassName r) {
@@ -82,13 +70,13 @@ public void a($jcstressResultClassName r) {
         }
     }
 
-    fun jcstressOutcomeDecls(): String {
+    val jcstressOutcomeDecls: String = run {
         val outcomes = test.outcomeSpec.accepted.associateWith { "ACCEPTABLE" } +
                 test.outcomeSpec.interesting.associateWith { "ACCEPTABLE_INTERESTING" } +
                 test.outcomeSpec.forbidden.associateWith { "FORBIDDEN" }
 
         // since only AutoOutcome is allowed, each outcome is a list (unless it's a single value)
-        return outcomes.map { (o, t) ->
+        outcomes.map { (o, t) ->
             val oId = if (outcomeVarCount > 1) (o as List<*>).joinToString(", ") else o.toString()
             "@Outcome(id = \"$oId\", expect = $t)"
         }.joinToString("\n")
@@ -100,7 +88,26 @@ public void a($jcstressResultClassName r) {
         LitmusOutcomeType.INTERESTING -> "ACCEPTABLE_INTERESTING"
     }
 
-    return """
+    return wrapperCode(test, jcstressOutcomeDecls, jcstressDefaultOutcomeType, javaTestGetter, javaArbiterDecl)
+}
+
+private fun javaThreadFunctionDecl(index: Int) =
+    "private static final Function1<Object, Unit> fT$index = test.getThreadFunctions().get($index);"
+
+private fun javaActorDecl(index: Int) = """
+    @Actor
+    public void t$index() {
+        fT$index.invoke(state);
+    }
+    """.trimIndent()
+
+fun wrapperCode(
+    test: LitmusTest<*>,
+    jcstressOutcomeDecls: String,
+    jcstressDefaultOutcomeType: String,
+    javaTestGetter: String,
+    javaArbiterDecl: String,
+) = """
 package komem.litmus;
 
 import komem.litmus.testsuite.*;
@@ -117,11 +124,11 @@ import java.util.List;
 
 @JCStressTest
 @State
-${jcstressOutcomeDecls()}
+$jcstressOutcomeDecls
 @Outcome(expect = $jcstressDefaultOutcomeType)
 public class ${test.javaClassName} {
 
-    private static final LitmusTest<Object> test = (LitmusTest<Object>) ${javaTestGetter()};
+    private static final LitmusTest<Object> test = (LitmusTest<Object>) $javaTestGetter;
     ${List(test.threadCount) { javaThreadFunctionDecl(it) }.joinToString("\n    ")}
     private static final Function1<Object, Object> fA = test.getOutcomeFinalizer();
 
@@ -131,9 +138,8 @@ public class ${test.javaClassName} {
     
     ${List(test.threadCount) { javaActorDecl(it).padded(4) }.joinToString("\n\n    ")}
     
-    ${javaArbiterDecl().padded(4)}
+    ${javaArbiterDecl.padded(4)}
 }
-    """.trimIndent()
-}
+""".trimIndent()
 
 private fun String.padded(padding: Int) = replace("\n", "\n" + " ".repeat(padding))

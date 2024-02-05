@@ -15,7 +15,7 @@ private sealed class RunnerOptions : OptionGroup() {
 }
 
 private class JvmThreadRunnerOptions : RunnerOptions() {
-    override val runner = JvmThreadRunner
+    override val runner = JvmThreadRunner()
 }
 
 private class JCStressRunnerOptions : RunnerOptions() {
@@ -23,7 +23,7 @@ private class JCStressRunnerOptions : RunnerOptions() {
         .convert { it.split(" ") }
         .default(emptyList())
 
-    override val runner = JCStressRunner(jcstressDirectory, jcstressFreeArgs)
+    override val runner get() = JCStressRunner(jcstressDirectory, jcstressFreeArgs)
 }
 
 class CliJvm : CliCommon() {

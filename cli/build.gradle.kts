@@ -5,7 +5,8 @@ plugins {
 kotlin {
     val nativeTargets = listOf(
         linuxX64(),
-//        linuxArm64(), // 1) no machine currently available 2) CLI library does not support
+        // 1) no machine currently available 2) CLI library does not support
+//        linuxArm64(),
         macosX64(),
         macosArm64(),
     )
@@ -23,10 +24,11 @@ kotlin {
 
     sourceSets {
         commonMain {
+            val cliktVersion = project.findProperty("cliktVersion")
             dependencies {
                 implementation(project(":core"))
                 implementation(project(":testsuite"))
-                implementation("com.github.ajalt.clikt:clikt:4.2.1")
+                implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
             }
         }
         jvmMain {
@@ -36,8 +38,6 @@ kotlin {
         }
     }
 }
-
-val jcsDir: File get() = File(System.getenv("JCS_DIR") ?: error("JCS_DIR envvar is not set"))
 
 tasks.whenTaskAdded {
     if (name == "jvmRun") {

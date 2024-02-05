@@ -4,7 +4,11 @@ import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 
-object WorkerRunner : LitmusRunner() {
+/**
+ * A runner based on Kotlin/Native Workers. They are declared obsolete,
+ * but an alternative is yet to exist.
+ */
+class WorkerRunner : LitmusRunner() {
 
     @OptIn(ObsoleteWorkersApi::class)
     override fun <S : Any> startTest(

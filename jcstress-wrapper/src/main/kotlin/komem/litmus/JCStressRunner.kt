@@ -2,7 +2,6 @@ package komem.litmus
 
 import komem.litmus.barriers.JvmCyclicBarrier
 import java.nio.file.Path
-import kotlin.system.exitProcess
 
 /**
  * Note that this 'runner' is severely different from all others.
@@ -45,7 +44,7 @@ class JCStressRunner(
             .start()
         mvn.waitFor()
         if (mvn.exitValue() != 0) {
-            exitProcess(mvn.exitValue())
+            error("mvn exited with code ${mvn.exitValue()}")
         }
 
         val jcsParams = if (params != DEFAULT_LITMUSKT_PARAMS) {

@@ -7,8 +7,8 @@ import komem.litmus.barriers.CinteropSpinBarrier
 
 class CliNative : CliCommon() {
     override val runner by option("-r", "--runner")
-        .choice(mapOf("worker" to WorkerRunner, "pthread" to PthreadRunner))
-        .default(WorkerRunner)
+        .choice(mapOf("worker" to WorkerRunner(), "pthread" to PthreadRunner()))
+        .default(WorkerRunner())
 
     private val affinityMapChoices = run {
         val schedulesMapped = mutableMapOf<String, List<AffinityMap?>>("none" to listOf(null))

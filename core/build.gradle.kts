@@ -11,7 +11,8 @@ version = "1.0-SNAPSHOT"
 kotlin {
     val nativeTargets = listOf(
         linuxX64(),
-//        linuxArm64(), // 1) no machine currently available 2) CLI library does not support
+        // 1) no machine currently available 2) CLI library does not support
+//        linuxArm64(),
         macosX64(),
         macosArm64(),
     )
@@ -48,13 +49,14 @@ kotlin {
     }
     sourceSets {
         commonMain {
+            val atomicfuVersion = project.findProperty("atomicfuVersion")
             dependencies {
-                implementation("org.jetbrains.kotlinx:atomicfu:0.20.2")
+                implementation("org.jetbrains.kotlinx:atomicfu:$atomicfuVersion")
             }
         }
         commonTest {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test:1.9.0")
+                implementation(kotlin("test"))
             }
         }
 

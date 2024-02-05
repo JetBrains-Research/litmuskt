@@ -7,8 +7,8 @@ import platform.posix.pthread_join
 import platform.posix.strerror
 
 private class ThreadData(
-    val states: List<Any?>,
-    val function: (Any?) -> Unit,
+    val states: List<Any>,
+    val function: (Any) -> Unit,
     val syncPeriod: Int,
     val barrier: Barrier,
 )
@@ -24,7 +24,10 @@ private fun threadRoutine(data: ThreadData): Unit = with(data) {
 // pthread_t = ULong
 private typealias PthreadVar = ULongVar
 
-object PthreadRunner : LitmusRunner() {
+/**
+ * A runner based on pthread API provided by C interop from stdlib.
+ */
+class PthreadRunner : LitmusRunner() {
 
     @OptIn(ExperimentalForeignApi::class)
     override fun <S : Any> startTest(
@@ -37,8 +40,7 @@ object PthreadRunner : LitmusRunner() {
         val barrier = barrierProducer(test.threadCount)
 
         fun startThread(threadIndex: Int): Pair<PthreadVar, StableRef<*>> {
-            val function: (Any?) -> Unit = { state ->
-                // TODO: fix thread function signature
+            val function: (Any) -> Unit = { state ->
                 @Suppress("UNCHECKED_CAST")
                 test.threadFunctions[threadIndex].invoke(state as S)
             }
@@ -76,7 +78,6 @@ object PthreadRunner : LitmusRunner() {
                 threadDataRef.dispose()
             }
             val outcomes = states.asSequence().map { test.outcomeFinalizer(it) }
-            println("calcing stats")
             outcomes.calcStats(test.outcomeSpec)
         }
     }
