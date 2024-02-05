@@ -27,7 +27,7 @@ object JvmThreadRunner : LitmusRunner() {
 
         return {
             threads.forEach { it.join() }
-            val outcomes = states.map { it.outcomeFinalizer() }
+            val outcomes = states.asSequence().map { it.outcomeFinalizer() }
             outcomes.calcStats(test.outcomeSpec)
         }
     }

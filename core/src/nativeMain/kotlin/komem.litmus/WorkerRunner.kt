@@ -54,7 +54,7 @@ object WorkerRunner : LitmusRunner() {
         return {
             futures.forEach { it.result } // await all results
             workers.forEach { it.requestTermination().result } // waits for all workers to stop
-            val outcomes = states.map { it.outcomeFinalizer() }
+            val outcomes = states.asSequence().map { it.outcomeFinalizer() }
             outcomes.calcStats(test.outcomeSpec)
         }
     }

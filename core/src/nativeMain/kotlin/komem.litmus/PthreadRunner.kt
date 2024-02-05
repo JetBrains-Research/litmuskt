@@ -75,7 +75,8 @@ object PthreadRunner : LitmusRunner() {
                 nativeHeap.free(pthreadVar)
                 threadDataRef.dispose()
             }
-            val outcomes = states.map { test.outcomeFinalizer(it) }
+            val outcomes = states.asSequence().map { test.outcomeFinalizer(it) }
+            println("calcing stats")
             outcomes.calcStats(test.outcomeSpec)
         }
     }

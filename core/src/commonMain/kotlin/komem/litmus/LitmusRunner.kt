@@ -60,13 +60,48 @@ abstract class LitmusRunner {
         return allJoinHandles
     }
 
-    // be extremely careful due to LitmusOutcome = Any?
-    protected fun List<LitmusOutcome>.calcStats(outcomeSpec: LitmusOutcomeSpec): LitmusResult = this
-        .groupingBy { it }
-        .eachCount()
-        .map { (outcome, count) ->
-            LitmusOutcomeStats(outcome, count.toLong(), outcomeSpec.getType(outcome))
+    // 1) be extremely careful due to LitmusOutcome = Any?
+    // 2) Sequence forces to think twice before accidentally allocating a huge list (like `states.map{...}`)
+    // 3) this is an optimized version which is ~30% faster than `.groupingBy().eachCount()` on List-s (!)
+    protected fun Sequence<LitmusOutcome>.calcStats(outcomeSpec: LitmusOutcomeSpec): LitmusResult {
+        val bucketsMap = mutableMapOf<Int, Pair<MutableList<LitmusOutcome>, MutableList<Long>>>()
+
+        fun fastEquals(o1: Any?, o2: Any?): Boolean {
+            if (o1 is List<*> && o2 is List<*>) {
+                if (o1.size != o2.size) return false
+                for (i in o1.indices) {
+                    if (o1[i] != o2[i]) return false
+                }
+                return true
+            } else return o1 == o2
         }
+
+        outcomes@ for (o in this) {
+            val bucketId = o.hashCode()
+            val (bucket, counts) = bucketsMap.getOrPut(bucketId) { mutableListOf<LitmusOutcome>() to mutableListOf() }
+            if (bucket.isEmpty()) {
+                bucket.add(o)
+                counts.add(1L)
+                continue
+            }
+            if (fastEquals(bucket[0], o)) { // "fast path"
+                counts[0]++
+                continue
+            }
+            for (i in 1..<bucket.size) {
+                if (fastEquals(bucket[i], o)) {
+                    counts[i]++
+                    continue@outcomes
+                }
+            }
+            bucket.add(o)
+            counts.add(1L)
+        }
+        val countsMap = bucketsMap.values.map { (bucket, counts) -> bucket zip counts }.flatten()
+        return countsMap.map { (outcome, count) ->
+            LitmusOutcomeStats(outcome, count, outcomeSpec.getType(outcome))
+        }
+    }
 }
 
 fun <S : Any> LitmusRunner.runTest(
