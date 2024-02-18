@@ -4,5 +4,4 @@ build/
 temp/
 *.hprof
 gitignored/
-litmus/src/nativeInterop/kaffinity.def
-litmus/src/nativeInterop/kaffinity_gnu.o
+local.properties

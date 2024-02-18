@@ -1,4 +1,7 @@
 rootProject.name = "litmuskt"
 
-include(":litmus")
+include(":core")
 include(":codegen")
+include(":jcstress-wrapper")
+include(":cli")
+include(":testsuite")

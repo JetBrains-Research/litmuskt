@@ -10,12 +10,13 @@ class LitmusTestProcessorProvider : SymbolProcessorProvider {
     }
 }
 
-class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
+class LitmusTestProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val basePackage = "komem.litmus"
         val registryFileName = "LitmusTestRegistry"
+        val testsPackage = "$basePackage.tests"
 
-        val testFiles = resolver.getAllFiles().filter { it.packageName.asString() == "$basePackage.testsuite" }.toList()
+        val testFiles = resolver.getAllFiles().filter { it.packageName.asString() == testsPackage }.toList()
         val dependencies = Dependencies(true, *testFiles.toTypedArray())
 
         val registryFile = try {
@@ -26,7 +27,7 @@ class LitmusTestProcessor(val codeGenerator: CodeGenerator) : SymbolProcessor {
 
         val decls = testFiles.flatMap { it.declarations }.filterIsInstance<KSPropertyDeclaration>()
         val namedTestsMap = decls.associate {
-            val relativePackage = it.packageName.asString().removePrefix("$basePackage.testsuite")
+            val relativePackage = it.packageName.asString().removePrefix(testsPackage)
             val testAlias = (if (relativePackage.isEmpty()) "" else "$relativePackage.") +
                     it.containingFile!!.fileName.removeSuffix(".kt") +
                     "." + it.simpleName.getShortName()
