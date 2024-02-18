@@ -3,4 +3,4 @@ libs/
 results/
 *.bin.gz
 test.iml
-src/main/java/komem/litmus/
+generatedSrc/

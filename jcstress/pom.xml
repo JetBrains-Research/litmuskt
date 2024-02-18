@@ -146,44 +146,24 @@ THE POSSIBILITY OF SUCH DAMAGE.
                     </execution>
                 </executions>
             </plugin>
-
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                <artifactId>maven-install-plugin</artifactId>-->
-            <!--                <version>3.1.1</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>install-litmuskt-core</id>-->
-            <!--                        <configuration>-->
-            <!--                            <groupId>komem.litmus</groupId>-->
-            <!--                            <artifactId>litmuskt-jvm</artifactId>-->
-            <!--                            <version>1.0</version>-->
-            <!--                            <packaging>jar</packaging>-->
-            <!--                            <file>${basedir}/libs/core-jvm-1.0-SNAPSHOT.jar</file>-->
-            <!--                            <generatePom>true</generatePom>-->
-            <!--                        </configuration>-->
-            <!--                        <goals>-->
-            <!--                            <goal>install-file</goal>-->
-            <!--                        </goals>-->
-            <!--                        <phase>validate</phase>-->
-            <!--                    </execution>-->
-            <!--                    <execution>-->
-            <!--                        <id>install-litmuskt-jcstress-wrappers</id>-->
-            <!--                        <configuration>-->
-            <!--                            <groupId>komem.litmus</groupId>-->
-            <!--                            <artifactId>litmuskt-jcstress</artifactId>-->
-            <!--                            <version>1.0</version>-->
-            <!--                            <packaging>jar</packaging>-->
-            <!--                            <file>${basedir}/libs/jcstress-wrapper.jar</file>-->
-            <!--                            <generatePom>true</generatePom>-->
-            <!--                        </configuration>-->
-            <!--                        <goals>-->
-            <!--                            <goal>install-file</goal>-->
-            <!--                        </goals>-->
-            <!--                        <phase>validate</phase>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>generatedSrc/main/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

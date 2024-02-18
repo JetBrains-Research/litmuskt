@@ -9,7 +9,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.superclasses
 
 fun generateWrapperFile(test: LitmusTest<*>, jcstressDirectory: Path): Boolean {
-    val targetFile = jcstressDirectory / "src/main/java/komem/litmus/${test.javaClassName}.java"
+    val targetFile = jcstressDirectory / "generatedSrc/main/java/komem/litmus/${test.javaClassName}.java"
     targetFile.createParentDirectories()
     val targetCode = try {
         generateWrapperCode(test)
