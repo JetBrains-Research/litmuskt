@@ -11,9 +11,9 @@ data class LitmusOutcomeStats(
 )
 
 data class LitmusOutcomeSpec(
-    val accepted: Set<LitmusOutcome>,
-    val interesting: Set<LitmusOutcome>,
-    val forbidden: Set<LitmusOutcome>,
+    val accepted: List<LitmusOutcome>,
+    val interesting: List<LitmusOutcome>,
+    val forbidden: List<LitmusOutcome>,
     val default: LitmusOutcomeType,
 ) {
     fun getType(outcome: LitmusOutcome) = when (outcome) {
@@ -25,41 +25,29 @@ data class LitmusOutcomeSpec(
 }
 
 /**
- * For convenience, it is possible to use `accept(vararg values)` if test outcome is a `List`.
- * This is true for [LitmusAutoOutcome].
+ * For convenience, it is possible to use `accept(vararg values)` if outcome is a [LitmusAutoState].
  *
  * Use `accept(value)` otherwise. Notice that `accept(a, b)` is NOT the same as `accept(a); accept(b)`.
+ * Dev note: this is the reason why 'single values are handled differently' in some other places.
  *
  * The same applies to `interesting()` and `forbid()`.
  */
-class LitmusOutcomeSpecScope {
-    private val accepted = mutableSetOf<LitmusOutcome>()
-    private val interesting = mutableSetOf<LitmusOutcome>()
-    private val forbidden = mutableSetOf<LitmusOutcome>()
+class LitmusOutcomeSpecScope<S : Any> {
+    private val accepted = mutableListOf<LitmusOutcome>()
+    private val interesting = mutableListOf<LitmusOutcome>()
+    private val forbidden = mutableListOf<LitmusOutcome>()
     private var default: LitmusOutcomeType? = null
 
     fun accept(outcome: LitmusOutcome) {
         accepted.add(outcome)
     }
 
-    fun accept(vararg outcome: LitmusOutcome) {
-        accepted.add(outcome.toList())
-    }
-
     fun interesting(outcome: LitmusOutcome) {
         interesting.add(outcome)
     }
 
-    fun interesting(vararg outcome: LitmusOutcome) {
-        interesting.add(outcome.toList())
-    }
-
     fun forbid(outcome: LitmusOutcome) {
         forbidden.add(outcome)
-    }
-
-    fun forbid(vararg outcome: LitmusOutcome) {
-        forbidden.add(outcome.toList())
     }
 
     fun default(outcomeType: LitmusOutcomeType) {
@@ -70,6 +58,17 @@ class LitmusOutcomeSpecScope {
 
     fun build() = LitmusOutcomeSpec(accepted, interesting, forbidden, default ?: LitmusOutcomeType.FORBIDDEN)
 }
+
+// if S is LitmusAutoState, even single values should only be interpreted as r1
+
+fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.accept(vararg values: LitmusOutcome) =
+    accept(LitmusAutoState(values.toList()))
+
+fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.interesting(vararg values: LitmusOutcome) =
+    interesting(LitmusAutoState(values.toList()))
+
+fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.forbid(vararg values: LitmusOutcome) =
+    forbid(LitmusAutoState(values.toList()))
 
 typealias LitmusResult = List<LitmusOutcomeStats>
 
