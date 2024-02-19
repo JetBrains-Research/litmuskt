@@ -17,7 +17,7 @@ class JCStressRunner(
 
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: CustomList<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?

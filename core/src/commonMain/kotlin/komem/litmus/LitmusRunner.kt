@@ -11,7 +11,7 @@ abstract class LitmusRunner {
      */
     protected abstract fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: CustomList<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?,
@@ -22,7 +22,7 @@ abstract class LitmusRunner {
      * does not need to allocate states.
      */
     open fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val states = List(params.batchSize) { test.stateProducer() }
+        val states = CustomList(params.batchSize) { test.stateProducer() }
         return startTest(test, states, params.barrierProducer, params.syncPeriod, params.affinityMap)
     }
 
@@ -41,7 +41,7 @@ abstract class LitmusRunner {
     ): List<() -> LitmusResult> {
         // separated due to allocations severely impacting threads
         val allStates = List(instances) {
-            List(params.batchSize) { test.stateProducer() }
+            CustomList(params.batchSize) { test.stateProducer() }
         }
         val allJoinHandles = List(instances) { instanceIndex ->
             val newAffinityMap = params.affinityMap?.let { oldMap ->
@@ -70,7 +70,7 @@ abstract class LitmusRunner {
         class LongHolder(var value: Long)
 
         // the absolute majority of outcomes will be declared in spec
-        val fastPathOutcomes = ArrayList(spec.accepted + spec.interesting + spec.forbidden)
+        val fastPathOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toCustomList()
         val fastPathCounts = Array(fastPathOutcomes.size) { 0L }
         val totalCounts = mutableMapOf<LitmusOutcome, LongHolder>()
 
