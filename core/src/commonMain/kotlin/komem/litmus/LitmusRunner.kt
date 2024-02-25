@@ -70,24 +70,28 @@ abstract class LitmusRunner {
         class LongHolder(var value: Long)
 
         // the absolute majority of outcomes will be declared in spec
-        val fastPathOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toCustomList()
-        val fastPathCounts = Array(fastPathOutcomes.size) { 0L }
+        val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toCustomList()
+        val specifiedCounts = Array(specifiedOutcomes.size) { 0L }
+        val useFastPath = specifiedOutcomes.size <= 10
+
         val totalCounts = mutableMapOf<LitmusOutcome, LongHolder>()
 
         for (s in states) {
             val outcome = outcomeFinalizer(s)
-            val i = fastPathOutcomes.indexOf(outcome)
-            if (i != -1) {
-                fastPathCounts[i]++
-            } else {
-                totalCounts.getOrPut(outcome) { LongHolder(0L) }.value++
+            if (useFastPath) {
+                val i = specifiedOutcomes.indexOf(outcome)
+                if (i != -1) {
+                    specifiedCounts[i]++
+                    continue
+                }
             }
+            totalCounts.getOrPut(outcome) { LongHolder(0L) }.value++
         }
         // update totalCounts with fastPathCounts
-        for (i in fastPathCounts.indices) {
-            val count = fastPathCounts[i]
+        for (i in specifiedCounts.indices) {
+            val count = specifiedCounts[i]
             if (count > 0) totalCounts
-                .getOrPut(fastPathOutcomes[i]) { LongHolder(0L) }
+                .getOrPut(specifiedOutcomes[i]) { LongHolder(0L) }
                 .value = count
         }
 

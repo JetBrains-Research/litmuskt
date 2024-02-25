@@ -27,6 +27,19 @@ fun LitmusAutoState(values: List<LitmusOutcome>): LitmusAutoState {
         val o2 = values[1]
         if (o1 is Int && o2 is Int) return LitmusIIState(o1, o2)
     }
+    if (values.size == 3) {
+        val o1 = values[0]
+        val o2 = values[1]
+        val o3 = values[2]
+        if (o1 is Int && o2 is Int && o3 is Int) return LitmusIIIState(o1, o2, o3)
+    }
+    if (values.size == 4) {
+        val o1 = values[0]
+        val o2 = values[1]
+        val o3 = values[2]
+        val o4 = values[3]
+        if (o1 is Int && o2 is Int && o3 is Int && o4 is Int) return LitmusIIIIState(o1, o2, o3, o4)
+    }
     error("no LitmusAutoOutcome to support values $values")
 }
 
@@ -54,19 +67,29 @@ open class LitmusIIState(
     }
 }
 
-//open class LitmusIIIState(
-//    var r1: Int = 0,
-//    var r2: Int = 0,
-//    var r3: Int = 0,
-//) : LitmusAutoState {
-//    override fun getOutcome() = listOf(r1, r2, r3)
-//}
-//
-//open class LitmusIIIIState(
-//    var r1: Int = 0,
-//    var r2: Int = 0,
-//    var r3: Int = 0,
-//    var r4: Int = 0,
-//) : LitmusAutoState {
-//    override fun getOutcome() = listOf(r1, r2, r3, r4)
-//}
+open class LitmusIIIState(
+    var r1: Int = 0,
+    var r2: Int = 0,
+    var r3: Int = 0,
+) : LitmusAutoState {
+    final override fun toString() = "($r1, $r2, $r3)"
+    final override fun hashCode() = r1 shl 20 + r2 shl 10 + r3
+    final override fun equals(o: Any?): Boolean {
+        if (o !is LitmusIIIState) return false
+        return r1 == o.r1 && r2 == o.r2 && r2 == o.r3
+    }
+}
+
+open class LitmusIIIIState(
+    var r1: Int = 0,
+    var r2: Int = 0,
+    var r3: Int = 0,
+    var r4: Int = 0,
+) : LitmusAutoState {
+    final override fun toString() = "($r1, $r2, $r3, $r4)"
+    final override fun hashCode() = r1 shl 24 + r2 shl 16 + r3 shl 8 + r4
+    final override fun equals(o: Any?): Boolean {
+        if (o !is LitmusIIIIState) return false
+        return r1 == o.r1 && r2 == o.r2 && r2 == o.r3 && r4 == o.r4
+    }
+}

@@ -11,9 +11,9 @@ data class LitmusOutcomeStats(
 )
 
 data class LitmusOutcomeSpec(
-    val accepted: List<LitmusOutcome>,
-    val interesting: List<LitmusOutcome>,
-    val forbidden: List<LitmusOutcome>,
+    val accepted: Set<LitmusOutcome>,
+    val interesting: Set<LitmusOutcome>,
+    val forbidden: Set<LitmusOutcome>,
     val default: LitmusOutcomeType,
 ) {
     fun getType(outcome: LitmusOutcome) = when (outcome) {
@@ -33,9 +33,9 @@ data class LitmusOutcomeSpec(
  * The same applies to `interesting()` and `forbid()`.
  */
 class LitmusOutcomeSpecScope<S : Any> {
-    private val accepted = mutableListOf<LitmusOutcome>()
-    private val interesting = mutableListOf<LitmusOutcome>()
-    private val forbidden = mutableListOf<LitmusOutcome>()
+    private val accepted = mutableSetOf<LitmusOutcome>()
+    private val interesting = mutableSetOf<LitmusOutcome>()
+    private val forbidden = mutableSetOf<LitmusOutcome>()
     private var default: LitmusOutcomeType? = null
 
     fun accept(outcome: LitmusOutcome) {
