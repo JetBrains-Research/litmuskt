@@ -32,7 +32,7 @@ class PthreadRunner : LitmusRunner() {
     @OptIn(ExperimentalForeignApi::class)
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: CustomList<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
@@ -77,8 +77,7 @@ class PthreadRunner : LitmusRunner() {
                 nativeHeap.free(pthreadVar)
                 threadDataRef.dispose()
             }
-            val outcomes = states.asSequence().map { test.outcomeFinalizer(it) }
-            outcomes.calcStats(test.outcomeSpec)
+            calcStats(states, test.outcomeSpec, test.outcomeFinalizer)
         }
     }
 }
