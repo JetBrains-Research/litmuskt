@@ -25,14 +25,15 @@ data class LitmusOutcomeSpec(
 }
 
 /**
- * For convenience, it is possible to use `accept(vararg values)` if test outcome is a `List`.
- * This is true for [LitmusAutoOutcome].
+ * For convenience, it is possible to use `accept(vararg values)` if outcome is a [LitmusAutoOutcome].
+ * See [LitmusAutoOutcome] file for those functions. The generic <S> is used precisely for this.
  *
  * Use `accept(value)` otherwise. Notice that `accept(a, b)` is NOT the same as `accept(a); accept(b)`.
+ * Dev note: this is the reason why 'single values are handled differently' in some other places.
  *
  * The same applies to `interesting()` and `forbid()`.
  */
-class LitmusOutcomeSpecScope {
+class LitmusOutcomeSpecScope<S : Any> {
     private val accepted = mutableSetOf<LitmusOutcome>()
     private val interesting = mutableSetOf<LitmusOutcome>()
     private val forbidden = mutableSetOf<LitmusOutcome>()
@@ -42,24 +43,12 @@ class LitmusOutcomeSpecScope {
         accepted.add(outcome)
     }
 
-    fun accept(vararg outcome: LitmusOutcome) {
-        accepted.add(outcome.toList())
-    }
-
     fun interesting(outcome: LitmusOutcome) {
         interesting.add(outcome)
     }
 
-    fun interesting(vararg outcome: LitmusOutcome) {
-        interesting.add(outcome.toList())
-    }
-
     fun forbid(outcome: LitmusOutcome) {
         forbidden.add(outcome)
-    }
-
-    fun forbid(vararg outcome: LitmusOutcome) {
-        forbidden.add(outcome.toList())
     }
 
     fun default(outcomeType: LitmusOutcomeType) {

@@ -13,21 +13,20 @@ class WorkerRunner : LitmusRunner() {
     @OptIn(ObsoleteWorkersApi::class)
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
     ): () -> LitmusResult {
 
         data class WorkerContext(
-            val states: List<S>,
+            val states: Array<S>,
             val threadFunction: S.() -> Any?,
             val syncPeriod: Int,
             val barrier: Barrier,
         )
 
         val barrier = barrierProducer(test.threadCount)
-        val outcomeFinalizer = test.outcomeFinalizer
         val workers = List(test.threadCount) { Worker.start() }
 
         val futures = workers.mapIndexed { threadIndex, worker ->
@@ -58,8 +57,7 @@ class WorkerRunner : LitmusRunner() {
         return {
             futures.forEach { it.result } // await all results
             workers.forEach { it.requestTermination().result } // waits for all workers to stop
-            val outcomes = states.asSequence().map { it.outcomeFinalizer() }
-            outcomes.calcStats(test.outcomeSpec)
+            calcStats(states, test.outcomeSpec, test.outcomeFinalizer)
         }
     }
 }

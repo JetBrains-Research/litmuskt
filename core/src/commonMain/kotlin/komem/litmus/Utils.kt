@@ -24,3 +24,6 @@ fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
 }
 
 expect fun cpuCount(): Int
+
+@Suppress("UNCHECKED_CAST")
+fun <S> TypedArray(size: Int, init: (Int) -> S): Array<S> = Array<Any?>(size, init) as Array<S>

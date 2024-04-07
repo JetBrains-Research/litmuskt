@@ -7,13 +7,12 @@ class JvmThreadRunner : LitmusRunner() {
 
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
     ): () -> LitmusResult {
         val barrier = barrierProducer(test.threadCount)
-        val outcomeFinalizer = test.outcomeFinalizer
 
         val threads = List(test.threadCount) { threadIndex ->
             Thread {
@@ -28,8 +27,7 @@ class JvmThreadRunner : LitmusRunner() {
 
         return {
             threads.forEach { it.join() }
-            val outcomes = states.asSequence().map { it.outcomeFinalizer() }
-            outcomes.calcStats(test.outcomeSpec)
+            calcStats(states, test.outcomeSpec, test.outcomeFinalizer)
         }
     }
 }

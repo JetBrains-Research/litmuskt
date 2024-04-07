@@ -11,7 +11,7 @@ abstract class LitmusRunner {
      */
     protected abstract fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: List<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?,
@@ -22,7 +22,7 @@ abstract class LitmusRunner {
      * does not need to allocate states.
      */
     open fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val states = List(params.batchSize) { test.stateProducer() }
+        val states = TypedArray(params.batchSize) { test.stateProducer() }
         return startTest(test, states, params.barrierProducer, params.syncPeriod, params.affinityMap)
     }
 
@@ -41,7 +41,7 @@ abstract class LitmusRunner {
     ): List<() -> LitmusResult> {
         // separated due to allocations severely impacting threads
         val allStates = List(instances) {
-            List(params.batchSize) { test.stateProducer() }
+            TypedArray(params.batchSize) { test.stateProducer() }
         }
         val allJoinHandles = List(instances) { instanceIndex ->
             val newAffinityMap = params.affinityMap?.let { oldMap ->
@@ -60,46 +60,43 @@ abstract class LitmusRunner {
         return allJoinHandles
     }
 
-    // 1) be extremely careful due to LitmusOutcome = Any?
-    // 2) Sequence forces to think twice before accidentally allocating a huge list (like `states.map{...}`)
-    // 3) this is an optimized version which is ~30% faster than `.groupingBy().eachCount()` on List-s (!)
-    protected fun Sequence<LitmusOutcome>.calcStats(outcomeSpec: LitmusOutcomeSpec): LitmusResult {
-        val bucketsMap = mutableMapOf<Int, Pair<MutableList<LitmusOutcome>, MutableList<Long>>>()
+    protected fun <S : Any> calcStats(
+        states: Array<S>,
+        spec: LitmusOutcomeSpec,
+        outcomeFinalizer: (S) -> LitmusOutcome
+    ): LitmusResult {
+        // cannot do `map.getOrPut(key){0L}++` with Long-s, and by getting rid of one
+        // extra put(), we are also getting rid of one extra hashCode()
+        class LongHolder(var value: Long)
 
-        fun fastEquals(o1: Any?, o2: Any?): Boolean {
-            if (o1 is List<*> && o2 is List<*>) {
-                if (o1.size != o2.size) return false
-                for (i in o1.indices) {
-                    if (o1[i] != o2[i]) return false
-                }
-                return true
-            } else return o1 == o2
-        }
+        // the absolute majority of outcomes will be declared in spec
+        val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toTypedArray()
+        val specifiedCounts = Array(specifiedOutcomes.size) { 0L }
+        val useFastPath = specifiedOutcomes.size <= 10
 
-        outcomes@ for (o in this) {
-            val bucketId = o.hashCode()
-            val (bucket, counts) = bucketsMap.getOrPut(bucketId) { mutableListOf<LitmusOutcome>() to mutableListOf() }
-            if (bucket.isEmpty()) {
-                bucket.add(o)
-                counts.add(1L)
-                continue
-            }
-            if (fastEquals(bucket[0], o)) { // "fast path"
-                counts[0]++
-                continue
-            }
-            for (i in 1..<bucket.size) {
-                if (fastEquals(bucket[i], o)) {
-                    counts[i]++
-                    continue@outcomes
+        val totalCounts = mutableMapOf<LitmusOutcome, LongHolder>()
+
+        for (s in states) {
+            val outcome = outcomeFinalizer(s)
+            if (useFastPath) {
+                val i = specifiedOutcomes.indexOf(outcome)
+                if (i != -1) {
+                    specifiedCounts[i]++
+                    continue
                 }
             }
-            bucket.add(o)
-            counts.add(1L)
+            totalCounts.getOrPut(outcome) { LongHolder(0L) }.value++
         }
-        val countsMap = bucketsMap.values.map { (bucket, counts) -> bucket zip counts }.flatten()
-        return countsMap.map { (outcome, count) ->
-            LitmusOutcomeStats(outcome, count, outcomeSpec.getType(outcome))
+        // update totalCounts with fastPathCounts
+        for (i in specifiedCounts.indices) {
+            val count = specifiedCounts[i]
+            if (count > 0) totalCounts
+                .getOrPut(specifiedOutcomes[i]) { LongHolder(0L) }
+                .value = count
+        }
+
+        return totalCounts.map { (outcome, count) ->
+            LitmusOutcomeStats(outcome, count.value, spec.getType(outcome))
         }
     }
 }
