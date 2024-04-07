@@ -6,14 +6,14 @@ import platform.posix.pthread_create
 import platform.posix.pthread_join
 import platform.posix.strerror
 
-private class ThreadData(
-    val states: List<Any>,
+private class ThreadData<S : Any>(
+    val states: Array<S>,
     val function: (Any) -> Unit,
     val syncPeriod: Int,
     val barrier: Barrier,
 )
 
-private fun threadRoutine(data: ThreadData): Unit = with(data) {
+private fun <S : Any> threadRoutine(data: ThreadData<S>): Unit = with(data) {
     for (i in states.indices) {
         function(states[i])
         if (i % syncPeriod == 0) barrier.await()
@@ -32,7 +32,7 @@ class PthreadRunner : LitmusRunner() {
     @OptIn(ExperimentalForeignApi::class)
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: CustomList<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
@@ -52,7 +52,7 @@ class PthreadRunner : LitmusRunner() {
                 __newthread = pthreadVar.ptr,
                 __attr = null,
                 __start_routine = staticCFunction<COpaquePointer?, COpaquePointer?> {
-                    val data = it!!.asStableRef<ThreadData>().get()
+                    val data = it!!.asStableRef<ThreadData<S>>().get()
                     threadRoutine(data)
                     return@staticCFunction null
                 },

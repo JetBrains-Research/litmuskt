@@ -23,11 +23,11 @@ fun generateWrapperFile(test: LitmusTest<*>, jcstressDirectory: Path): Boolean {
 
 private fun generateWrapperCode(test: LitmusTest<*>): String {
     val stateClass = test.stateProducer()::class
-    require(stateClass.allSuperclasses.contains(LitmusAutoState::class)) {
+    require(stateClass.allSuperclasses.contains(LitmusAutoOutcome::class)) {
         "to use JCStress, test state must extend some LitmusAutoOutcome (e.g. LitmusIIOutcome)"
     }
 
-    val autoOutcomeClassList = stateClass.superclasses.filter { it.isSubclassOf(LitmusAutoState::class) }
+    val autoOutcomeClassList = stateClass.superclasses.filter { it.isSubclassOf(LitmusAutoOutcome::class) }
     require(autoOutcomeClassList.size == 1) { "test state should extend exactly one LitmusAutoOutcome" }
     val outcomeTypeName = autoOutcomeClassList.first().simpleName!!
         .removePrefix("Litmus")

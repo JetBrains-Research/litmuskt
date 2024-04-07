@@ -35,7 +35,7 @@ class LitmusTestScope<S : Any>(
         if (!::outcomeSpec.isInitialized) error("spec not specified")
         val outcomeFinalizer: S.() -> LitmusOutcome = when {
             ::outcomeFinalizer.isInitialized -> outcomeFinalizer
-            stateProducer() is LitmusAutoState -> {
+            stateProducer() is LitmusAutoOutcome -> {
                 { this }
             }
 

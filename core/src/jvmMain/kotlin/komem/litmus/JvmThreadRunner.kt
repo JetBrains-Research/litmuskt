@@ -7,7 +7,7 @@ class JvmThreadRunner : LitmusRunner() {
 
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: CustomList<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?

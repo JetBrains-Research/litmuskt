@@ -13,14 +13,14 @@ class WorkerRunner : LitmusRunner() {
     @OptIn(ObsoleteWorkersApi::class)
     override fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: CustomList<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
     ): () -> LitmusResult {
 
         data class WorkerContext(
-            val states: List<S>,
+            val states: Array<S>,
             val threadFunction: S.() -> Any?,
             val syncPeriod: Int,
             val barrier: Barrier,

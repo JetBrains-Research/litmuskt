@@ -25,7 +25,8 @@ data class LitmusOutcomeSpec(
 }
 
 /**
- * For convenience, it is possible to use `accept(vararg values)` if outcome is a [LitmusAutoState].
+ * For convenience, it is possible to use `accept(vararg values)` if outcome is a [LitmusAutoOutcome].
+ * See [LitmusAutoOutcome] file for those functions. The generic <S> is used precisely for this.
  *
  * Use `accept(value)` otherwise. Notice that `accept(a, b)` is NOT the same as `accept(a); accept(b)`.
  * Dev note: this is the reason why 'single values are handled differently' in some other places.
@@ -58,17 +59,6 @@ class LitmusOutcomeSpecScope<S : Any> {
 
     fun build() = LitmusOutcomeSpec(accepted, interesting, forbidden, default ?: LitmusOutcomeType.FORBIDDEN)
 }
-
-// if S is LitmusAutoState, even single values should only be interpreted as r1
-
-fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.accept(vararg values: LitmusOutcome) =
-    accept(LitmusAutoState(values.toList()))
-
-fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.interesting(vararg values: LitmusOutcome) =
-    interesting(LitmusAutoState(values.toList()))
-
-fun <S : LitmusAutoState> LitmusOutcomeSpecScope<S>.forbid(vararg values: LitmusOutcome) =
-    forbid(LitmusAutoState(values.toList()))
 
 typealias LitmusResult = List<LitmusOutcomeStats>
 

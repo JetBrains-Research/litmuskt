@@ -10,7 +10,7 @@ class IntHolderCtor {
 }
 
 val ATOM: LitmusTest<*> = litmusTest({
-    object : LitmusIState() {
+    object : LitmusIOutcome() {
         var x = 0
     }
 }) {
@@ -27,7 +27,7 @@ val ATOM: LitmusTest<*> = litmusTest({
 }
 
 val SB: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -50,7 +50,7 @@ val SB: LitmusTest<*> = litmusTest({
 }
 
 val SBVolatile: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -75,7 +75,7 @@ val SBVolatile: LitmusTest<*> = litmusTest({
 }
 
 val MP: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -97,7 +97,7 @@ val MP: LitmusTest<*> = litmusTest({
 }
 
 val MPVolatile: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -121,7 +121,7 @@ val MPVolatile: LitmusTest<*> = litmusTest({
 }
 
 val MP_DRF: LitmusTest<*> = litmusTest({
-    object : LitmusIState() {
+    object : LitmusIOutcome() {
         var x = 0
 
         @Volatile
@@ -142,7 +142,7 @@ val MP_DRF: LitmusTest<*> = litmusTest({
 }
 
 val CoRR: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
     }
 }) {
@@ -163,7 +163,7 @@ val CoRR: LitmusTest<*> = litmusTest({
 
 val CoRR_CSE: LitmusTest<*> = litmusTest({
     data class Holder(var x: Int)
-    object : LitmusIIIState() {
+    object : LitmusIIIOutcome() {
         val holder1 = Holder(0)
         val holder2 = holder1
     }
@@ -186,7 +186,7 @@ val CoRR_CSE: LitmusTest<*> = litmusTest({
 }
 
 val IRIW: LitmusTest<*> = litmusTest({
-    object : LitmusIIIIState() {
+    object : LitmusIIIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -213,7 +213,7 @@ val IRIW: LitmusTest<*> = litmusTest({
 }
 
 val IRIWVolatile: LitmusTest<*> = litmusTest({
-    object : LitmusIIIIState() {
+    object : LitmusIIIIOutcome() {
         @Volatile
         var x = 0
 
@@ -242,7 +242,7 @@ val IRIWVolatile: LitmusTest<*> = litmusTest({
 }
 
 val UPUB: LitmusTest<*> = litmusTest({
-    object : LitmusIState() {
+    object : LitmusIOutcome() {
         var h: IntHolder? = null
     }
 }) {
@@ -259,7 +259,7 @@ val UPUB: LitmusTest<*> = litmusTest({
 }
 
 val UPUBCtor: LitmusTest<*> = litmusTest({
-    object : LitmusIState() {
+    object : LitmusIOutcome() {
         var h: IntHolderCtor? = null
     }
 }) {
@@ -276,7 +276,7 @@ val UPUBCtor: LitmusTest<*> = litmusTest({
 }
 
 val LB_DEPS_OOTA: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -295,7 +295,7 @@ val LB_DEPS_OOTA: LitmusTest<*> = litmusTest({
 }
 
 val LB: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }
@@ -317,7 +317,7 @@ val LB: LitmusTest<*> = litmusTest({
 }
 
 val LBVolatile: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         @Volatile
         var x = 0
 
@@ -341,7 +341,7 @@ val LBVolatile: LitmusTest<*> = litmusTest({
 }
 
 val LBFakeDEPS: LitmusTest<*> = litmusTest({
-    object : LitmusIIState() {
+    object : LitmusIIOutcome() {
         var x = 0
         var y = 0
     }

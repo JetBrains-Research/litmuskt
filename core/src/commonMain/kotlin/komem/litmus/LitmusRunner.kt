@@ -11,7 +11,7 @@ abstract class LitmusRunner {
      */
     protected abstract fun <S : Any> startTest(
         test: LitmusTest<S>,
-        states: CustomList<S>,
+        states: Array<S>,
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?,
@@ -22,7 +22,7 @@ abstract class LitmusRunner {
      * does not need to allocate states.
      */
     open fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val states = CustomList(params.batchSize) { test.stateProducer() }
+        val states = TypedArray(params.batchSize) { test.stateProducer() }
         return startTest(test, states, params.barrierProducer, params.syncPeriod, params.affinityMap)
     }
 
@@ -41,7 +41,7 @@ abstract class LitmusRunner {
     ): List<() -> LitmusResult> {
         // separated due to allocations severely impacting threads
         val allStates = List(instances) {
-            CustomList(params.batchSize) { test.stateProducer() }
+            TypedArray(params.batchSize) { test.stateProducer() }
         }
         val allJoinHandles = List(instances) { instanceIndex ->
             val newAffinityMap = params.affinityMap?.let { oldMap ->
@@ -61,7 +61,7 @@ abstract class LitmusRunner {
     }
 
     protected fun <S : Any> calcStats(
-        states: List<S>,
+        states: Array<S>,
         spec: LitmusOutcomeSpec,
         outcomeFinalizer: (S) -> LitmusOutcome
     ): LitmusResult {
@@ -70,7 +70,7 @@ abstract class LitmusRunner {
         class LongHolder(var value: Long)
 
         // the absolute majority of outcomes will be declared in spec
-        val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toCustomList()
+        val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toTypedArray()
         val specifiedCounts = Array(specifiedOutcomes.size) { 0L }
         val useFastPath = specifiedOutcomes.size <= 10
 
