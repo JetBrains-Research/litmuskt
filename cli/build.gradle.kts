@@ -41,7 +41,8 @@ kotlin {
 
 tasks.whenTaskAdded {
     if (name == "jvmRun") {
-        dependsOn(":core:copyLibToJCStress")
+        dependsOn(":jcstress-wrapper:copyCoreToJCStress")
+        dependsOn(":jcstress-wrapper:copyTestsuiteToJCStress")
         dependsOn(":jcstress-wrapper:run")
     }
 }

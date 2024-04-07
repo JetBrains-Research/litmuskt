@@ -54,7 +54,7 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
         """
 @Arbiter
 public void a($jcstressResultClassName r) {
-    List<$outcomeVarType> result = (List<$outcomeVarType>) ((LitmusAutoOutcome) fA.invoke(state)).toList();
+    List<$outcomeVarType> result = (List<$outcomeVarType>) (Object) ((LitmusAutoOutcome) fA.invoke(state)).toList();
     ${List(outcomeVarCount) { "r.r${it + 1} = result.get($it);" }.joinToString("\n    ")}
 }
         """.trim()
@@ -100,7 +100,7 @@ fun wrapperCode(
 ) = """
 package komem.litmus;
 
-import komem.litmus.testsuite.*;
+import komem.litmus.tests.*;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;

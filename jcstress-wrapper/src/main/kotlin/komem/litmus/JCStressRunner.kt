@@ -37,7 +37,7 @@ class JCStressRunner(
 
     // TODO: optimize for many tests (do not invoke jcstress many times)
     override fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
-        val mvn = ProcessBuilder("mvn", "install", "verify")
+        val mvn = ProcessBuilder("mvn", "install", "verify", "-U")
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
             .redirectError(ProcessBuilder.Redirect.INHERIT)
