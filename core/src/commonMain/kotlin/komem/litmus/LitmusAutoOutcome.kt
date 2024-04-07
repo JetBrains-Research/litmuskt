@@ -20,12 +20,14 @@ sealed interface LitmusAutoOutcome {
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun equals(o: Any?): Boolean
+
+    // for JCStress interop
+    fun toList(): List<LitmusOutcome>
 }
 
 open class LitmusIOutcome(
     var r1: Int = 0,
 ) : LitmusAutoOutcome {
-    // single values are handled differently (see LitmusOutcomeSpecScope)
     final override fun toString() = "$r1"
     final override fun hashCode() = r1
     final override fun equals(o: Any?): Boolean {
@@ -33,9 +35,17 @@ open class LitmusIOutcome(
         return r1 == o.r1
     }
 
-    // note: if S is LitmusAutoState, even single values should only be interpreted as r1
-    // hence no overloads for accept() and so on
+    final override fun toList() = listOf(r1)
 }
+
+fun <S : LitmusIOutcome> LitmusOutcomeSpecScope<S>.accept(r1: Int) =
+    accept(setOf(LitmusIOutcome(r1)))
+
+fun <S : LitmusIOutcome> LitmusOutcomeSpecScope<S>.interesting(r1: Int) =
+    interesting(setOf(LitmusIOutcome(r1)))
+
+fun <S : LitmusIOutcome> LitmusOutcomeSpecScope<S>.forbid(r1: Int) =
+    forbid(setOf(LitmusIOutcome(r1)))
 
 open class LitmusIIOutcome(
     var r1: Int = 0,
@@ -47,16 +57,18 @@ open class LitmusIIOutcome(
         if (o !is LitmusIIOutcome) return false
         return r1 == o.r1 && r2 == o.r2
     }
+
+    final override fun toList() = listOf(r1, r2)
 }
 
 fun <S : LitmusIIOutcome> LitmusOutcomeSpecScope<S>.accept(r1: Int, r2: Int) =
-    accept(LitmusIIOutcome(r1, r2))
+    accept(setOf(LitmusIIOutcome(r1, r2)))
 
 fun <S : LitmusIIOutcome> LitmusOutcomeSpecScope<S>.interesting(r1: Int, r2: Int) =
-    interesting(LitmusIIOutcome(r1, r2))
+    interesting(setOf(LitmusIIOutcome(r1, r2)))
 
 fun <S : LitmusIIOutcome> LitmusOutcomeSpecScope<S>.forbid(r1: Int, r2: Int) =
-    forbid(LitmusIIOutcome(r1, r2))
+    forbid(setOf(LitmusIIOutcome(r1, r2)))
 
 open class LitmusIIIOutcome(
     var r1: Int = 0,
@@ -69,16 +81,18 @@ open class LitmusIIIOutcome(
         if (o !is LitmusIIIOutcome) return false
         return r1 == o.r1 && r2 == o.r2 && r3 == o.r3
     }
+
+    final override fun toList() = listOf(r1, r2, r3)
 }
 
 fun <S : LitmusIIIOutcome> LitmusOutcomeSpecScope<S>.accept(r1: Int, r2: Int, r3: Int) =
-    accept(LitmusIIIOutcome(r1, r2, r3))
+    accept(setOf(LitmusIIIOutcome(r1, r2, r3)))
 
 fun <S : LitmusIIIOutcome> LitmusOutcomeSpecScope<S>.interesting(r1: Int, r2: Int, r3: Int) =
-    interesting(LitmusIIIOutcome(r1, r2, r3))
+    interesting(setOf(LitmusIIIOutcome(r1, r2, r3)))
 
 fun <S : LitmusIIIOutcome> LitmusOutcomeSpecScope<S>.forbid(r1: Int, r2: Int, r3: Int) =
-    forbid(LitmusIIIOutcome(r1, r2, r3))
+    forbid(setOf(LitmusIIIOutcome(r1, r2, r3)))
 
 open class LitmusIIIIOutcome(
     var r1: Int = 0,
@@ -92,13 +106,15 @@ open class LitmusIIIIOutcome(
         if (o !is LitmusIIIIOutcome) return false
         return r1 == o.r1 && r2 == o.r2 && r3 == o.r3 && r4 == o.r4
     }
+
+    final override fun toList() = listOf(r1, r2, r3, r4)
 }
 
 fun <S : LitmusIIIIOutcome> LitmusOutcomeSpecScope<S>.accept(r1: Int, r2: Int, r3: Int, r4: Int) =
-    accept(LitmusIIIIOutcome(r1, r2, r3, r4))
+    accept(setOf(LitmusIIIIOutcome(r1, r2, r3, r4)))
 
 fun <S : LitmusIIIIOutcome> LitmusOutcomeSpecScope<S>.interesting(r1: Int, r2: Int, r3: Int, r4: Int) =
-    interesting(LitmusIIIIOutcome(r1, r2, r3, r4))
+    interesting(setOf(LitmusIIIIOutcome(r1, r2, r3, r4)))
 
 fun <S : LitmusIIIIOutcome> LitmusOutcomeSpecScope<S>.forbid(r1: Int, r2: Int, r3: Int, r4: Int) =
-    forbid(LitmusIIIIOutcome(r1, r2, r3, r4))
+    forbid(setOf(LitmusIIIIOutcome(r1, r2, r3, r4)))

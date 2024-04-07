@@ -1,23 +1,23 @@
 package komem.litmus.tests
 
+import komem.litmus.LitmusIOutcome
 import komem.litmus.LitmusTest
+import komem.litmus.accept
 import komem.litmus.litmusTest
 import kotlin.concurrent.Volatile
 
 val UPUBVolatile: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         @Volatile
         var h: IntHolder? = null
-        var o = 0
     }
 }) {
     thread {
         h = IntHolder(0)
     }
     thread {
-        o = h?.x ?: -1
+        r1 = h?.x ?: -1
     }
-    outcome { o }
     spec {
         accept(0)
         accept(-1)
@@ -25,18 +25,16 @@ val UPUBVolatile: LitmusTest<*> = litmusTest({
 }
 
 val UPUBArray: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var arr: Array<Int>? = null
-        var o = 0
     }
 }) {
     thread {
         arr = Array(10) { 0 }
     }
     thread {
-        o = arr?.get(0) ?: -1
+        r1 = arr?.get(0) ?: -1
     }
-    outcome { o }
     spec {
         accept(0)
         accept(-1)
@@ -47,9 +45,8 @@ private class UPUBRefInner(val x: Int)
 private class UPUBRefHolder(val ref: UPUBRefInner)
 
 val UPUBRef: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var h: UPUBRefHolder? = null
-        var o = 0
     }
 }) {
     thread {
@@ -58,9 +55,8 @@ val UPUBRef: LitmusTest<*> = litmusTest({
     }
     thread {
         val t = h
-        o = t?.ref?.x ?: -1
+        r1 = t?.ref?.x ?: -1
     }
-    outcome { o }
     spec {
         accept(1)
         accept(-1)
@@ -81,18 +77,16 @@ private class UPUBIntHolderInnerLeaking {
 }
 
 val UBUBCtorLeaking: LitmusTest<*> = litmusTest({
-    object {
+    object : LitmusIOutcome() {
         var h = UPUBIntHolderInnerLeaking()
-        var o = 0
     }
 }) {
     thread {
         h.InnerHolder()
     }
     thread {
-        o = h.ih?.x ?: -1
+        r1 = h.ih?.x ?: -1
     }
-    outcome { o }
     spec {
         accept(1)
         accept(0)

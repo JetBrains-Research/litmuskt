@@ -66,11 +66,11 @@ val SBVolatile: LitmusTest<*> = litmusTest({
         y = 1
         r2 = x
     }
-    // no need for explicit outcome{}
     spec {
         accept(0, 1)
         accept(1, 0)
         accept(1, 1)
+        forbid(0, 0) // redundant as forbidden is the default
     }
 }
 
@@ -207,7 +207,6 @@ val IRIW: LitmusTest<*> = litmusTest({
     }
     spec {
         interesting(1, 0, 1, 0)
-        interesting(0, 1, 0, 1)
         default(LitmusOutcomeType.ACCEPTED)
     }
 }

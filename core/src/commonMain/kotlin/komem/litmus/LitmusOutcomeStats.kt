@@ -25,13 +25,13 @@ data class LitmusOutcomeSpec(
 }
 
 /**
- * For convenience, it is possible to use `accept(vararg values)` if outcome is a [LitmusAutoOutcome].
- * See [LitmusAutoOutcome] file for those functions. The generic <S> is used precisely for this.
+ * For convenience, it is possible to use `accept(r1, r2, ...)` if outcome is a [LitmusAutoOutcome].
+ * In other cases, use `accept(setOf(...))` to accept one or many values. Note that to accept an iterable,
+ * it has to be wrapped in an extra `setOf()`. All of this applies as well to `interesting()` and `forbid()`.
  *
- * Use `accept(value)` otherwise. Notice that `accept(a, b)` is NOT the same as `accept(a); accept(b)`.
- * Dev note: this is the reason why 'single values are handled differently' in some other places.
+ * See [LitmusAutoOutcome] file for those extension functions. The generic <S> is used precisely for them.
  *
- * The same applies to `interesting()` and `forbid()`.
+ * single values are handled differently !!!!!!!!!!!!! TODO
  */
 class LitmusOutcomeSpecScope<S : Any> {
     private val accepted = mutableSetOf<LitmusOutcome>()
@@ -39,16 +39,18 @@ class LitmusOutcomeSpecScope<S : Any> {
     private val forbidden = mutableSetOf<LitmusOutcome>()
     private var default: LitmusOutcomeType? = null
 
-    fun accept(outcome: LitmusOutcome) {
-        accepted.add(outcome)
+    // note: if S is LitmusIOutcome, even single values should be interpreted as r1
+
+    fun accept(outcomes: Iterable<LitmusOutcome>) {
+        accepted.addAll(outcomes)
     }
 
-    fun interesting(outcome: LitmusOutcome) {
-        interesting.add(outcome)
+    fun interesting(outcomes: Iterable<LitmusOutcome>) {
+        interesting.addAll(outcomes)
     }
 
-    fun forbid(outcome: LitmusOutcome) {
-        forbidden.add(outcome)
+    fun forbid(outcomes: Iterable<LitmusOutcome>) {
+        forbidden.addAll(outcomes)
     }
 
     fun default(outcomeType: LitmusOutcomeType) {

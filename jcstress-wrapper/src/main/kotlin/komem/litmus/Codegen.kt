@@ -9,7 +9,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.superclasses
 
 fun generateWrapperFile(test: LitmusTest<*>, jcstressDirectory: Path): Boolean {
-    val targetFile = jcstressDirectory / "generatedSrc/main/java/komem/litmus/${test.javaClassName}.java"
+    val targetFile = jcstressDirectory / "generatedSrc/main/komem/litmus/${test.javaClassName}.java"
     targetFile.createParentDirectories()
     val targetCode = try {
         generateWrapperCode(test)
@@ -51,23 +51,13 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
 
     val javaArbiterDecl: String = run {
         val jcstressResultClassName = outcomeTypeName + "_Result"
-        if (outcomeVarCount > 1) {
-            """
+        """
 @Arbiter
 public void a($jcstressResultClassName r) {
-    List<$outcomeVarType> result = (List<$outcomeVarType>) fA.invoke(state);
+    List<$outcomeVarType> result = (List<$outcomeVarType>) ((LitmusAutoOutcome) fA.invoke(state)).toList();
     ${List(outcomeVarCount) { "r.r${it + 1} = result.get($it);" }.joinToString("\n    ")}
 }
-            """.trim()
-        } else {
-            // single values are handled differently
-            """
-            @Arbiter
-            public void a($jcstressResultClassName r) {
-                r.r1 = ($outcomeVarType) fA.invoke(state);
-            }
-            """.trimIndent()
-        }
+        """.trim()
     }
 
     val jcstressOutcomeDecls: String = run {
@@ -75,9 +65,9 @@ public void a($jcstressResultClassName r) {
                 test.outcomeSpec.interesting.associateWith { "ACCEPTABLE_INTERESTING" } +
                 test.outcomeSpec.forbidden.associateWith { "FORBIDDEN" }
 
-        // since only AutoOutcome is allowed, each outcome is a list (unless it's a single value)
+        // since only AutoOutcome is allowed, the cast is safe
         outcomes.map { (o, t) ->
-            val oId = if (outcomeVarCount > 1) (o as List<*>).joinToString(", ") else o.toString()
+            val oId = (o as LitmusAutoOutcome).toList().joinToString(", ")
             "@Outcome(id = \"$oId\", expect = $t)"
         }.joinToString("\n")
     }
