@@ -19,7 +19,6 @@ kotlin {
     }
     jvm {
         withJava()
-        jvmToolchain(8)
     }
 
     sourceSets {

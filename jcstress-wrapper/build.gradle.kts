@@ -7,30 +7,30 @@ application {
     mainClass = "MainKt"
 }
 
-kotlin {
-    jvmToolchain(8)
-}
-
 dependencies {
     implementation(project(":core"))
     implementation(project(":testsuite"))
     implementation(kotlin("reflect"))
 }
 
-val jcsDir: File get() = File(System.getenv("JCS_DIR") ?: error("JCS_DIR envvar is not set"))
+val jcsDir = rootProject.layout.projectDirectory.dir("jcstress")
 
 tasks.register<Copy>("copyCoreToJCStress") {
     dependsOn(":core:jvmJar")
-    from(project(":core").layout.buildDirectory.file("libs/core-jvm-1.0-SNAPSHOT.jar"))
-    if (inputs.sourceFiles.isEmpty) throw BuildCancelledException("missing files to copy")
+    from(project(":core").layout.buildDirectory.file("libs/core-jvm-$version.jar"))
     rename { "litmusktJvm-1.0.jar" }
-    into(jcsDir.resolve("libs/org/jetbrains/litmuskt/litmusktJvm/1.0/"))
+    into(jcsDir.dir("libs/org/jetbrains/litmuskt/litmusktJvm/1.0/"))
+    doFirst {
+        if (inputs.sourceFiles.isEmpty) throw GradleException("missing files to copy")
+    }
 }
 
 tasks.register<Copy>("copyTestsuiteToJCStress") {
     dependsOn(":testsuite:jvmJar")
-    from(project(":testsuite").layout.buildDirectory.file("libs/testsuite-jvm.jar"))
-    if (inputs.sourceFiles.isEmpty) throw BuildCancelledException("missing files to copy")
+    from(project(":testsuite").layout.buildDirectory.file("libs/testsuite-jvm-$version.jar"))
     rename { "litmusktJvmTestsuite-1.0.jar" }
-    into(jcsDir.resolve("libs/org/jetbrains/litmuskt/litmusktJvmTestsuite/1.0/"))
+    into(jcsDir.dir("libs/org/jetbrains/litmuskt/litmusktJvmTestsuite/1.0/"))
+    doFirst {
+        if (inputs.sourceFiles.isEmpty) throw GradleException("missing files to copy")
+    }
 }

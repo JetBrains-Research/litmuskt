@@ -12,7 +12,6 @@ kotlin {
     macosArm64()
     jvm {
         withJava()
-        jvmToolchain(8)
     }
 
     sourceSets {

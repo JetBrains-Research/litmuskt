@@ -8,6 +8,8 @@ repositories {
 }
 
 subprojects {
+    group = "org.jetbrains.litmuskt"
+    version = "1.0-SNAPSHOT"
     repositories {
         mavenCentral()
         gradlePluginPortal()

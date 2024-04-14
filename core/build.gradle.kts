@@ -3,9 +3,6 @@ plugins {
     `java-library`
 }
 
-group = "org.jetbrains.litmuskt"
-version = "1.0-SNAPSHOT"
-
 kotlin {
     val nativeTargets = listOf(
         linuxX64(),
@@ -17,7 +14,7 @@ kotlin {
 
     jvm {
         withJava()
-        jvmToolchain(8)
+        jvmToolchain(17)
     }
 
     val hostOs = System.getProperty("os.name")
@@ -26,12 +23,12 @@ kotlin {
         target.apply {
             compilations.getByName("main") {
                 cinterops {
-                    val barrier by creating {
+                    create("barrier") {
                         defFile(project.file("src/nativeInterop/barrier.def"))
                         headers(project.file("src/nativeInterop/barrier.h"))
                     }
                     if (affinitySupported) {
-                        val affinity by creating {
+                        create("affinity") {
                             defFile(project.file("src/nativeInterop/kaffinity.def"))
                             compilerOpts.add("-D_GNU_SOURCE")
                         }
@@ -44,12 +41,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
-            }
-        }
-
-        jvmMain {
-            dependencies {
-                implementation(kotlin("reflect"))
             }
         }
     }
