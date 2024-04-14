@@ -1,5 +1,5 @@
-import komem.litmus.generateWrapperFile
-import komem.litmus.generated.LitmusTestRegistry
+import org.jetbrains.litmuskt.generateWrapperFile
+import org.jetbrains.litmuskt.generated.LitmusTestRegistry
 import kotlin.io.path.Path
 
 fun main() {

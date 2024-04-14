@@ -24,7 +24,7 @@ tasks.register<Copy>("copyCoreToJCStress") {
     from(project(":core").layout.buildDirectory.file("libs/core-jvm-1.0-SNAPSHOT.jar"))
     if (inputs.sourceFiles.isEmpty) throw BuildCancelledException("missing files to copy")
     rename { "litmusktJvm-1.0.jar" }
-    into(jcsDir.resolve("libs/komem/litmus/litmusktJvm/1.0/"))
+    into(jcsDir.resolve("libs/org/jetbrains/litmuskt/litmusktJvm/1.0/"))
 }
 
 tasks.register<Copy>("copyTestsuiteToJCStress") {
@@ -32,5 +32,5 @@ tasks.register<Copy>("copyTestsuiteToJCStress") {
     from(project(":testsuite").layout.buildDirectory.file("libs/testsuite-jvm.jar"))
     if (inputs.sourceFiles.isEmpty) throw BuildCancelledException("missing files to copy")
     rename { "litmusktJvmTestsuite-1.0.jar" }
-    into(jcsDir.resolve("libs/komem/litmus/litmusktJvmTestsuite/1.0/"))
+    into(jcsDir.resolve("libs/org/jetbrains/litmuskt/litmusktJvmTestsuite/1.0/"))
 }
