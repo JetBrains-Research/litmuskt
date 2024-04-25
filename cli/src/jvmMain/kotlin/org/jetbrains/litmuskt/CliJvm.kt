@@ -8,13 +8,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import jcstressDirectory
-import org.jetbrains.litmuskt.JCStressRunner
-import org.jetbrains.litmuskt.CliCommon
 import org.jetbrains.litmuskt.barriers.JvmSpinBarrier
-import org.jetbrains.litmuskt.JvmThreadRunner
-import org.jetbrains.litmuskt.LitmusRunner
-import org.jetbrains.litmuskt.runTest
-import org.jetbrains.litmuskt.variateRunParams
 
 private sealed class RunnerOptions : OptionGroup() {
     abstract val runner: LitmusRunner
@@ -80,7 +74,8 @@ class CliJvm : CliCommon() {
             ) JCStressRunner.DEFAULT_LITMUSKT_PARAMS else params // jcstress defaults are different
 
             for (test in tests) {
-                runner.runTest(jcsParams, test)
+                val results = runner.runTest(jcsParams, test)
+                echo("\n" + results.generateTable())
             }
         }
     }
