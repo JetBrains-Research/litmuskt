@@ -11,11 +11,8 @@ The tool's API is unstable and might be a subject to a further change.
 
 Simply clone the project and run `./gradlew build`.
 
-Note that for Kotlin/JVM this project relies on [jcstress](https://github.com/openjdk/jcstress), so you also need to
-set `JCS_DIR` environment variable to `/path/to/jcstress/folder`.
-
-Tip: if you wish to run Gradle tasks from IDEA, you need to set `JCS_DIR` for it too, and a handy way to do that is to
-run IDEA from bash: `idea & disown -a` (note the singular `&`).
+Note that for Kotlin/JVM this project relies on [jcstress](https://github.com/openjdk/jcstress) with a custom
+buildscript in `jcstress/pom.xml`
 
 ## Running
 
@@ -23,7 +20,7 @@ The entry point is the CLI tool residing in `:cli` subproject. You can use the `
 the CLI, but most basic example requires two settings:
 
 1. Choose a runner with `-r` option
-1. After the options are specified, choose the tests to run using regex patterns
+2. After the options are specified, choose the tests to run using regex patterns
 
 ### Running on Native
 
@@ -89,13 +86,21 @@ val StoreBuffering = litmusTest(::StoreBufferingState) {
         r2 = x
     }
     outcome {
-        listOf(r1, r2)
+      r1 to r2
     }
     spec {
-        accept(listOf(0, 1))
-        accept(listOf(1, 0))
-        accept(listOf(1, 1))
-        interesting(listOf(0, 0))
+      accept(
+        listOf(
+          0 to 1,
+          1 to 0,
+          1 to 1
+        )
+      )
+      interesting(
+        listOf(
+          0 to 0
+        )
+      )
     }
 }
 ```
@@ -105,10 +110,10 @@ And here is an example of the tool's output:
 ```
  outcome |    type     |  count  | frequency 
 ---------------------------------------------
- [1, 0]  |  ACCEPTED   | 6298680 |  48.451%  
- [0, 1]  |  ACCEPTED   | 6291034 |  48.392%  
- [0, 0]  | INTERESTING | 405062  |  3.1158%  
- [1, 1]  |  ACCEPTED   |  5224   |  0.0401%  
+ (1, 0)  |  ACCEPTED   | 6298680 |  48.451%  
+ (0, 1)  |  ACCEPTED   | 6291034 |  48.392%  
+ (0, 0)  | INTERESTING | 405062  |  3.1158%  
+ (1, 1)  |  ACCEPTED   |  5224   |  0.0401%  
 ```
 
 Let us describe the litmus test's declaration.
@@ -126,14 +131,19 @@ Here are a few additional convenient features.
 * Classes implementing `LitmusAutoOutcome` interface set up an outcome automatically.
   There are a few predefined subclasses of this interface.
   For example, the class `LitmusIIOutcome` with `II` standing for "int, int" expects two integers as an outcome.
-  This class have two fields `var r1: Int` and `var r2: Int`.
+  This class has two fields: `var r1: Int` and `var r2: Int`.
   These fields should be set inside litmus test's threads, and then they will be automatically used to form an
-  outcome `listOf(r1, r2)`.
+  outcome `(r1, r2)`.
 
-* If the outcome is a `List`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes.
-  Just use `accept(vararg outcome)` counterparts to specify expected elements.
+* Another bonus of using `LitmusAutoOutcome`-s is that you can use a shorter syntax for declaring accepted /
+  interesting / forbidden outcomes.
+  For example, if your test uses `LitmusIIOutcome`, you can use `accept(r1: Int, r2: Int)` several times instead
+  of `accept(listOf(LitmusIIOutcome(r1, r2), ...))`.
 
-* Since each test usually has its own specific state, it is quite useful to use anonymous classes for them.
+* You are also encouraged to use `LitmusAutoOutcome`-s because they are optimized for best performance, and also because
+  they are necessary if you wish to run your test with JCStress.
+
+* Since each test usually has its own specific state, it is quite handy to use anonymous classes for them.
 
 Using these features, the test from above can be shortened as follows:
 
@@ -161,6 +171,25 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
 }
 ```
 
+There also is an alternative, even shorter syntax based on infix functions:
+
+```kotlin
+val infixStoreBuffering = litmusTest {
+  object : LitmusIIOutcome() {
+    var x = 0
+    var y = 0
+  }
+} thread {
+  x = 1
+  r1 = y
+} thread {
+  y = 1
+  r2 = x
+} spec {
+  // ...
+}
+```
+
 ### Litmus Test Runners
 
 Litmus tests are run with a `LitmusRunner`. This interface has several running functions:
@@ -179,7 +208,7 @@ The following implementations of `LitmusRunner` are available:
 * For JVM:
   * `JvmThreadRunner`: a simple runner based on Java threads
   * `JCStressRunner`: a **special** runner that delegates to JCStress. Note that many of `LitmusRunner` parameters are
-    not applicable to JCStress.
+    not applicable to JCStress. However, you can provide JCStress-specific flags when using this runner with CLI.
 
 ### Litmus Test Parameters
 
@@ -201,7 +230,7 @@ Common practice is to iterate through different parameter bundles and aggregate 
 * Function `variateParameters()` takes the cross-product of all passed parameters
   (hence use `listOf(null)` instead of `emptyList()` for unused arguments).
 * For results aggregation, use `List<LitmusResult>.mergeResults()`.
-* You can also use `LitmusResult.prettyPrint()` to print the results.
+* You can also use `LitmusResult.generateTable()` to format the results into a nice readable table.
 
 ### Project structure
 
@@ -213,10 +242,13 @@ The project consists of several subprojects:
 * `:jcstress-wrapper` contains the code to convert `LitmusTest`-s into JCStress-compatible Java wrappers.
 * `:cli` is a user-friendly entry point.
 
-## Notes
+## Important notes
 
-* If you decide to add some litmus tests, you **must** put them into `:testsuite` subproject and
-  into `komem.litmus.tests` package. Deeper packages are allowed.
+### General notes
+
+* If you decide to add some litmus tests, and you want them to be detected by CLI or JCStress, you **must** put them
+  into `:testsuite` subproject and into a "container" `object` annotated with `@LitmusTestContainer` (see existing tests
+  as examples) as object properties.
 * Setting thread affinity is not supported on macOS yet. As such, `getAffinityManager()` returns `null` on macOS.
 * It is possible to run the tests with `@Test` annotation. However, the tests are run in debug mode by
   the `kotlinx.test` framework. Running litmus tests in the debug mode can affect their results, potentially hiding some
@@ -224,4 +256,17 @@ The project consists of several subprojects:
 * In practice, all cases of currently found relaxed behaviors can be consistently found in under a minute of running.
 * Avoid creating unnecessary objects inside threads, especially if they get shared. This not only significantly slows
   down the performance, but can also introduce unexpected relaxed behaviors.
-* The tool currently doesn't address the false sharing problem. The memory shuffling API is in development.
+* The tool currently doesn't address the false sharing problem. This has proven to be tricky if we wish to retain the
+  current flexibility of tests. But on the other hand, it is confirmed that eliminating false sharing improves the
+  results both quantitatively and qualitatively. At the moment, we are searching for a good solution to this problem.
+
+### JCStress-related
+
+* Do not forget to clean up JCStress `*.bin.gz` results from time to time. It is not done automatically so that older
+  run results are not lost (given that the `jcstress/results/` folder is overwritten on each run).
+* Avoid naming tests in a manner that can cause Java-related problems. For example, a test `SB.volatile` does not work
+  and is called `SB.vol` instead.
+* If for any reason JCStress interop is not working, you can try the following:
+  * `./gradlew jcstress-wrapper:clean`
+  * Go to `jcstress/` and `mvn clean`
+  * Go to your maven `.m2` cache and delete `.m2/repositories/org/jetbrains/litmuskt` (this is the last straw x_x)
