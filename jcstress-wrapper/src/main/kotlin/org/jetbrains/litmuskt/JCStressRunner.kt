@@ -25,21 +25,23 @@ class JCStressRunner(
         syncPeriod: Int,
         affinityMap: AffinityMap?
     ): () -> LitmusResult {
-        throw NotImplementedError("jcstress runner should not be called like this")
+        throw NotImplementedError("jcstress runner should not be called with explicit params like this")
     }
 
     override fun <S : Any> LitmusRunner.startTestParallel(
-        instances: Int,
+        test: LitmusTest<S>,
         params: LitmusRunParams,
-        test: LitmusTest<S>
+        instances: Int
     ): List<() -> LitmusResult> {
         throw NotImplementedError(
             "jcstress runs tests in parallel by default; asking for parallelism explicitly is meaningless"
         )
     }
 
-    // TODO: optimize for many tests (do not invoke jcstress many times)
-    override fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
+    internal fun startTests(
+        tests: List<LitmusTest<*>>,
+        params: LitmusRunParams
+    ): () -> List<LitmusResult> {
         val mvn = ProcessBuilder("mvn", "install", "verify", "-U")
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -59,7 +61,7 @@ class JCStressRunner(
             "target/jcstress.jar",
             *(jcsParams + jcstressFreeArgs),
             "-t",
-            test.javaClassName,
+            tests.joinToString("|") { "(${it.javaClassName})" },
         )
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -69,12 +71,17 @@ class JCStressRunner(
         return handle@{
             jcs.waitFor()
             if (jcs.exitValue() != 0) error("jcstress exited with code ${jcs.exitValue()}")
-            return@handle parseJCStressResults(test)
+            return@handle tests.map { test -> parseJCStressResults(test) }
         }
     }
 
-    fun parseJCStressResults(test: LitmusTest<*>): LitmusResult {
-        val resultsFile = jcstressDirectory / "results" / "org.jetbrains.litmuskt.${test.javaClassName}.html"
+    override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): () -> LitmusResult {
+        val handle = startTests(listOf(test), params)
+        return { handle().first() }
+    }
+
+    private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult {
+        val resultsFile = jcstressDirectory / "results" / "${test.javaFQN}.html"
         var lines = Files.lines(resultsFile).asSequence()
 
         val allOutcomes = test.outcomeSpec.all()
@@ -110,6 +117,12 @@ class JCStressRunner(
 
     private fun parseElementData(it: String) = it.dropWhile { it != '>' }.dropLastWhile { it != '<' }.trim('>', '<')
 }
+
+// does NOT shadow the common extension function, but can be accessed directly
+fun JCStressRunner.runTests(
+    tests: List<LitmusTest<*>>,
+    params: LitmusRunParams,
+): List<LitmusResult> = startTests(tests, params).invoke()
 
 /**
  * Split a sequence into two: one with the first [size] elements and one with the rest.

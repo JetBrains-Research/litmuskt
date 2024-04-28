@@ -42,6 +42,11 @@ class CliJvm : CliCommon() {
     override fun run() = if (runner is JCStressRunner) jcstressRun() else super.run()
 
     private fun jcstressRun() {
+        if (listOnly) {
+            runListOnly()
+            return
+        }
+
         val paramsList = variateRunParams(
             batchSizeSchedule = batchSizeSchedule,
             affinityMapSchedule = affinityMapSchedule,
@@ -73,10 +78,9 @@ class CliJvm : CliCommon() {
                 params.syncPeriod == DEFAULT_SYNC_EVERY
             ) JCStressRunner.DEFAULT_LITMUSKT_PARAMS else params // jcstress defaults are different
 
-            for (test in tests) {
-                val results = runner.runTest(jcsParams, test)
-                echo("\n" + results.generateTable())
-            }
+            val jcsRunner = runner as JCStressRunner // use the correct runTests()!
+            val results = jcsRunner.runTests(tests, jcsParams).first()
+            echo("\n" + results.generateTable())
         }
     }
 }

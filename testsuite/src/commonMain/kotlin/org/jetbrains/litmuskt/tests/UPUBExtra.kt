@@ -8,7 +8,7 @@ import kotlin.concurrent.Volatile
 
 @LitmusTestContainer
 object UPUBExtra {
-    val volatile = litmusTest({
+    val vol = litmusTest({
         object : LitmusIOutcome() {
             @Volatile
             var h: IntHolder? = null
