@@ -64,15 +64,27 @@ package $generatedPackage
 import $basePackage.LitmusTest
 
 object LitmusTestRegistry {
-    private val tests: Set<Pair<String, LitmusTest<*>>> = setOf(
-        ${namedTestsMap.entries.joinToString(",\n" + " ".repeat(8)) { (a, n) -> "\"$a\" to $n" }}
+
+    private data class TestData(
+        val alias: String,
+        val fqn: String,
+    )
+
+    private val tests: Map<LitmusTest<*>, TestData> = mapOf(
+        ${
+            namedTestsMap.entries.joinToString(",\n" + " ".repeat(8)) { (alias, fqn) ->
+                "$fqn to TestData(\"$alias\", \"$fqn\")"
+            }
+        }
     )
     
-    operator fun get(regex: Regex) = tests.filter { regex.matches(it.first) }.map { it.second }
+    operator fun get(regex: Regex): List<LitmusTest<*>> = 
+        tests.entries.filter { regex.matches(it.value.alias) }.map { it.key }
     
-    fun all() = tests.map { it.second }
+    fun all(): List<LitmusTest<*>> = tests.keys.toList()
     
-    fun resolveName(test: LitmusTest<*>) = tests.firstOrNull { it.second == test }?.first ?: "<unnamed>" 
+    fun getAlias(test: LitmusTest<*>): String = tests[test]?.alias ?: error("unknown test")
+    fun getFQN(test: LitmusTest<*>): String = tests[test]?.fqn ?: error("unknown test") 
 }
 
         """.trimIndent()

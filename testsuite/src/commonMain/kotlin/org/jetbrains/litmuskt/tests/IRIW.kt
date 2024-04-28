@@ -31,7 +31,7 @@ object IRIW {
         }
     }
 
-    val volatile = litmusTest({
+    val vol = litmusTest({
         object : LitmusIIIIOutcome() {
             @Volatile
             var x = 0

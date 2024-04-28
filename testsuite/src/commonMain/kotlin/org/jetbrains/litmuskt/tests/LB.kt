@@ -46,7 +46,7 @@ object LB {
         }
     }
 
-    val volatile = litmusTest({
+    val vol = litmusTest({
         object : LitmusIIOutcome() {
             @Volatile
             var x = 0

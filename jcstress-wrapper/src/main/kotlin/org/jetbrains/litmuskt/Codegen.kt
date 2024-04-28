@@ -1,8 +1,5 @@
 package org.jetbrains.litmuskt
 
-import org.jetbrains.litmuskt.LitmusAutoOutcome
-import org.jetbrains.litmuskt.LitmusOutcomeType
-import org.jetbrains.litmuskt.LitmusTest
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
@@ -11,13 +8,17 @@ import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.superclasses
 
-fun generateWrapperFile(test: LitmusTest<*>, jcstressDirectory: Path): Boolean {
-    val targetFile = jcstressDirectory / "generatedSrc/main/komem/litmus/${test.javaClassName}.java"
+fun generateWrapperFile(test: LitmusTest<*>, generatedSrc: Path): Boolean {
+    val targetFile = run {
+        val targetFilePackageFolder = test.qualifiedName.split(".").dropLast(2).joinToString("/")
+        val targetFileClassName = test.javaClassName + ".java"
+        generatedSrc / "main" / targetFilePackageFolder / targetFileClassName
+    }
     targetFile.createParentDirectories()
     val targetCode = try {
         generateWrapperCode(test)
     } catch (e: Throwable) {
-        System.err.println("WARNING: could not generate wrapper for ${test.name} because: ${e.message}")
+        System.err.println("WARNING: could not generate wrapper for ${test.alias} because: ${e.message}")
         return false
     }
     targetFile.writeText(targetCode)
@@ -44,12 +45,9 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
     }
 
     val javaTestGetter: String = run {
-        val parts = test.name.split(".")
-        val getter = "get" + parts.last() + "()"
-        val className = parts.dropLast(1).last() + "Kt"
-        val packages = parts.dropLast(2)
-        val packagesLine = if (packages.isEmpty()) "" else packages.joinToString(".", postfix = ".")
-        "$packagesLine$className.$getter"
+        val (className, testName) = test.alias.split(".")
+        val getter = "get${testName.replaceFirstChar { it.uppercaseChar() }}()"
+        "$className.INSTANCE.$getter"
     }
 
     val javaArbiterDecl: String = run {
@@ -81,7 +79,16 @@ public void a($jcstressResultClassName r) {
         LitmusOutcomeType.INTERESTING -> "ACCEPTABLE_INTERESTING"
     }
 
-    return wrapperCode(test, jcstressOutcomeDecls, jcstressDefaultOutcomeType, javaTestGetter, javaArbiterDecl)
+    val testParentClassFQN = test.qualifiedName.split(".").dropLast(1).joinToString(".")
+
+    return wrapperCode(
+        test,
+        jcstressOutcomeDecls,
+        jcstressDefaultOutcomeType,
+        javaTestGetter,
+        javaArbiterDecl,
+        testParentClassFQN
+    )
 }
 
 private fun javaThreadFunctionDecl(index: Int) =
@@ -100,20 +107,22 @@ fun wrapperCode(
     jcstressDefaultOutcomeType: String,
     javaTestGetter: String,
     javaArbiterDecl: String,
+    testParentClassFQN: String,
 ) = """
-package org.jetbrains.litmuskt;
+package ${test.qualifiedName.split(".").dropLast(2).joinToString(".")};
 
-import org.jetbrains.litmuskt.tests.*;
+import org.jetbrains.litmuskt.*;
+
+import $testParentClassFQN;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+import java.util.List;
 
 import org.openjdk.jcstress.annotations.*;
 import org.openjdk.jcstress.infra.results.*;
 
 import static org.openjdk.jcstress.annotations.Expect.*;
-
-import java.util.List;
 
 @JCStressTest
 @State
