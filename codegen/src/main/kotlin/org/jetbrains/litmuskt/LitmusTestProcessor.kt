@@ -25,7 +25,9 @@ class LitmusTestProcessor(private val codeGenerator: CodeGenerator) : SymbolProc
             return emptyList()
         }
 
-        val decls = testFiles.flatMap { it.declarations }.filterIsInstance<KSPropertyDeclaration>()
+        val decls = testFiles.flatMap { it.declarations }
+            .filterIsInstance<KSPropertyDeclaration>()
+            .filter { it.type.resolve().declaration.simpleName.asString() == "LitmusTest" }
         val namedTestsMap = decls.associate {
             val relativePackage = it.packageName.asString().removePrefix(testsPackage)
             val testAlias = (if (relativePackage.isEmpty()) "" else "$relativePackage.") +
