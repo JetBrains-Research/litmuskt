@@ -1,44 +1,66 @@
 package org.jetbrains.litmuskt
 
 import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 
 class LitmusTestProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return LitmusTestProcessor(environment.codeGenerator)
+        return LitmusTestProcessor(environment.codeGenerator, environment.logger)
     }
 }
 
-class LitmusTestProcessor(private val codeGenerator: CodeGenerator) : SymbolProcessor {
+private const val testContainerAnnotationFQN = "org.jetbrains.litmuskt.LitmusTestContainer"
+private const val basePackage = "org.jetbrains.litmuskt"
+private const val generatedPackage = "$basePackage.generated"
+private const val registryFileName = "LitmusTestRegistry"
+
+class LitmusTestProcessor(
+    private val codeGenerator: CodeGenerator,
+    private val logger: KSPLogger
+) : SymbolProcessor {
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val basePackage = "org.jetbrains.litmuskt"
-        val registryFileName = "LitmusTestRegistry"
-        val testsPackage = "$basePackage.tests"
+        val containerClassDecls = resolver.getSymbolsWithAnnotation(testContainerAnnotationFQN)
+            .filterIsInstance<KSClassDeclaration>()
+            .toList()
+        // check for name collisions
+        containerClassDecls
+            .groupingBy { it.simpleName.asString() }
+            .eachCount()
+            .filter { it.value > 1 }
+            .takeIf { it.isNotEmpty() }
+            ?.let { logger.error("container class name collision: $it") }
+        // check that all containers are objects
+        containerClassDecls
+            .filterNot { it.classKind == ClassKind.OBJECT }
+            .takeIf { it.isNotEmpty() }
+            ?.let { logger.error("container class must be an object: $it") }
 
-        val testFiles = resolver.getAllFiles().filter { it.packageName.asString() == testsPackage }.toList()
-        val dependencies = Dependencies(true, *testFiles.toTypedArray())
-
-        val registryFile = try {
-            codeGenerator.createNewFile(dependencies, "$basePackage.generated", registryFileName)
-        } catch (e: FileAlreadyExistsException) { // TODO: this is a workaround
-            return emptyList()
-        }
-
-        val decls = testFiles.flatMap { it.declarations }
-            .filterIsInstance<KSPropertyDeclaration>()
+        val decls = containerClassDecls
+            .flatMap { it.getAllProperties() }
             .filter { it.type.resolve().declaration.simpleName.asString() == "LitmusTest" }
+            .toList()
+        // should prevent extra rounds, or else createNewFile() will throw
+        if (decls.isEmpty()) return emptyList()
+
+        val inputFiles = decls.mapNotNull { it.containingFile }.toSet()
+        val dependencies = Dependencies(true, *inputFiles.toTypedArray())
+        val registryFile = codeGenerator.createNewFile(dependencies, generatedPackage, registryFileName)
+
         val namedTestsMap = decls.associate {
-            val relativePackage = it.packageName.asString().removePrefix(testsPackage)
-            val testAlias = (if (relativePackage.isEmpty()) "" else "$relativePackage.") +
-                    it.containingFile!!.fileName.removeSuffix(".kt") +
-                    "." + it.simpleName.getShortName()
-            val testName = it.qualifiedName!!.asString()
-            testAlias to testName
+            val testAlias = run {
+                val parentClassDecl = it.parentDeclaration
+                    ?: error("test declaration at ${it.location} has no parent container class")
+                parentClassDecl.simpleName.asString() + "." + it.simpleName.asString()
+            }
+            val testFQN = it.qualifiedName!!.asString()
+            testAlias to testFQN
         }
 
         val registryCode = """
-package $basePackage.generated
+package $generatedPackage
 import $basePackage.LitmusTest
 
 object LitmusTestRegistry {
