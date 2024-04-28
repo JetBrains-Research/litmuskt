@@ -30,7 +30,7 @@ class LitmusTestScope<S : Any>(
         outcomeSpec = LitmusOutcomeSpecScope<S>().apply(setup)
     }
 
-    fun build(): LitmusTest<S> {
+    fun build(): LitmusTest<*> {
         if (threadFunctions.size < 2) error("tests require at least two threads")
         if (!::outcomeSpec.isInitialized) error("spec not specified")
         val outcomeFinalizer: S.() -> LitmusOutcome = when {
@@ -43,7 +43,30 @@ class LitmusTestScope<S : Any>(
         }
         return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
     }
+
+    inner class InfixStage1 {
+        infix fun thread(function: S.() -> Unit): InfixStage1 = this.also {
+            this@LitmusTestScope.thread(function)
+        }
+
+        infix fun outcome(setup: S.() -> LitmusOutcome) = InfixStage2().also {
+            this@LitmusTestScope.outcome(setup)
+        }
+    }
+
+    inner class InfixStage2 {
+        infix fun spec(setup: LitmusOutcomeSpecScope<S>.() -> Unit): LitmusTest<*> {
+            this@LitmusTestScope.spec(setup)
+            return build()
+        }
+    }
 }
+
+infix fun <S : LitmusAutoOutcome> (LitmusTestScope<S>.InfixStage1).spec(
+    setup: LitmusOutcomeSpecScope<S>.() -> Unit
+) = outcome { this@outcome }.spec(setup)
 
 fun <S : Any> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
     LitmusTestScope(stateProducer).apply(setup).build()
+
+fun <S : Any> litmusTest(stateProducer: () -> S) = LitmusTestScope(stateProducer).InfixStage1()
