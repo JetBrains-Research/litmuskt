@@ -171,6 +171,25 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
 }
 ```
 
+There also is an alternative, even shorter syntax based on infix functions:
+
+```kotlin
+val infixStoreBuffering = litmusTest {
+  object : LitmusIIOutcome() {
+    var x = 0
+    var y = 0
+  }
+} thread {
+  x = 1
+  r1 = y
+} thread {
+  y = 1
+  r2 = x
+} spec {
+  // ...
+}
+```
+
 ### Litmus Test Runners
 
 Litmus tests are run with a `LitmusRunner`. This interface has several running functions:
@@ -225,8 +244,9 @@ The project consists of several subprojects:
 
 ## Important notes
 
-* If you decide to add some litmus tests, you **must** put them into `:testsuite` subproject and
-  into `org.jetbrains.litmuskt.tests` package. Deeper packages are allowed.
+* If you decide to add some litmus tests, and you want them to be detected by CLI, you **must** put them
+  into `:testsuite` subproject and into a "container" `object` annotated with `@LitmusTestContainer` (see existing tests
+  as examples) as object properties.
 * Setting thread affinity is not supported on macOS yet. As such, `getAffinityManager()` returns `null` on macOS.
 * It is possible to run the tests with `@Test` annotation. However, the tests are run in debug mode by
   the `kotlinx.test` framework. Running litmus tests in the debug mode can affect their results, potentially hiding some
@@ -237,4 +257,5 @@ The project consists of several subprojects:
 * The tool currently doesn't address the false sharing problem. This has proven to be tricky if we wish to retain the
   current flexibility of tests. But on the other hand, it is confirmed that eliminating false sharing improves the
   results both quantitatively and qualitatively. At the moment, we are searching for a good solution to this problem.
-* Do not forget to clean up JCStress `*.bin.gz` results from time to time as it is not done automatically.
+* Do not forget to clean up JCStress `*.bin.gz` results from time to time. It is not done automatically so that older
+  run results are not lost (given that the `jcstress/results/` folder is overwritten on each run).
