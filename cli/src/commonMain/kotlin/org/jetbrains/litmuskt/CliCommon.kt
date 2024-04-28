@@ -8,7 +8,6 @@ import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.int
 import org.jetbrains.litmuskt.generated.LitmusTestRegistry
-import org.jetbrains.litmuskt.*
 import kotlin.time.Duration
 
 abstract class CliCommon : CliktCommand(
@@ -65,8 +64,7 @@ abstract class CliCommon : CliktCommand(
             runListOnly()
             return
         }
-        echo("selected tests: \n" + tests.joinToString("\n") { " - " + it.name })
-        echo("in total: ${tests.size} tests")
+        echo("selected ${tests.size} tests: \n" + tests.joinToString("\n") { " - " + it.name })
         echo()
 
         val paramsList = variateRunParams(
@@ -83,7 +81,7 @@ abstract class CliCommon : CliktCommand(
         echo()
 
         for (test in tests) {
-            echo("running test ${LitmusTestRegistry.resolveName(test)}...")
+            echo("running test ${test.name}...")
             // TODO: handle exceptions
             paramsList.map { params ->
                 // TODO: print ETA (later: calculate based on part of run)
