@@ -244,7 +244,9 @@ The project consists of several subprojects:
 
 ## Important notes
 
-* If you decide to add some litmus tests, and you want them to be detected by CLI, you **must** put them
+### General notes
+
+* If you decide to add some litmus tests, and you want them to be detected by CLI or JCStress, you **must** put them
   into `:testsuite` subproject and into a "container" `object` annotated with `@LitmusTestContainer` (see existing tests
   as examples) as object properties.
 * Setting thread affinity is not supported on macOS yet. As such, `getAffinityManager()` returns `null` on macOS.
@@ -257,5 +259,14 @@ The project consists of several subprojects:
 * The tool currently doesn't address the false sharing problem. This has proven to be tricky if we wish to retain the
   current flexibility of tests. But on the other hand, it is confirmed that eliminating false sharing improves the
   results both quantitatively and qualitatively. At the moment, we are searching for a good solution to this problem.
+
+### JCStress-related
+
 * Do not forget to clean up JCStress `*.bin.gz` results from time to time. It is not done automatically so that older
   run results are not lost (given that the `jcstress/results/` folder is overwritten on each run).
+* Avoid naming tests in a manner that can cause Java-related problems. For example, a test `SB.volatile` does not work
+  and is called `SB.vol` instead.
+* If for any reason JCStress interop is not working, you can try the following:
+  * `./gradlew jcstress-wrapper:clean`
+  * Go to `jcstress/` and `mvn clean`
+  * Go to your maven `.m2` cache and delete `.m2/repositories/org/jetbrains/litmuskt` (this is the last straw x_x)
