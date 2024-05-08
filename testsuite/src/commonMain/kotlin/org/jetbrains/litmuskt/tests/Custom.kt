@@ -1,6 +1,10 @@
 package org.jetbrains.litmuskt.tests
 
-import org.jetbrains.litmuskt.*
+import org.jetbrains.litmuskt.LitmusTestContainer
+import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
+import org.jetbrains.litmuskt.autooutcomes.accept
+import org.jetbrains.litmuskt.autooutcomes.interesting
+import org.jetbrains.litmuskt.litmusTest
 
 @LitmusTestContainer
 object Custom {

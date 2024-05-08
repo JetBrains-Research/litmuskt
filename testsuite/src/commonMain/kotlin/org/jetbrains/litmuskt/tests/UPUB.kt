@@ -1,8 +1,8 @@
 package org.jetbrains.litmuskt.tests
 
-import org.jetbrains.litmuskt.LitmusIOutcome
 import org.jetbrains.litmuskt.LitmusTestContainer
-import org.jetbrains.litmuskt.accept
+import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
+import org.jetbrains.litmuskt.autooutcomes.accept
 import org.jetbrains.litmuskt.litmusTest
 
 data class IntHolder(val x: Int)

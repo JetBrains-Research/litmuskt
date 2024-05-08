@@ -1,5 +1,7 @@
 package org.jetbrains.litmuskt
 
+import org.jetbrains.litmuskt.autooutcomes.LitmusAutoOutcome
+
 data class LitmusTest<S : Any>(
     val stateProducer: () -> S,
     val threadFunctions: List<S.() -> Unit>,
