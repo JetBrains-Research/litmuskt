@@ -45,5 +45,5 @@ class LitmusTestScope<S : Any>(
     }
 }
 
-fun <S : Any> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit) =
+fun <S : Any> litmusTest(stateProducer: () -> S, setup: LitmusTestScope<S>.() -> Unit): LitmusTest<*> =
     LitmusTestScope(stateProducer).apply(setup).build()
