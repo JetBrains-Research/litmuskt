@@ -20,20 +20,26 @@ kotlin {
                 implementation(project(":core"))
             }
             // ksp
-            kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin/"))
+//            kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin/"))
         }
     }
 }
 
 // ======== ksp ========
 
-dependencies {
-    add("kspCommonMainMetadata", project(":codegen"))
-}
+val kspTasks = setOf("kspJvm", "kspLinuxX64", "kspMacosX64", "kspMacosArm64")
 
-tasks.whenTaskAdded {
-    if (name == "kspCommonMainKotlinMetadata") {
-        val kspTask = this
-        tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
+dependencies {
+    for (kspTask in kspTasks) {
+        add(kspTask, project(":codegen"))
     }
 }
+
+// the following lines ruin the build for no reason whatsoever
+
+//tasks.whenTaskAdded {
+//    if (name in kspTasks) {
+//        val kspTask = this
+//        tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
+//    }
+//}

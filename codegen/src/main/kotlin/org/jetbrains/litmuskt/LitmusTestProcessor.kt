@@ -63,7 +63,7 @@ class LitmusTestProcessor(
 package $generatedPackage
 import $basePackage.LitmusTest
 
-object LitmusTestRegistry {
+actual object LitmusTestRegistry {
 
     private data class TestData(
         val alias: String,
