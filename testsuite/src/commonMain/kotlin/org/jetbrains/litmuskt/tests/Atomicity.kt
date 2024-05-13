@@ -6,8 +6,9 @@ import org.jetbrains.litmuskt.accept
 import org.jetbrains.litmuskt.litmusTest
 
 @LitmusTestContainer
-object ATOM {
-    val plain = litmusTest({
+object Atomicity {
+
+    val Plain = litmusTest({
         object : LitmusIOutcome() {
             var x = 0
         }
@@ -23,4 +24,5 @@ object ATOM {
             accept(-1)
         }
     }
+
 }

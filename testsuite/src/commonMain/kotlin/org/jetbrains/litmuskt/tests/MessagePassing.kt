@@ -4,8 +4,9 @@ import org.jetbrains.litmuskt.*
 import kotlin.concurrent.Volatile
 
 @LitmusTestContainer
-object SB {
-    val plain = litmusTest({
+object MessagePassing {
+
+    val Plain = litmusTest({
         object : LitmusIIOutcome() {
             var x = 0
             var y = 0
@@ -13,22 +14,21 @@ object SB {
     }) {
         thread {
             x = 1
-            r1 = y
+            y = 1
         }
         thread {
-            y = 1
+            r1 = y
             r2 = x
         }
-        // no need for explicit outcome{}
         spec {
+            accept(0, 0)
             accept(0, 1)
-            accept(1, 0)
             accept(1, 1)
-            interesting(0, 0)
+            interesting(1, 0)
         }
     }
 
-    val volatile = litmusTest({
+    val Volatile = litmusTest({
         object : LitmusIIOutcome() {
             @Volatile
             var x = 0
@@ -39,17 +39,38 @@ object SB {
     }) {
         thread {
             x = 1
-            r1 = y
+            y = 1
         }
         thread {
-            y = 1
+            r1 = y
             r2 = x
         }
         spec {
+            accept(0, 0)
             accept(0, 1)
-            accept(1, 0)
             accept(1, 1)
-            forbid(0, 0) // redundant as forbidden is the default
         }
     }
+
+    val RaceFree = litmusTest({
+        object : LitmusIOutcome() {
+            var x = 0
+
+            @Volatile
+            var y = 0
+        }
+    }) {
+        thread {
+            x = 1
+            y = 1
+        }
+        thread {
+            r1 = if (y != 0) x else -1
+        }
+        spec {
+            accept(1)
+            accept(-1)
+        }
+    }
+
 }

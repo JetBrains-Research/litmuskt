@@ -7,13 +7,12 @@ import org.jetbrains.litmuskt.litmusTest
 
 data class IntHolder(val x: Int)
 
-class IntHolderCtor {
-    val x = 1
-}
+class IntHolderWithConstructor(val x: Int = 1)
 
 @LitmusTestContainer
-object UPUB {
-    val plain = litmusTest({
+object UnsafePublication {
+
+    val Plain = litmusTest({
         object : LitmusIOutcome() {
             var h: IntHolder? = null
         }
@@ -30,13 +29,13 @@ object UPUB {
         }
     }
 
-    val ctor = litmusTest({
+    val PlainWithConstructor = litmusTest({
         object : LitmusIOutcome() {
-            var h: IntHolderCtor? = null
+            var h: IntHolderWithConstructor? = null
         }
     }) {
         thread {
-            h = IntHolderCtor()
+            h = IntHolderWithConstructor()
         }
         thread {
             r1 = h?.x ?: -1
@@ -46,4 +45,5 @@ object UPUB {
             accept(-1)
         }
     }
+
 }

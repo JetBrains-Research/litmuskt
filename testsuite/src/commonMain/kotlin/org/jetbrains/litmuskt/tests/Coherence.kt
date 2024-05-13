@@ -3,8 +3,9 @@ package org.jetbrains.litmuskt.tests
 import org.jetbrains.litmuskt.*
 
 @LitmusTestContainer
-object CoRR {
-    val plain = litmusTest({
+object Coherence {
+
+    val Plain = litmusTest({
         object : LitmusIIOutcome() {
             var x = 0
         }
@@ -47,4 +48,5 @@ object CoRR {
             default(LitmusOutcomeType.ACCEPTED)
         }
     }
+
 }

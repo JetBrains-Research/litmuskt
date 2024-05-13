@@ -4,8 +4,9 @@ import org.jetbrains.litmuskt.*
 import kotlin.concurrent.Volatile
 
 @LitmusTestContainer
-object IRIW {
-    val plain = litmusTest({
+object IndependentReadsOfIndependentWrites {
+
+    val Plain = litmusTest({
         object : LitmusIIIIOutcome() {
             var x = 0
             var y = 0
@@ -31,7 +32,7 @@ object IRIW {
         }
     }
 
-    val volatile = litmusTest({
+    val Volatile = litmusTest({
         object : LitmusIIIIOutcome() {
             @Volatile
             var x = 0
@@ -59,4 +60,5 @@ object IRIW {
             default(LitmusOutcomeType.ACCEPTED)
         }
     }
+
 }

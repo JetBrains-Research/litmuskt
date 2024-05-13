@@ -4,8 +4,9 @@ import org.jetbrains.litmuskt.*
 import kotlin.concurrent.Volatile
 
 @LitmusTestContainer
-object LB {
-    val OOTA = litmusTest({
+object LoadBuffering {
+
+    val NoOutOfThinAirValues = litmusTest({
         object : LitmusIIOutcome() {
             var x = 0
             var y = 0
@@ -24,7 +25,7 @@ object LB {
         }
     }
 
-    val plain = litmusTest({
+    val Plain = litmusTest({
         object : LitmusIIOutcome() {
             var x = 0
             var y = 0
@@ -46,7 +47,7 @@ object LB {
         }
     }
 
-    val volatile = litmusTest({
+    val Volatile = litmusTest({
         object : LitmusIIOutcome() {
             @Volatile
             var x = 0
@@ -70,7 +71,7 @@ object LB {
         }
     }
 
-    val fakeDeps = litmusTest({
+    val PlainWithFakeDependencies = litmusTest({
         object : LitmusIIOutcome() {
             var x = 0
             var y = 0
@@ -89,4 +90,5 @@ object LB {
             accept(0, 1)
         }
     }
+
 }
