@@ -6,12 +6,10 @@ import org.jetbrains.litmuskt.accept
 import org.jetbrains.litmuskt.litmusTest
 import kotlin.concurrent.Volatile
 
-data class IntHolder(val x: Int)
-
-class IntHolderWithConstructor(val x: Int = 1)
-
 @LitmusTestContainer
 object UnsafePublication {
+
+    private data class IntHolder(val x: Int = 0)
 
     val Plain = litmusTest({
         object : LitmusIOutcome() {
@@ -19,7 +17,7 @@ object UnsafePublication {
         }
     }) {
         thread {
-            h = IntHolder(0)
+            h = IntHolder()
         }
         thread {
             r1 = h?.x ?: -1
@@ -37,7 +35,7 @@ object UnsafePublication {
         }
     }) {
         thread {
-            h = IntHolder(0)
+            h = IntHolder()
         }
         thread {
             r1 = h?.x ?: -1
@@ -50,11 +48,11 @@ object UnsafePublication {
 
     val PlainWithConstructor = litmusTest({
         object : LitmusIOutcome() {
-            var h: IntHolderWithConstructor? = null
+            var h: IntHolder? = null
         }
     }) {
         thread {
-            h = IntHolderWithConstructor()
+            h = IntHolder(x = 1)
         }
         thread {
             r1 = h?.x ?: -1
@@ -65,7 +63,7 @@ object UnsafePublication {
         }
     }
 
-    val Array = litmusTest({
+    val PlainArray = litmusTest({
         object : LitmusIOutcome() {
             var arr: Array<Int>? = null
         }
@@ -82,17 +80,16 @@ object UnsafePublication {
         }
     }
 
-    private class UPUBRefInner(val x: Int)
-    private class UPUBRefHolder(val ref: UPUBRefInner)
+    private class RefHolder(val ref: IntHolder)
 
     val Reference = litmusTest({
         object : LitmusIOutcome() {
-            var h: UPUBRefHolder? = null
+            var h: RefHolder? = null
         }
     }) {
         thread {
-            val ref = UPUBRefInner(1)
-            h = UPUBRefHolder(ref)
+            val ref = IntHolder(x = 1)
+            h = RefHolder(ref)
         }
         thread {
             val t = h
@@ -104,29 +101,28 @@ object UnsafePublication {
         }
     }
 
-    private class UPUBIntHolderInnerLeaking {
-        var ih: InnerHolder? = null
+    private class LeakingIntHolderContext {
+        var ih: LeakingIntHolder? = null
 
-        inner class InnerHolder {
-            val x: Int
+        inner class LeakingIntHolder {
+            val x: Int = 1
 
             init {
-                x = 1
                 ih = this
             }
         }
     }
 
-    val ctorLeaking = litmusTest({
+    val PlainWithLeakingConstructor = litmusTest({
         object : LitmusIOutcome() {
-            var h = UPUBIntHolderInnerLeaking()
+            var ctx = LeakingIntHolderContext()
         }
     }) {
         thread {
-            h.InnerHolder()
+            ctx.LeakingIntHolder()
         }
         thread {
-            r1 = h.ih?.x ?: -1
+            r1 = ctx.ih?.x ?: -1
         }
         spec {
             accept(1)
