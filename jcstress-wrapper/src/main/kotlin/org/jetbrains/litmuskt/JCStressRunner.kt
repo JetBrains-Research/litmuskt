@@ -80,11 +80,31 @@ class JCStressRunner(
         return { handle().first() }
     }
 
+    /**
+     * Parses JCStress HTML output file. Here is the expected structure of the file, using SB as an example:
+     *
+     * ...
+     * <th colspan=3>Observed States</th>    <-- read the number of observed states
+     * </tr>
+     * <tr>
+     * <th colspan=4></th>
+     * <th nowrap align='center'>0, 1</th>   <-- read the observed states in this order
+     * <th nowrap align='center'>1, 0</th>
+     * <th nowrap align='center'>1, 1</th>
+     * ...
+     * </td>
+     * <td align='center' bgColor='green '>OK</td>
+     * <td align='right' width='33.333333333333336%' bgColor=#00ff00>3</td>   <-- read the number of times observed
+     * <td align='right' width='33.333333333333336%' bgColor=#00ff00>1</td>
+     * <td align='right' width='33.333333333333336%' bgColor=#c0c0c0>0</td>
+     * </tr>    <-- these lines repeat per each configuration, so the results are summed in the end
+     * ...
+     */
     private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult {
         val resultsFile = jcstressDirectory / "results" / "${test.javaFQN}.html"
         var lines = Files.lines(resultsFile).asSequence()
 
-        val allOutcomes = test.outcomeSpec.all()
+        val allOutcomes = test.outcomeSpec.all
         val outcomeStrings = allOutcomes.associateBy { it.toString().trim('(', ')') }
 
         // get the number of observed outcomes

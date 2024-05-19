@@ -23,7 +23,7 @@ data class LitmusOutcomeSpec(
         else -> default
     }
 
-    fun all() = accepted + interesting + forbidden
+    val all = accepted + interesting + forbidden
 }
 
 /**
