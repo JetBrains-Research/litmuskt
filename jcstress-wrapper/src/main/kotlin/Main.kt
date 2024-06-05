@@ -10,9 +10,8 @@ fun main() {
     var successCnt = 0
     val allTests = LitmusTestRegistry.all()
     val generatedSrc = jcstressDirectory / "generatedSrc"
-    try {
+    runCatching {
         generatedSrc.deleteRecursively()
-    } catch (_: Exception) {
     }
     for (test in allTests) {
         val success = generateWrapperFile(test, generatedSrc)
