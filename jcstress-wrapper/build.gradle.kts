@@ -34,3 +34,9 @@ tasks.register<Copy>("copyTestsuiteToJCStress") {
         if (inputs.sourceFiles.isEmpty) throw GradleException("missing files to copy")
     }
 }
+
+tasks.register<Delete>("cleanJCStress") {
+    delete(jcsDir.dir("generatedSrc"), jcsDir.dir("libs"))
+}
+
+tasks.getByName("clean").finalizedBy("cleanJCStress")

@@ -32,7 +32,8 @@ object IndependentReadsOfIndependentWrites {
         }
     }
 
-    val Volatile = litmusTest({
+    // because of Java, tests cannot be named "Volatile"
+    val VolatileAnnotated = litmusTest({
         object : LitmusIIIIOutcome() {
             @Volatile
             var x = 0

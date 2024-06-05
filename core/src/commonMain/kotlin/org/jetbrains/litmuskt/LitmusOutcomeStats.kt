@@ -22,6 +22,8 @@ data class LitmusOutcomeSpec(
         in forbidden -> LitmusOutcomeType.FORBIDDEN
         else -> default
     }
+
+    val all = accepted + interesting + forbidden
 }
 
 /**

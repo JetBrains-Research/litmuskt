@@ -35,7 +35,7 @@ abstract class CliCommon : CliktCommand(
                     fail("invalid regex: $it")
                 }
             }
-            regexes.flatMap { LitmusTestRegistry[it] }.toSet()
+            regexes.flatMap { LitmusTestRegistry[it] }
         }
         .check("no tests were selected") { it.isNotEmpty() || listOnly }
 
@@ -49,7 +49,8 @@ abstract class CliCommon : CliktCommand(
 
     protected open val duration by option("-d", "--duration")
         .convert { Duration.parse(it) }
-        .check("value must be positive") { it.isPositive() }
+        .default(Duration.ZERO)
+        .check("value must not be negative") { !it.isNegative() }
 
     protected abstract val affinityMapSchedule: List<AffinityMap?>
     protected abstract val runner: LitmusRunner
@@ -64,7 +65,7 @@ abstract class CliCommon : CliktCommand(
             runListOnly()
             return
         }
-        echo("selected ${tests.size} tests: \n" + tests.joinToString("\n") { " - " + it.name })
+        echo("selected ${tests.size} tests: \n" + tests.joinToString("\n") { " - " + it.alias })
         echo()
 
         val paramsList = variateRunParams(
@@ -81,10 +82,10 @@ abstract class CliCommon : CliktCommand(
         echo()
 
         for (test in tests) {
-            echo("running test ${test.name}...")
+            echo("running test ${test.alias}...")
             // TODO: handle exceptions
+            // TODO: print ETA (later: calculate based on part of run)
             paramsList.map { params ->
-                // TODO: print ETA (later: calculate based on part of run)
                 runTest(params, test)
             }.mergeResults().let {
                 echo(it.generateTable())
@@ -94,38 +95,24 @@ abstract class CliCommon : CliktCommand(
     }
 
     private fun runTest(params: LitmusRunParams, test: LitmusTest<*>): LitmusResult {
-        val timeLimit = duration
         return when (parallelism) {
             PARALLELISM_DISABLED -> {
-                if (timeLimit == null) {
-                    runner.runTest(params, test)
-                } else {
-                    runner.runTest(timeLimit, params, test)
-                }
+                // note: not running all tests here because of changing params
+                runner.runTests(listOf(test), params, duration).first()
             }
-
             PARALLELISM_AUTO -> {
-                if (timeLimit == null) {
-                    runner.runTestParallel(params, test)
-                } else {
-                    runner.runTestParallel(timeLimit, params, test)
-                }
+                runner.runSingleTestParallel(test, params, timeLimit = duration)
             }
-
             else -> {
-                if (timeLimit == null) {
-                    runner.runTestParallel(parallelism, params, test)
-                } else {
-                    runner.runTestParallel(parallelism, timeLimit, params, test)
-                }
+                runner.runSingleTestParallel(test, params, timeLimit = duration, instances = parallelism)
             }
         }
     }
 
-    private fun runListOnly() {
-        echo("all known tests:\n" + LitmusTestRegistry.all().joinToString("\n") { " * " + it.name })
+    protected fun runListOnly() {
+        echo("all known tests:\n" + LitmusTestRegistry.all().joinToString("\n") { " * " + it.alias })
         echo()
-        echo("selected tests:\n" + tests.joinToString("\n") { " - " + it.name })
+        echo("selected tests:\n" + tests.joinToString("\n") { " - " + it.alias })
     }
 }
 

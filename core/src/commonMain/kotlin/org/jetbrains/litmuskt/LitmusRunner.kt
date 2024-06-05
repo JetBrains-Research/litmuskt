@@ -21,7 +21,7 @@ abstract class LitmusRunner {
      * Entry point for running tests. This method can be overridden in case that particular runner
      * does not need to allocate states.
      */
-    open fun <S : Any> startTest(params: LitmusRunParams, test: LitmusTest<S>): () -> LitmusResult {
+    open fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): () -> LitmusResult {
         val states = TypedArray(params.batchSize) { test.stateProducer() }
         return startTest(test, states, params.barrierProducer, params.syncPeriod, params.affinityMap)
     }
@@ -35,9 +35,9 @@ abstract class LitmusRunner {
      * first instance will have a [ [0], [1] ] map and the second one will have [ [2], [3] ].
      */
     open fun <S : Any> LitmusRunner.startTestParallel(
-        instances: Int,
-        params: LitmusRunParams,
         test: LitmusTest<S>,
+        params: LitmusRunParams,
+        instances: Int,
     ): List<() -> LitmusResult> {
         // separated due to allocations severely impacting threads
         val allStates = List(instances) {
@@ -101,60 +101,38 @@ abstract class LitmusRunner {
     }
 }
 
-fun <S : Any> LitmusRunner.runTest(
-    params: LitmusRunParams,
+/**
+ * Runs [test] with [params], [timeLimit] and in parallel [instances].
+ *
+ * If [timeLimit] is not given, run the test once. If [instances] is not given, use as
+ * many as possible without overlapping CPU cores between instances.
+ */
+fun <S : Any> LitmusRunner.runSingleTestParallel(
     test: LitmusTest<S>,
-): LitmusResult = startTest(params, test).invoke()
+    params: LitmusRunParams,
+    timeLimit: Duration = Duration.ZERO,
+    instances: Int = cpuCount() / test.threadCount,
+): LitmusResult = repeatFor(timeLimit) {
+    startTestParallel(test, params, instances).map { it() }.mergeResults()
+}.mergeResults()
 
-fun <S : Any> LitmusRunner.runTest(
-    timeLimit: Duration,
+/**
+ * Runs [tests] one by one, each with [params] and [timeLimit].
+ *
+ * If [timeLimit] is not given, run each test once.
+ */
+fun LitmusRunner.runTests(
+    tests: List<LitmusTest<*>>,
     params: LitmusRunParams,
-    test: LitmusTest<S>,
-): LitmusResult {
-    val results = mutableListOf<LitmusResult>()
-    val start = TimeSource.Monotonic.markNow()
-    while (start.elapsedNow() < timeLimit) {
-        results += runTest(params, test)
-    }
-    return results.mergeResults()
+    timeLimit: Duration = Duration.ZERO,
+): List<LitmusResult> = tests.map { test ->
+    repeatFor(timeLimit) { startTest(test, params).invoke() }.mergeResults()
 }
 
-fun <S : Any> LitmusRunner.runTestParallel(
-    instances: Int,
-    params: LitmusRunParams,
-    test: LitmusTest<S>,
-): LitmusResult = startTestParallel(instances, params, test).map { it() }.mergeResults()
-
-fun <S : Any> LitmusRunner.runTestParallel(
-    params: LitmusRunParams,
-    test: LitmusTest<S>
-): LitmusResult = runTestParallel(
-    cpuCount() / test.threadCount,
-    params,
-    test
-)
-
-fun <S : Any> LitmusRunner.runTestParallel(
-    instances: Int,
-    timeLimit: Duration,
-    params: LitmusRunParams,
-    test: LitmusTest<S>,
-): LitmusResult {
-    val results = mutableListOf<LitmusResult>()
+// guaranteed to run [f] at least once
+private inline fun <T> repeatFor(duration: Duration, crossinline f: () -> T): List<T> = buildList {
     val start = TimeSource.Monotonic.markNow()
-    while (start.elapsedNow() < timeLimit) {
-        results += runTestParallel(instances, params, test)
-    }
-    return results.mergeResults()
+    do {
+        add(f())
+    } while (start.elapsedNow() < duration)
 }
-
-fun <S : Any> LitmusRunner.runTestParallel(
-    timeLimit: Duration,
-    params: LitmusRunParams,
-    test: LitmusTest<S>,
-): LitmusResult = runTestParallel(
-    cpuCount() / test.threadCount,
-    timeLimit,
-    params,
-    test
-)

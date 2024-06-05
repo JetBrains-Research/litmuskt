@@ -1,12 +1,20 @@
 import org.jetbrains.litmuskt.generateWrapperFile
 import org.jetbrains.litmuskt.generated.LitmusTestRegistry
+import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.div
 
+@OptIn(ExperimentalPathApi::class)
 fun main() {
     var successCnt = 0
     val allTests = LitmusTestRegistry.all()
+    val generatedSrc = jcstressDirectory / "generatedSrc"
+    runCatching {
+        generatedSrc.deleteRecursively()
+    }
     for (test in allTests) {
-        val success = generateWrapperFile(test, jcstressDirectory)
+        val success = generateWrapperFile(test, generatedSrc)
         if (success) successCnt++
     }
     if (successCnt != allTests.size) {
@@ -14,5 +22,5 @@ fun main() {
     }
 }
 
-val jcstressDirectory
-    get() = Path(System.getenv("JCS_DIR") ?: error("JCS_DIR envvar is not set"))
+// TODO: this is very shaky, only works because all subprojects are on the same level
+val jcstressDirectory = Path("../jcstress/")

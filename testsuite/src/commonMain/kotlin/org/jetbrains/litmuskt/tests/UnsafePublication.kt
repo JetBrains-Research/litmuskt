@@ -28,7 +28,7 @@ object UnsafePublication {
         }
     }
 
-    val Volatile = litmusTest({
+    val VolatileAnnotated = litmusTest({
         object : LitmusIOutcome() {
             @Volatile
             var h: IntHolder? = null

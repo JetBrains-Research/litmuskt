@@ -29,7 +29,7 @@ object StoreBuffering {
         }
     }
 
-    val Volatile = litmusTest({
+    val VolatileAnnotated = litmusTest({
         object : LitmusIIOutcome() {
             @Volatile
             var x = 0
