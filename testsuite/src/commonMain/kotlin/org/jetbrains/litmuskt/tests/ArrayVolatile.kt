@@ -5,6 +5,7 @@ import org.jetbrains.litmuskt.autooutcomes.LitmusIIOutcome
 import org.jetbrains.litmuskt.autooutcomes.accept
 import org.jetbrains.litmuskt.autooutcomes.interesting
 import org.jetbrains.litmuskt.litmusTest
+import kotlin.concurrent.Volatile
 
 // source: https://github.com/openjdk/jcstress/blob/master/jcstress-samples/src/main/java/org/openjdk/jcstress/samples/jmm/advanced/AdvancedJMM_08_ArrayVolatility.java
 @LitmusTestContainer
@@ -12,7 +13,9 @@ object ArrayVolatile {
 
     val vol = litmusTest({
         object : LitmusIIOutcome() {
-            val arr = IntArray(2)
+            // @Volatile cannot be put on `val`-s
+            @Volatile
+            var arr = IntArray(2)
         }
     }) {
         thread {

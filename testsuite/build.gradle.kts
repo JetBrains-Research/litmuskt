@@ -19,8 +19,6 @@ kotlin {
             dependencies {
                 implementation(project(":core"))
             }
-            // ksp
-//            kotlin.srcDir(layout.buildDirectory.dir("generated/ksp/metadata/commonMain/kotlin/"))
         }
     }
 }
@@ -34,12 +32,3 @@ dependencies {
         add(kspTask, project(":codegen"))
     }
 }
-
-// the following lines ruin the build for no reason whatsoever
-
-//tasks.whenTaskAdded {
-//    if (name in kspTasks) {
-//        val kspTask = this
-//        tasks.matching { it.name.startsWith("compileKotlin") }.forEach { it.dependsOn(kspTask) }
-//    }
-//}
