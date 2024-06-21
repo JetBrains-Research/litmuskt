@@ -63,7 +63,7 @@ class LitmusTestProcessor(
 package $generatedPackage
 import $basePackage.LitmusTest
 
-object LitmusTestRegistry {
+actual object LitmusTestRegistry {
 
     private data class TestData(
         val alias: String,
@@ -78,13 +78,12 @@ object LitmusTestRegistry {
         }
     )
     
-    operator fun get(regex: Regex): List<LitmusTest<*>> = 
+    actual operator fun get(regex: Regex): List<LitmusTest<*>> = 
         tests.entries.filter { regex.matches(it.value.alias) }.map { it.key }
     
-    fun all(): List<LitmusTest<*>> = tests.keys.toList()
-    
-    fun getAlias(test: LitmusTest<*>): String = tests[test]?.alias ?: error("unknown test")
-    fun getFQN(test: LitmusTest<*>): String = tests[test]?.fqn ?: error("unknown test") 
+    actual fun all(): List<LitmusTest<*>> = tests.keys.toList()
+    actual fun getAlias(test: LitmusTest<*>): String = tests[test]?.alias ?: error("unknown test")
+    actual fun getFQN(test: LitmusTest<*>): String = tests[test]?.fqn ?: error("unknown test") 
 }
 
         """.trimIndent()

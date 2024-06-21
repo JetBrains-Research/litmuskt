@@ -1,5 +1,6 @@
 package org.jetbrains.litmuskt
 
+import org.jetbrains.litmuskt.autooutcomes.LitmusAutoOutcome
 import java.nio.file.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.div
@@ -112,6 +113,7 @@ fun wrapperCode(
 package ${test.qualifiedName.split(".").dropLast(2).joinToString(".")};
 
 import org.jetbrains.litmuskt.*;
+import org.jetbrains.litmuskt.autooutcomes.*;
 
 import $testParentClassFQN;
 

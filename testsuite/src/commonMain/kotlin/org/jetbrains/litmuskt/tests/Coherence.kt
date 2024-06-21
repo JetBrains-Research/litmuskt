@@ -1,6 +1,12 @@
 package org.jetbrains.litmuskt.tests
 
-import org.jetbrains.litmuskt.*
+import org.jetbrains.litmuskt.LitmusOutcomeType
+import org.jetbrains.litmuskt.LitmusTestContainer
+import org.jetbrains.litmuskt.autooutcomes.LitmusIIIOutcome
+import org.jetbrains.litmuskt.autooutcomes.LitmusIIOutcome
+import org.jetbrains.litmuskt.autooutcomes.accept
+import org.jetbrains.litmuskt.autooutcomes.interesting
+import org.jetbrains.litmuskt.litmusTest
 
 @LitmusTestContainer
 object Coherence {
