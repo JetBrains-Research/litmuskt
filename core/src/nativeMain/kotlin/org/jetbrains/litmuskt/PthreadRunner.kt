@@ -20,10 +20,6 @@ private fun <S : Any> threadRoutine(data: ThreadData<S>): Unit = with(data) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
-// pthread_t = ULong
-private typealias PthreadVar = ULongVar
-
 /**
  * A runner based on pthread API provided by C interop from stdlib.
  */
@@ -47,20 +43,7 @@ class PthreadRunner : LitmusRunner() {
             val threadData = ThreadData(states, function, syncPeriod, barrier)
             val threadDataRef = StableRef.create(threadData)
 
-//            val pthreadVar = nativeHeap.alloc<PthreadVar>()
             val pthreadPtr = k_pthread_t_alloc() ?: error("could not allocate pthread_t pointer")
-
-//            val code = pthread_create(
-//                __newthread = pthreadPtr,
-//                __attr = null,
-//                __start_routine = staticCFunction<COpaquePointer?, COpaquePointer?> {
-//                    val data = it!!.asStableRef<ThreadData<S>>().get()
-//                    threadRoutine(data)
-//                    return@staticCFunction null
-//                },
-//                __arg = threadDataRef.asCPointer(),
-//            )
-//            if (code != 0) error("pthread_create failed; errno means: ${strerror(errno)?.toKString()}")
             k_pthread_create(
                 pthreadPtr,
                 staticCFunction<COpaquePointer?, COpaquePointer?> {
@@ -84,8 +67,6 @@ class PthreadRunner : LitmusRunner() {
 
         return {
             for ((pthreadPtr, threadDataRef) in threads) {
-//                pthread_join(pthreadVar.value, null).syscallCheck()
-//                nativeHeap.free(pthreadVar)
                 k_pthread_join(pthreadPtr, null).syscallCheck()
                 k_pthread_t_free(pthreadPtr)
                 threadDataRef.dispose()
