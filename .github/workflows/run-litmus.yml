@@ -1,0 +1,39 @@
+name: Run litmus tests on different platforms
+
+on:
+  push:
+    branches:
+      - dev-gh-ci
+      - development
+      - main
+
+jobs:
+  linux-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+      - run: chmod +x gradlew
+      - name: Assemble CLI binary
+        run: ./gradlew cli:linkReleaseExecutableLinuxX64
+      - name: Run litmus tests via CLI
+        run: ./cli/build/bin/linuxX64/releaseExecutable/cli.kexe -r pthread ".*"
+
+  macos-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+      - run: chmod +x gradlew
+      - name: Assemble CLI binary (x64)
+        run: ./gradlew cli:linkReleaseExecutableMacosX64
+      - name: Run litmus tests via CLI (x64)
+        run: ./cli/build/bin/macosX64/releaseExecutable/cli.kexe -r pthread ".*"
+      - name: Assemble CLI binary (arm)
+        run: ./gradlew cli:linkReleaseExecutableMacosArm64
+      - name: Run litmus tests via CLI (arm)
+        run: ./cli/build/bin/macosArm64/releaseExecutable/cli.kexe -r pthread ".*"
