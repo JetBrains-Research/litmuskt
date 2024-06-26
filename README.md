@@ -1,55 +1,66 @@
-# LitmusKt 
+# LitmusKt
 
 **LitmusKt** is a litmus testing tool for Kotlin.
-Litmus tests are small concurrent programs exposing various relaxed behaviors,
-arising due to compiler or hardware optimizations (for example, instruction reordering).
+Litmus tests are small concurrent programs exposing various relaxed behaviors, arising due to compiler or hardware
+optimizations (for example, instruction reordering).
 
-This project is in an **experimental** stage of the development. 
+This project is in an **experimental** stage of the development.
 The tool's API is unstable and might be a subject to a further change.
 
 ## Setup
 
 Simply clone the project and run `./gradlew build`.
 
-### Running
+Note that for Kotlin/JVM this project relies on [jcstress](https://github.com/openjdk/jcstress).
 
-All classic Gradle building tasks (like `run`, `build`, `-debug-` or `-release-`) work as expected. 
-The only important distinction is that on various platforms these tasks are named differently.
+## Running
+
+The entry point is the CLI tool residing in `:cli` subproject. You can use the `--help` flag to find the details about
+the CLI, but most basic example requires two settings:
+
+1. Choose a runner with `-r` option
+2. After the options are specified, choose the tests to run using regex patterns
+
+### Running on Native
+
+Create an executable and run it:
 
 ```bash
-# Linux:
-./gradlew runReleaseExecutableLinuxX64
-
-# MacOS (x86):
-./gradlew runReleaseExecutableMacosX64
-# MacOS (arm):
-./gradlew runReleaseExecutableMacosArm64 -Parm # don't forget the -Parm flag!
+./gradlew :cli:linkReleaseExecutableLinuxX64
+./build/bin/linuxX64/releaseExecutable/cli.kexe -r pthread 'StoreBuffering.*'
 ```
 
-Substituting `Release` with `Debug` disables compiler `-opt` flag.
+Depending on what you need, you can:
 
-Also, it is possible to build the project manually with Kotlin CLI compiler. 
-You'd have to either declare several opt-ins or edit the code to remove `expect/actual` and C interop parts. 
-There aren't many benefits to manual compilation, but it allows at least some way to read the program's LLVM IR bitcode 
-(using `-Xtemporary-files-dir` compiler flag and then converting the `.bc` file into readable text with `llvm-dis`).
+* Switch between `debug` and `release` (which, among other things, toggles the `-opt` compiler flag)
+* Specify the platform (`linuxX64` / `macosX64` / `macosArm64`)
+
+### Running on JVM
+
+Simply run the project with Gradle:
+
+```bash
+./gradlew :cli:jvmRun --args="-r jcstress -j '-m sanity' 'StoreBuffering.*'"
+```
 
 ## Overview
 
 A single litmus test consists of the following parts:
+
 * a state shared between threads;
 * code for each thread;
 * an outcome &mdash; a certain value which is the result of running the test;
 * a specification listing accepted and forbidden outcomes
 
-The tool runs litmus tests with various parameters, 
-using the standard techniques also employed by other tools, 
+The tool runs litmus tests with various parameters,
+using the standard techniques also employed by other tools,
 like [herdtools/litmus7](https://github.com/herd/herdtools7) and [JCStress](https://github.com/openjdk/jcstress).
 
 The tool allocates a batch of shared state instances
-and runs the threads on one state instance after another, 
-occasionally synchronizing threads with barriers. 
-After all threads finish running, states are converted into outcomes, and the same outcomes are counted. 
-The end result is the list of all different observed outcomes, 
+and runs the threads on one state instance after another,
+occasionally synchronizing threads with barriers.
+After all threads finish running, states are converted into outcomes, and the same outcomes are counted.
+The end result is the list of all different observed outcomes,
 their frequencies and their types (accepted, interesting or forbidden).
 
 ### Litmus Test Syntax
@@ -74,13 +85,11 @@ val StoreBuffering = litmusTest(::StoreBufferingState) {
         r2 = x
     }
     outcome {
-        listOf(r1, r2)
+        r1 to r2
     }
     spec {
-        accept(listOf(0, 1))
-        accept(listOf(1, 0))
-        accept(listOf(1, 1))
-        interesting(listOf(0, 0))
+        accept(listOf(0 to 1, 1 to 0, 1 to 1))
+        interesting(listOf(0 to 0))
     }
 }
 ```
@@ -99,24 +108,23 @@ And here is an example of the tool's output:
 Let us describe the litmus test's declaration.
 
 * As a first argument `litmusTest` takes a function producing the shared state instance.
-* The second argument is DSL builder lambda, setting up the litmus test.  
-* `thread { ... }` lambdas set up the code run in different threads of the litmus tests — 
-   these lambdas take shared state instance as a receiver.
+* The second argument is DSL builder lambda, setting up the litmus test.
+* `thread { ... }` lambdas set up the code run in different threads of the litmus tests —
+  these lambdas take shared state instance as a receiver.
 * `outcome { ... }` lambda sets up the outcome of a test obtained after all threads have run —
   these lambdas also take shared state instance as a receiver.
-* the `spec { ... }` lambda classifies the outcomes into acceptable, interesting, and forbidden categories. 
+* the `spec { ... }` lambda classifies the outcomes into acceptable, interesting, and forbidden categories.
 
 Here are a few additional convenient features.
 
 * Classes implementing `LitmusAutoOutcome` interface set up an outcome automatically.
-  There are a few predefined subclasses of this interface. 
-  For example, the class `LitmusIIOutcome` with `II` standing for "int, int" expects two integers as an outcome. 
-  This class have two fields `var r1: Int` and `var r2: Int`. 
-  These fields should be set inside litmus test's threads, and then they will be automatically used to form an outcome `listOf(r1, r2)`.
- 
-* If the outcome is a `List`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes. 
-  Just use `accept(vararg outcome)` counterparts to specify expected elements.
- 
+  There are a few predefined subclasses of this interface.
+  For example, the class `LitmusIIOutcome` with `II` standing for "int, int" expects two integers as an outcome.
+  This class have two fields `var r1: Int` and `var r2: Int`.
+  These fields should be set inside litmus test's threads, and then they will be automatically used to form an outcome.
+* Additionally, if the state implements `LitmusAutoOutcome`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes. 
+  For example, for `LitmusIIOutcome` you can use `accept(r1: Int, r2: Int)` to add `(r1, r2)` as an accepted outcome.
+* Finally, `LitmusAutoOutcome` is considerably more performant than manually creating any extra outcome object. It is therefore strongly advised to use this interface at all times.
 * Since each test usually has its own specific state, it is quite useful to use anonymous classes for them.
 
 Using these features, the test from above can be shortened as follows:
@@ -147,53 +155,61 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
 
 ### Litmus Test Runners
 
-The tests are run with an `LitmusRunner`. 
-Currently, there are two implementations. 
-* `WorkerRunner`: runner based on `Worker` API for Kotlin/Native;
-* `JvmThreadRunner`: custom threads-based runner for Kotlin/JVM.
-* A proper, JCStress based runner for Kotlin/JVM is **in development**. 
- 
-`LitmusRunner` has several running functions:
+Litmus tests are run with a `LitmusRunner`. This interface has several running functions:
 
-* `runTest(params, test)` simply runs the test with the given parameters.
-* `runTest(duration, params, test)` repeatedly runs the test with the given parameters until the given time duration passes.
-* `runTestParallel(instances, ...)` it runs several instances of the test in parallel.
-* `runTestParallel(...)` without explicit instances number will run `#{of cpu cores} / #{of threads in test}` instances.
+* `runTests(tests, params, timeLimit)` runs several `tests` one after another, each with the given `params`, optionally repeating each test for the duration of `timeLimit`.
+* `runSingleTestParallel(test, params, timeLimit = 0, instances = ...)` runs a single test in parallel `instances`, with the given `params` and optionally repeating for `timeLimit`. The default value for `instances` is `#{of cpu cores} / #{of threads in test}`.
 
-### Entry point
+The following implementations of `LitmusRunner` are available:
 
-Currently, the `main()` functions are the intended way of running particular litmus tests.
-A proper CLI interface is in development.
-
-There is also an option to run the tests with `@Test` annotation using the default parameters. 
-However, the tests are run in debug mode by the `kotlinx.test` framework.
-Running litmus tests in the debug mode can affect their results, potentially hiding some relaxed behaviors.
+* For native:
+  * `WorkerRunner`: based on K/N `Worker` API
+  * `PthreadRunner`: based on C interop pthread API
+* For JVM:
+  * `JvmThreadRunner`: a simple runner based on Java threads
+  * `JCStressRunner`: a **special** runner that delegates to JCStress. Note that many of `LitmusRunner` parameters are not applicable to JCStress. Furthermore, there are JCStress-exclusive options as well.
 
 ### Litmus Test Parameters
 
-* `AffinityMap`: bindings from thread to CPU cores. 
-  Obtained through `AffinityManager`, which is available from `getAffinityManager()` top-level function.
+There is a number of parameters that can be varied between test runs. Their influence on the results can change
+drastically depending on the particular test, hardware, and so on.
 
-* `syncEvery`: the number of tests between barrier synchronizations. 
-  Practice shows that on Native the reasonable range is somewhere in the range from 10 to 100, 
-  while on JVM it works best in the range from 1000 to 10000. 
-  This also depends on the particular test.
- 
-* `Barrier`: can be either Kotlin-implemented (`KNativeSpinBarrier`) or C-implemented (`CinteropSpinBarrier`). 
+* `AffinityMap`: bindings from thread to CPU cores.
+  Obtained through `AffinityManager`, which is available from `getAffinityManager()` top-level function.
+* `syncEvery`: the number of tests between barrier synchronizations.
+  Practice shows that on Native the reasonable range is somewhere in the range from 10 to 100,
+  while on JVM it works best in the range from 1000 to 10000.
+  This highly depends on the particular test.
+* `Barrier`: can be either Kotlin-implemented (`KNativeSpinBarrier`) or C-implemented (`CinteropSpinBarrier`).
   C-implemented might yield better results.
   On JVM, use `JvmSpinBarrier` in favor of `JvmCyclicBarrier`.
 
 Common practice is to iterate through different parameter bundles and aggregate the results across them.
-* Function `variateParameters()` takes the cross-product of all passed parameters 
+
+* Function `variateParameters()` takes the cross-product of all passed parameters
   (hence use `listOf(null)` instead of `emptyList()` for unused arguments).
 * For results aggregation, use `List<LitmusResult>.mergeResults()`.
-* You can also use `LitmusResult.prettyPrint()` to print the results.
+* You can also use `LitmusResult.generateTable()` to format the results into a human-readable table.
 
-### Notes
+### Project structure
 
+The project consists of several subprojects:
+
+* `:core` contains the core infrastructure such as `LitmusTest` and `LitmusRunner` interfaces, etc.
+* `:testsuite` contains the litmus tests themselves.
+* `:codegen` uses KSP to collect all tests from `:testsuite`.
+* `:jcstress-wrapper` contains the code to convert `LitmusTest`-s into JCStress-compatible Java wrappers.
+* `:cli` is a user-friendly entry point.
+
+## Notes
+
+* If you decide to add some litmus tests, and you wish for them to be registered in the CLI, you must put them into `:testsuite` subproject. Use the existing tests as reference for the proper test structure. 
 * Setting thread affinity is not supported on macOS yet. As such, `getAffinityManager()` returns `null` on macOS.
-* For some reason, running a lot of different tests in one go will drastically reduce the performance and weak outcomes' frequency. 
-  For now, please try to avoid running tests for longer than 5 minutes.
+* It is possible to run the tests with `@Test` annotation. However, the tests are run in debug mode by
+  the `kotlinx.test` framework. Running litmus tests in the debug mode can affect their results, potentially hiding some
+  relaxed behaviors.
 * In practice, all cases of currently found relaxed behaviors can be consistently found in under a minute of running.
-* Avoid creating unnecessary objects inside threads, especially if they get shared. This not only significantly slows down the performance, but can also introduce unexpected relaxed behaviors.
-* The tool currently doesn't address the false sharing problem. The memory shuffling API is in development.
+* Avoid creating unnecessary objects inside threads, especially if they get shared. This not only significantly slows
+  down the performance, but can also introduce unexpected relaxed behaviors.
+* The tool currently doesn't address the false sharing problem. It has been shown to be fairly significant, but we looked for a solution and found none good enough. This problem can be resolved with a `@Contended`-like annotation in Kotlin, which does not yet exist.
+* When writing tests with `LitmusAutoOutcome`, it is possible to achieve a post-processing step similar to JCStress `@Arbiter`. To do that, you can write your code in the `outcome{}` section, and then return `this` from it. An example can be found in the [WordTearing](testsuite/src/commonMain/kotlin/org/jetbrains/litmuskt/tests/WordTearing.kt) test.
