@@ -3,11 +3,7 @@ package org.jetbrains.litmuskt
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
-import org.jetbrains.litmuskt.CliCommon
 import org.jetbrains.litmuskt.barriers.CinteropSpinBarrier
-import org.jetbrains.litmuskt.PthreadRunner
-import org.jetbrains.litmuskt.WorkerRunner
-import org.jetbrains.litmuskt.AffinityMap
 
 class CliNative : CliCommon() {
     override val runner by option("-r", "--runner")
@@ -16,7 +12,7 @@ class CliNative : CliCommon() {
 
     private val affinityMapChoices = run {
         val schedulesMapped = mutableMapOf<String, List<AffinityMap?>>("none" to listOf(null))
-        org.jetbrains.litmuskt.getAffinityManager()?.let {
+        affinityManager?.let {
             schedulesMapped["short"] = it.presetShort()
             schedulesMapped["long"] = it.presetLong()
         }
