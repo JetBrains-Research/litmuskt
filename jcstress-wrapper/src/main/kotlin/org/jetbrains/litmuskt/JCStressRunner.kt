@@ -41,7 +41,7 @@ class JCStressRunner(
     internal fun startTests(
         tests: List<LitmusTest<*>>,
         params: LitmusRunParams
-    ): () -> List<LitmusResult> {
+    ): () -> Map<LitmusTest<*>, LitmusResult> {
         val mvn = ProcessBuilder("mvn", "install", "verify", "-U")
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -71,13 +71,13 @@ class JCStressRunner(
         return handle@{
             jcs.waitFor()
             if (jcs.exitValue() != 0) error("jcstress exited with code ${jcs.exitValue()}")
-            return@handle tests.map { test -> parseJCStressResults(test) }
+            return@handle tests.associateWith { test -> parseJCStressResults(test) }
         }
     }
 
     override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): () -> LitmusResult {
         val handle = startTests(listOf(test), params)
-        return { handle().first() }
+        return { handle()[test] ?: error("test $test did not produce a result; perhaps its wrapper is missing?") }
     }
 
     /**
@@ -142,7 +142,7 @@ class JCStressRunner(
 fun JCStressRunner.runTests(
     tests: List<LitmusTest<*>>,
     params: LitmusRunParams,
-): List<LitmusResult> = startTests(tests, params).invoke()
+): Map<LitmusTest<*>, LitmusResult> = startTests(tests, params).invoke()
 
 /**
  * Split a sequence into two: one with the first [size] elements and one with the rest.

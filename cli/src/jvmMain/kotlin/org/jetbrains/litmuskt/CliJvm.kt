@@ -82,7 +82,11 @@ class CliJvm : CliCommon() {
             val results = jcsRunner.runTests(tests, jcsParams)
 
             echo()
-            (tests zip results).forEach { (test, result) ->
+            if (results.isEmpty()) {
+                echo("no tests were run, perhaps they are missing jcstress wrappers?", err = true)
+                return
+            }
+            results.forEach { (test, result) ->
                 echo("results for ${test.alias}:")
                 echo(result.generateTable() + "\n")
             }

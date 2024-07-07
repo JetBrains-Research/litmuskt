@@ -38,7 +38,7 @@ jobs:
       - name: Run litmus tests via CLI (x64 + release)
         run: ./cli/build/bin/macosX64/releaseExecutable/cli.kexe -r pthread ".*"
       - name: Run a single test with JCStress
-        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' .*"
+        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' StoreBuffering.Plain"
       - name: Assemble CLI binary (arm + release)
         run: ./gradlew cli:linkReleaseExecutableMacosArm64
       - name: Run litmus tests via CLI (arm + release)
