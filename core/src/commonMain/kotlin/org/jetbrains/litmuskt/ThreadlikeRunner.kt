@@ -28,9 +28,9 @@ abstract class ThreadlikeRunner : LitmusRunner() {
 
         val threads = List(test.threadCount) { threadlikeProducer() }
         affinityMap?.let { map ->
-            affinityManager?.let { manager ->
+            affinityManager?.apply {
                 for ((i, t) in threads.withIndex()) {
-                    manager.setAffinityAndCheck(t, map.allowedCores(i))
+                    setAffinityAndCheck(t, map.allowedCores(i))
                 }
             }
         }
@@ -45,8 +45,8 @@ abstract class ThreadlikeRunner : LitmusRunner() {
         }
 
         return {
-            for (f in futures) f.invoke() // await all results
-            for (t in threads) t.dispose() // stop all "threads"
+            futures.forEach { it.await() } // await all results
+            threads.forEach { it.dispose() } // stop all "threads"
             calcStats(states, test.outcomeSpec, test.outcomeFinalizer)
         }
     }

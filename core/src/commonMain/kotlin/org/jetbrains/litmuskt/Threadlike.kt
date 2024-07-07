@@ -11,10 +11,17 @@ interface Threadlike {
      *
      * This function should be only called once.
      */
-    fun <A : Any> start(args: A, function: (A) -> Unit): () -> Unit
+    fun <A : Any> start(args: A, function: (A) -> Unit): BlockingFuture
 
     /**
      * Dispose of any resources the "thread" has allocated. Blocks until the resources are cleaned.
      */
     fun dispose()
+}
+
+/**
+ * A future that blocks on calling [await] and returns nothing.
+ */
+fun interface BlockingFuture {
+    fun await()
 }

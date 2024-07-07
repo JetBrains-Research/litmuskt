@@ -13,7 +13,7 @@ class PthreadThreadlike : Threadlike {
 
     private class ThreadData<A : Any>(val args: A, val function: (A) -> Unit)
 
-    override fun <A : Any> start(args: A, function: (A) -> Unit): () -> Unit {
+    override fun <A : Any> start(args: A, function: (A) -> Unit): BlockingFuture {
         val threadData = ThreadData(args, function)
         val threadDataRef = StableRef.create(threadData)
 
@@ -27,7 +27,7 @@ class PthreadThreadlike : Threadlike {
             threadDataRef.asCPointer()
         ).syscallCheck()
 
-        return {
+        return BlockingFuture {
             k_pthread_join(pthreadPtr, null).syscallCheck()
             threadDataRef.dispose()
         }

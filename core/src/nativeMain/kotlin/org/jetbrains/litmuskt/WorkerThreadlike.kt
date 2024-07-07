@@ -14,13 +14,13 @@ class WorkerThreadlike : Threadlike {
         val threadFunction: (A) -> Unit,
     )
 
-    override fun <A : Any> start(args: A, function: (A) -> Unit): () -> Unit {
+    override fun <A : Any> start(args: A, function: (A) -> Unit): BlockingFuture {
         val context = WorkerContext(args, function)
         val future = worker.execute(
             TransferMode.SAFE /* ignored */,
             { context }
         ) { (a, f) -> f(a) }
-        return { future.result }
+        return BlockingFuture { future.result }
     }
 
     override fun dispose() {
