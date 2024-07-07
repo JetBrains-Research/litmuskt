@@ -33,16 +33,13 @@ jobs:
           distribution: oracle
           java-version: 17
       - run: chmod +x gradlew
-      - name: Assemble all CLI artifacts
-        run: ./gradlew cli:assemble
-      - name: Run litmus tests via CLI (x64 + debug)
-        run: ./cli/build/bin/macosX64/debugExecutable/cli.kexe -r pthread ".*"
+      - name: Assemble CLI binary (x64 + release)
+        run: ./gradlew cli:linkReleaseExecutableMacosX64
       - name: Run litmus tests via CLI (x64 + release)
         run: ./cli/build/bin/macosX64/releaseExecutable/cli.kexe -r pthread ".*"
       - name: Run a single test with JCStress
-        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' StoreBuffering.Plain"
-      - name: Run litmus tests via CLI (arm + debug)
-        run: ./cli/build/bin/macosArm64/debugExecutable/cli.kexe -r pthread ".*"
+        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' .*"
+      - name: Assemble CLI binary (arm + release)
+        run: ./gradlew cli:linkReleaseExecutableMacosArm64
       - name: Run litmus tests via CLI (arm + release)
         run: ./cli/build/bin/macosArm64/releaseExecutable/cli.kexe -r pthread ".*"
-

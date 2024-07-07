@@ -79,8 +79,13 @@ class CliJvm : CliCommon() {
             ) JCStressRunner.DEFAULT_LITMUSKT_PARAMS else params // jcstress defaults are different
 
             val jcsRunner = runner as JCStressRunner // use the correct runTests()!
-            val results = jcsRunner.runTests(tests, jcsParams).first()
-            echo("\n" + results.generateTable())
+            val results = jcsRunner.runTests(tests, jcsParams)
+
+            echo()
+            (tests zip results).forEach { (test, result) ->
+                echo("results for ${test.alias}:")
+                echo(result.generateTable() + "\n")
+            }
         }
     }
 }
