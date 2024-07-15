@@ -14,7 +14,6 @@ kotlin {
 
     jvm {
         withJava()
-        jvmToolchain(17)
     }
 
     val hostOs = System.getProperty("os.name")
