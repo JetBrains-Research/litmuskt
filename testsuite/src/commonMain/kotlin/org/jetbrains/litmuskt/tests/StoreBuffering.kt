@@ -24,6 +24,7 @@ object StoreBuffering {
         thread {
             y = 1
             r2 = x
+            if(r1 == 0 && r2 == 0 && x == 1 && y == 1) error("haha")
         }
         // no need for explicit outcome{}
         spec {

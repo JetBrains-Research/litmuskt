@@ -1,5 +1,7 @@
 package org.jetbrains.litmuskt
 
+import platform.posix.sleep
+import kotlin.native.concurrent.Future
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
@@ -16,11 +18,23 @@ class WorkerThreadlike : Threadlike {
 
     override fun <A : Any> start(args: A, function: (A) -> Unit): BlockingFuture {
         val context = WorkerContext(args, function)
-        val future = worker.execute(
+        val future: Future<Result<Unit>> = worker.execute(
             TransferMode.SAFE /* ignored */,
             { context }
-        ) { (a, f) -> f(a) }
-        return BlockingFuture { future.result }
+        ) { ctx ->
+            // Unit as a receiver so that runCatching() does not capture <this>
+            Unit.runCatching {
+                ctx.threadFunction(ctx.args)
+            }.also {
+                println("worker f end; result=$it")
+            }
+        }
+        return BlockingFuture {
+            println("entered blockingfuture")
+            future.result.also {
+                println("worker future awaited")
+            }
+        }
     }
 
     override fun dispose() {

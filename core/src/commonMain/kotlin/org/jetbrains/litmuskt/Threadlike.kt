@@ -6,10 +6,12 @@ package org.jetbrains.litmuskt
  */
 interface Threadlike {
     /**
-     * Start running the function in a "thread". Returns a handle that will block when called until
+     * Start running the function in a "thread". Returns a "future" handle that will block when called until
      * the "thread" has completed.
      *
      * This function should be only called once.
+     *
+     * Note: if [function] throws, the resulting "future" should have the thrown exception as a [Result].
      */
     fun <A : Any> start(args: A, function: (A) -> Unit): BlockingFuture
 
@@ -20,8 +22,8 @@ interface Threadlike {
 }
 
 /**
- * A future that blocks on calling [await] and returns nothing.
+ * A future that blocks on calling [await]. If the function we are waiting for threw, the [Result] will contain it.
  */
 fun interface BlockingFuture {
-    fun await()
+    fun await(): Result<Unit>
 }

@@ -45,8 +45,12 @@ abstract class ThreadlikeRunner : LitmusRunner() {
         }
 
         return {
-            futures.forEach { it.await() } // await all results
+            val exception = futures.firstNotNullOfOrNull {
+                it.await().exceptionOrNull() // await all results...
+            } // ...and collect the first exception, if any
             threads.forEach { it.dispose() } // stop all "threads"
+            println("all threads disposed")
+            exception?.let { throw it }
             calcStats(states, test.outcomeSpec, test.outcomeFinalizer)
         }
     }
