@@ -9,6 +9,7 @@ kotlin {
 //        linuxArm64(),
         macosX64(),
         macosArm64(),
+        mingwX64(),
     )
     nativeTargets.forEach { target ->
         target.binaries {
