@@ -85,11 +85,11 @@ abstract class CliCommon : CliktCommand(
             echo("running test ${test.alias}...")
             // TODO: handle exceptions
             // TODO: print ETA (later: calculate based on part of run)
-            paramsList.map { params ->
+            val result = paramsList.map { params ->
                 runTest(params, test)
-            }.mergeResults().let {
-                echo(it.generateTable())
-            }
+            }.mergeResults()
+            echo(result.generateTable(), false)
+            echo("total count: ${result.totalCount()}, overall status: ${result.overallStatus()}")
             echo()
         }
     }

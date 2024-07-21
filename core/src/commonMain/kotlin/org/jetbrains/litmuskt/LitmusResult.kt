@@ -17,8 +17,20 @@ fun LitmusResult.generateTable(): String {
     return (listOf(tableHeader) + table).tableFormat(true)
 }
 
+fun LitmusResult.totalCount() = sumOf { it.count }
+
+fun LitmusResult.overallStatus(): LitmusOutcomeType {
+    var isInteresting = false
+    for (stat in this) when (stat.type) {
+        LitmusOutcomeType.FORBIDDEN -> return LitmusOutcomeType.FORBIDDEN
+        LitmusOutcomeType.INTERESTING -> isInteresting = true
+        LitmusOutcomeType.ACCEPTED -> {} // ignore
+    }
+    return if (isInteresting) LitmusOutcomeType.INTERESTING else LitmusOutcomeType.ACCEPTED
+}
+
 fun List<LitmusResult>.mergeResults(): LitmusResult {
-    data class LTOutcomeStatTempData(var count: Long, var type: LitmusOutcomeType?)
+    data class LTOutcomeStatTempData(var count: Long, val type: LitmusOutcomeType)
 
     val statMap = mutableMapOf<LitmusOutcome, LTOutcomeStatTempData>()
     for (stat in this.flatten()) {
