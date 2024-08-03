@@ -27,13 +27,6 @@ abstract class ThreadlikeRunner : LitmusRunner() {
     ): () -> LitmusResult {
 
         val threads = List(test.threadCount) { threadlikeProducer() }
-        affinityMap?.let { map ->
-            affinityManager?.apply {
-                for ((i, t) in threads.withIndex()) {
-                    setAffinityAndCheck(t, map.allowedCores(i))
-                }
-            }
-        }
 
         val barrier = barrierProducer(test.threadCount)
         val contexts = List(threads.size) { i ->
@@ -42,6 +35,15 @@ abstract class ThreadlikeRunner : LitmusRunner() {
 
         val futures = (threads zip contexts).map { (thread, context) ->
             thread.start(context, ::threadFunction)
+        }
+
+        // cannot set affinity before thread is started (because pthread_create has not been called yet)
+        affinityMap?.let { map ->
+            affinityManager?.apply {
+                for ((i, t) in threads.withIndex()) {
+                    setAffinityAndCheck(t, map.allowedCores(i))
+                }
+            }
         }
 
         return {
