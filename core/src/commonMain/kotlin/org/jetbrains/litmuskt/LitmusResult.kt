@@ -30,12 +30,14 @@ fun LitmusResult.overallStatus(): LitmusOutcomeType {
 }
 
 fun List<LitmusResult>.mergeResults(): LitmusResult {
-    data class LTOutcomeStatTempData(var count: Long, val type: LitmusOutcomeType)
+    data class LTOutcomeStatsAccumulator(var count: Long, val type: LitmusOutcomeType)
 
-    val statMap = mutableMapOf<LitmusOutcome, LTOutcomeStatTempData>()
+    val statMap = mutableMapOf<LitmusOutcome, LTOutcomeStatsAccumulator>()
     for (stat in this.flatten()) {
-        val tempData = statMap.getOrPut(stat.outcome) { LTOutcomeStatTempData(0L, stat.type) }
-        if (tempData.type != stat.type) error("merging conflicting stats: ${stat.outcome} is both ${stat.type} and ${tempData.type}")
+        val tempData = statMap.getOrPut(stat.outcome) { LTOutcomeStatsAccumulator(0L, stat.type) }
+        if (tempData.type != stat.type) {
+            error("merging conflicting stats: ${stat.outcome} is both ${stat.type} and ${tempData.type}")
+        }
         tempData.count += stat.count
     }
     return statMap.map { (outcome, tempData) -> LitmusOutcomeStats(outcome, tempData.count, tempData.type) }

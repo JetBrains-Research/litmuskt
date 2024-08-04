@@ -28,9 +28,12 @@ expect fun cpuCount(): Int
 @Suppress("UNCHECKED_CAST")
 fun <S> TypedArray(size: Int, init: (Int) -> S): Array<S> = Array<Any?>(size, init) as Array<S>
 
-fun <S> Array<S>.view(range: IntRange): Sequence<S> = sequence {
+/**
+ * Returns a lazy iterable that iterates over a portion of the underlying array.
+ */
+fun <S> Array<S>.view(range: IntRange): Iterable<S> = sequence {
     for (i in range) yield(this@view[i])
-}
+}.asIterable()
 
 /**
  * Split a range into [n] parts of equal (+/- 1) length.

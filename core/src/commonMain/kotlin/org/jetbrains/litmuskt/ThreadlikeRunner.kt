@@ -10,7 +10,8 @@ abstract class ThreadlikeRunner : LitmusRunner() {
             if (i % syncPeriod == 0) barrier.await()
             states[i].testFunction()
         }
-        rangeResult = calcStats(states.view(resultCalcRange).asIterable(), test.outcomeSpec, test.outcomeFinalizer)
+        // performance optimization: each thread takes a portion of states and calculates stats for it
+        rangeResult = calcStats(states.view(resultCalcRange), test.outcomeSpec, test.outcomeFinalizer)
     }
 
     private data class ThreadContext<S : Any>(
