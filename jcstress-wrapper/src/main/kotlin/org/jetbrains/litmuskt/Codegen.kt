@@ -19,7 +19,7 @@ fun generateWrapperFile(test: LitmusTest<*>, generatedSrc: Path): Boolean {
     val targetCode = try {
         generateWrapperCode(test)
     } catch (e: Throwable) {
-        System.err.println("WARNING: could not generate wrapper for ${test.alias} because: ${e.message}")
+        System.err.println("WARNING: could not generate wrapper for ${test.alias} because:\n" + e.stackTraceToString())
         return false
     }
     targetFile.writeText(targetCode)
@@ -37,12 +37,15 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
     val outcomeTypeName = autoOutcomeClassList.first().simpleName!!
         .removePrefix("Litmus")
         .removeSuffix("Outcome")
-    val (outcomeVarType, outcomeVarCount) = when (outcomeTypeName) {
-        "I" -> "Integer" to 1
-        "II" -> "Integer" to 2
-        "III" -> "Integer" to 3
-        "IIII" -> "Integer" to 4
-        else -> error("unknown AutoOutcome type $outcomeTypeName")
+
+    val outcomeVarTypes = outcomeTypeName.map { c ->
+        when (c) {
+            'I' -> "Integer"
+            'L' -> "Long"
+            'Z' -> "Boolean"
+            // TODO: add others once they are created
+            else -> error("unrecognized outcome type '$c'")
+        }
     }
 
     val javaTestGetter: String = run {
@@ -56,8 +59,8 @@ private fun generateWrapperCode(test: LitmusTest<*>): String {
         """
 @Arbiter
 public void a($jcstressResultClassName r) {
-    List<$outcomeVarType> result = (List<$outcomeVarType>) (Object) ((LitmusAutoOutcome) fA.invoke(state)).toList();
-    ${List(outcomeVarCount) { "r.r${it + 1} = result.get($it);" }.joinToString("\n    ")}
+    List<Object> result = (List<Object>) (Object) ((LitmusAutoOutcome) fA.invoke(state)).toList();
+    ${List(outcomeVarTypes.size) { "r.r${it + 1} = (${outcomeVarTypes[it]}) result.get($it);" }.joinToString("\n    ")}
 }
         """.trim()
     }

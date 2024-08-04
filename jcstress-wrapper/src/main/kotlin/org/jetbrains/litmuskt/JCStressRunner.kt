@@ -1,5 +1,6 @@
 package org.jetbrains.litmuskt
 
+import org.jetbrains.litmuskt.autooutcomes.LitmusAutoOutcome
 import org.jetbrains.litmuskt.barriers.JvmCyclicBarrier
 import java.nio.file.Files
 import java.nio.file.Path
@@ -109,9 +110,6 @@ class JCStressRunner(
         if (Files.notExists(resultsFile)) return null
         var lines = Files.lines(resultsFile).asSequence()
 
-        val allOutcomes = test.outcomeSpec.all
-        val outcomeStrings = allOutcomes.associateBy { it.toString().trim('(', ')') }
-
         // get the number of observed outcomes
         lines = lines.dropWhile { !it.contains("Observed States") }
         val observedOutcomesLine = lines.splitFirst().let { (first, rest) -> lines = rest; first }
@@ -120,9 +118,10 @@ class JCStressRunner(
         // skip to <tr> with outcomes
         lines = lines.drop(3)
         val linesOutcomes = lines.splitTake(observedSize).let { (first, rest) -> lines = rest; first }
+        val outcomeParser = test.stateProducer() as LitmusAutoOutcome
         val outcomesOrdered = linesOutcomes.map {
             val outcomeString = parseElementData(it)
-            outcomeStrings[outcomeString] ?: error("unrecognized outcome: $outcomeString")
+            outcomeParser.parseOutcome(outcomeString)
         }.toList()
 
         // lines with "bgColor" and "width" are the only ones with data
