@@ -71,7 +71,11 @@ class JCStressRunner(
         return handle@{
             jcs.waitFor()
             if (jcs.exitValue() != 0) error("jcstress exited with code ${jcs.exitValue()}")
-            return@handle tests.associateWith { test -> parseJCStressResults(test) }
+            // not all tests might have generated wrappers
+            return@handle tests
+                .associateWith { test -> parseJCStressResults(test) }
+                .filterValues { it != null }
+                .mapValues { (_, result) -> result!! } // remove nullable type
         }
     }
 
@@ -100,8 +104,9 @@ class JCStressRunner(
      * </tr>    <-- these lines repeat per each configuration, so the results are summed in the end
      * ...
      */
-    private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult {
+    private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult? {
         val resultsFile = jcstressDirectory / "results" / "${test.javaFQN}.html"
+        if (Files.notExists(resultsFile)) return null
         var lines = Files.lines(resultsFile).asSequence()
 
         val allOutcomes = test.outcomeSpec.all

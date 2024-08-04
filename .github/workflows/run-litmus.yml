@@ -7,6 +7,9 @@ on:
       - development
       - main
 
+# Note: this CI run is an "integration"-test or "smoke"-test. It is intended to verify that
+# the basics of the tool work. It is NOT intended to be complete or to discover weak behaviors.
+
 jobs:
   linux-run:
     runs-on: ubuntu-latest
@@ -21,8 +24,9 @@ jobs:
         run: ./gradlew cli:linkReleaseExecutableLinuxX64
       - name: Run litmus tests via CLI
         run: ./cli/build/bin/linuxX64/releaseExecutable/cli.kexe -r pthread ".*"
-      - name: Run a single test with JCStress
-        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' StoreBuffering.Plain"
+      - name: Run litmus tests with JCStress
+        # takes ~10 mins
+        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m sanity' .*"
 
   macos-run:
     runs-on: macos-latest
@@ -37,8 +41,9 @@ jobs:
         run: ./gradlew cli:linkReleaseExecutableMacosX64
       - name: Run litmus tests via CLI (x64 + release)
         run: ./cli/build/bin/macosX64/releaseExecutable/cli.kexe -r pthread ".*"
-      - name: Run a single test with JCStress
-        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m quick' StoreBuffering.Plain"
+      - name: Run litmus tests with JCStress
+        # takes ~10 mins
+        run: ./gradlew :cli:jvmRun --args="-r jcstress -j '-m sanity' .*"
       - name: Assemble CLI binary (arm + release)
         run: ./gradlew cli:linkReleaseExecutableMacosArm64
       - name: Run litmus tests via CLI (arm + release)
