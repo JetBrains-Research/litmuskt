@@ -1,5 +1,6 @@
 package org.jetbrains.litmuskt
 
+import org.jetbrains.litmuskt.autooutcomes.LitmusAutoOutcome
 import org.jetbrains.litmuskt.barriers.JvmCyclicBarrier
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,7 +42,7 @@ class JCStressRunner(
     internal fun startTests(
         tests: List<LitmusTest<*>>,
         params: LitmusRunParams
-    ): () -> List<LitmusResult> {
+    ): () -> Map<LitmusTest<*>, LitmusResult> {
         val mvn = ProcessBuilder("mvn", "install", "verify", "-U")
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -71,13 +72,17 @@ class JCStressRunner(
         return handle@{
             jcs.waitFor()
             if (jcs.exitValue() != 0) error("jcstress exited with code ${jcs.exitValue()}")
-            return@handle tests.map { test -> parseJCStressResults(test) }
+            // not all tests might have generated wrappers
+            return@handle tests
+                .associateWith { test -> parseJCStressResults(test) }
+                .filterValues { it != null }
+                .mapValues { (_, result) -> result!! } // remove nullable type
         }
     }
 
     override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): () -> LitmusResult {
         val handle = startTests(listOf(test), params)
-        return { handle().first() }
+        return { handle()[test] ?: error("test $test did not produce a result; perhaps its wrapper is missing?") }
     }
 
     /**
@@ -100,12 +105,10 @@ class JCStressRunner(
      * </tr>    <-- these lines repeat per each configuration, so the results are summed in the end
      * ...
      */
-    private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult {
+    private fun parseJCStressResults(test: LitmusTest<*>): LitmusResult? {
         val resultsFile = jcstressDirectory / "results" / "${test.javaFQN}.html"
+        if (Files.notExists(resultsFile)) return null
         var lines = Files.lines(resultsFile).asSequence()
-
-        val allOutcomes = test.outcomeSpec.all
-        val outcomeStrings = allOutcomes.associateBy { it.toString().trim('(', ')') }
 
         // get the number of observed outcomes
         lines = lines.dropWhile { !it.contains("Observed States") }
@@ -115,9 +118,10 @@ class JCStressRunner(
         // skip to <tr> with outcomes
         lines = lines.drop(3)
         val linesOutcomes = lines.splitTake(observedSize).let { (first, rest) -> lines = rest; first }
+        val outcomeParser = test.stateProducer() as LitmusAutoOutcome
         val outcomesOrdered = linesOutcomes.map {
             val outcomeString = parseElementData(it)
-            outcomeStrings[outcomeString] ?: error("unrecognized outcome: $outcomeString")
+            outcomeParser.parseOutcome(outcomeString)
         }.toList()
 
         // lines with "bgColor" and "width" are the only ones with data
@@ -142,7 +146,7 @@ class JCStressRunner(
 fun JCStressRunner.runTests(
     tests: List<LitmusTest<*>>,
     params: LitmusRunParams,
-): List<LitmusResult> = startTests(tests, params).invoke()
+): Map<LitmusTest<*>, LitmusResult> = startTests(tests, params).invoke()
 
 /**
  * Split a sequence into two: one with the first [size] elements and one with the rest.
