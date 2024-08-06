@@ -25,7 +25,7 @@ class JCStressRunner(
         barrierProducer: BarrierProducer,
         syncPeriod: Int,
         affinityMap: AffinityMap?
-    ): () -> LitmusResult {
+    ): BlockingFuture<LitmusResult> {
         throw NotImplementedError("jcstress runner should not be called with explicit params like this")
     }
 
@@ -33,7 +33,7 @@ class JCStressRunner(
         test: LitmusTest<S>,
         params: LitmusRunParams,
         instances: Int
-    ): List<() -> LitmusResult> {
+    ): List<BlockingFuture<LitmusResult>> {
         throw NotImplementedError(
             "jcstress runs tests in parallel by default; asking for parallelism explicitly is meaningless"
         )
@@ -42,7 +42,7 @@ class JCStressRunner(
     internal fun startTests(
         tests: List<LitmusTest<*>>,
         params: LitmusRunParams
-    ): () -> Map<LitmusTest<*>, LitmusResult> {
+    ): BlockingFuture<Map<LitmusTest<*>, LitmusResult>> {
         val mvn = ProcessBuilder("mvn", "install", "verify", "-U")
             .directory(jcstressDirectory.toFile())
             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
@@ -69,20 +69,22 @@ class JCStressRunner(
             .redirectError(ProcessBuilder.Redirect.INHERIT)
             .start()
 
-        return handle@{
+        return BlockingFuture {
             jcs.waitFor()
             if (jcs.exitValue() != 0) error("jcstress exited with code ${jcs.exitValue()}")
             // not all tests might have generated wrappers
-            return@handle tests
+            return@BlockingFuture tests
                 .associateWith { test -> parseJCStressResults(test) }
                 .filterValues { it != null }
                 .mapValues { (_, result) -> result!! } // remove nullable type
         }
     }
 
-    override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): () -> LitmusResult {
-        val handle = startTests(listOf(test), params)
-        return { handle()[test] ?: error("test $test did not produce a result; perhaps its wrapper is missing?") }
+    override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): BlockingFuture<LitmusResult> {
+        val future = startTests(listOf(test), params)
+        return BlockingFuture {
+            future.await()[test] ?: error("test $test did not produce a result; perhaps its wrapper is missing?")
+        }
     }
 
     /**
@@ -146,7 +148,7 @@ class JCStressRunner(
 fun JCStressRunner.runTests(
     tests: List<LitmusTest<*>>,
     params: LitmusRunParams,
-): Map<LitmusTest<*>, LitmusResult> = startTests(tests, params).invoke()
+): Map<LitmusTest<*>, LitmusResult> = startTests(tests, params).await()
 
 /**
  * Split a sequence into two: one with the first [size] elements and one with the rest.
