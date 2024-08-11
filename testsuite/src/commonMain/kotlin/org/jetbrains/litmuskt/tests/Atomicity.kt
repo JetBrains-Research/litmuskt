@@ -16,6 +16,10 @@ object Atomicity {
             var x = 0
         }
     }) {
+        reset {
+            x = 0
+            outcomeReset()
+        }
         thread {
             x = -1 // signed 0xFFFFFFFF
         }
@@ -33,6 +37,10 @@ object Atomicity {
             var x = 0L
         }
     }) {
+        reset {
+            x = 0L
+            outcomeReset()
+        }
         thread {
             x = -1 // signed 0xFFFFFFFF_FFFFFFFF
         }
@@ -52,6 +60,10 @@ object Atomicity {
             var x = 0L
         }
     }) {
+        reset {
+            x = 0L
+            outcomeReset()
+        }
         thread {
             x = -1 // signed 0xFFFFFFFF_FFFFFFFF
         }

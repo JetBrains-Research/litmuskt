@@ -1,5 +1,8 @@
 package org.jetbrains.litmuskt
 
+import kotlin.time.Duration
+import kotlin.time.TimeSource
+
 fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     val columnCount = maxOf { it.size }
     val columnSizes = (0..<columnCount).map { i ->
@@ -58,4 +61,14 @@ fun IntRange.splitEqual(n: Int): List<IntRange> {
  */
 fun interface BlockingFuture<T> {
     fun await(): T
+}
+
+/**
+ * Repeat a function for at least the given [duration]. Runs the function at least once.
+ */
+inline fun <T> repeatFor(duration: Duration, crossinline f: () -> T): List<T> = buildList {
+    val start = TimeSource.Monotonic.markNow()
+    do {
+        add(f())
+    } while (start.elapsedNow() < duration)
 }

@@ -23,6 +23,8 @@ sealed interface LitmusAutoOutcome {
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun equals(o: Any?): Boolean
 
+    fun outcomeReset()
+
     // for JCStress interop
     fun toList(): List<LitmusOutcome>
     fun parseOutcome(str: String): LitmusAutoOutcome

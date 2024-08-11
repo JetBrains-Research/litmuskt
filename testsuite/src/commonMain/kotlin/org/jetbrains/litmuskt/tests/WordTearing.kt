@@ -14,6 +14,11 @@ object WordTearing {
             val arr = BooleanArray(2)
         }
     }) {
+        reset {
+            arr[0] = false
+            arr[1] = false
+            outcomeReset()
+        }
         thread {
             arr[0] = true
         }
@@ -36,6 +41,10 @@ object WordTearing {
             val arr = ByteArray(256)
         }
     }) {
+        reset {
+            for (i in arr.indices) arr[i] = 0
+            outcomeReset()
+        }
         thread {
             for (i in arr.indices step 2) arr[i] = 1
         }

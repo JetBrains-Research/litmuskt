@@ -17,6 +17,12 @@ object StoreBuffering {
             var y = 0
         }
     }) {
+        // DO NOT FORGET to call `outcomeReset()`!
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             r1 = y
@@ -43,6 +49,11 @@ object StoreBuffering {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             r1 = y

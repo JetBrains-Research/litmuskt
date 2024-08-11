@@ -17,6 +17,11 @@ object MessagePassing {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             y = 1
@@ -42,6 +47,11 @@ object MessagePassing {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             y = 1
@@ -65,6 +75,11 @@ object MessagePassing {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             y = 1
@@ -84,6 +99,11 @@ object MessagePassing {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
             y = 1

@@ -17,6 +17,11 @@ object IndependentReadsOfIndependentWrites {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
         }
@@ -47,6 +52,11 @@ object IndependentReadsOfIndependentWrites {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             x = 1
         }

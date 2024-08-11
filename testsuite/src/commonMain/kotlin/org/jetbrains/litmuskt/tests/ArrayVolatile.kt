@@ -18,6 +18,11 @@ object ArrayVolatile {
             var arr = IntArray(2)
         }
     }) {
+        reset {
+            arr[0] = 0
+            arr[1] = 0
+            outcomeReset()
+        }
         thread {
             arr[0] = 1
             arr[1] = 1

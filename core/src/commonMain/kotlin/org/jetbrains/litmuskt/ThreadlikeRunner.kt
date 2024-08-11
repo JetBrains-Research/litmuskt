@@ -10,8 +10,12 @@ abstract class ThreadlikeRunner : LitmusRunner() {
             if (i % syncPeriod == 0) barrier.await()
             states[i].testFunction()
         }
-        // performance optimization: each thread takes a portion of states and calculates stats for it
+        // performance optimizations:
+        // 1) each thread takes a portion of states and calculates stats for it
+        // 2) each thread then resets these states
         rangeResult = calcStats(states.view(resultCalcRange), test.outcomeSpec, test.outcomeFinalizer)
+        val resetFunction = test.resetFunction
+        for (i in resultCalcRange) states[i].resetFunction()
     }
 
     private class ThreadContext<S : Any>(
@@ -21,7 +25,7 @@ abstract class ThreadlikeRunner : LitmusRunner() {
         val syncPeriod: Int,
         val barrier: Barrier,
         val resultCalcRange: IntRange,
-        var rangeResult: LitmusResult? = null
+        var rangeResult: LitmusResult? = null,
     )
 
     override fun <S : Any> startTest(

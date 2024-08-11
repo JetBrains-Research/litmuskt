@@ -1,7 +1,7 @@
 package org.jetbrains.litmuskt.tests
 
-import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
 import org.jetbrains.litmuskt.LitmusTestContainer
+import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
 import org.jetbrains.litmuskt.autooutcomes.accept
 import org.jetbrains.litmuskt.autooutcomes.forbid
 import org.jetbrains.litmuskt.autooutcomes.interesting
@@ -18,6 +18,10 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
+        reset {
+            h = null
+            outcomeReset()
+        }
         thread {
             h = IntHolder()
         }
@@ -36,6 +40,10 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
+        reset {
+            h = null
+            outcomeReset()
+        }
         thread {
             h = IntHolder()
         }
@@ -53,6 +61,10 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
+        reset {
+            h = null
+            outcomeReset()
+        }
         thread {
             h = IntHolder(x = 1)
         }
@@ -71,6 +83,10 @@ object UnsafePublication {
             var arr: Array<Int>? = null
         }
     }) {
+        reset {
+            arr = null
+            outcomeReset()
+        }
         thread {
             arr = Array(10) { 0 }
         }
@@ -90,6 +106,10 @@ object UnsafePublication {
             var h: RefHolder? = null
         }
     }) {
+        reset {
+            h = null
+            outcomeReset()
+        }
         thread {
             val ref = IntHolder(x = 1)
             h = RefHolder(ref)
@@ -116,11 +136,11 @@ object UnsafePublication {
         var ih: LeakingIntHolder? = null
 
         inner class LeakingIntHolder {
-            val x: Int = 1
-
             init {
                 ih = this
             }
+
+            val x: Int = 1
         }
     }
 
@@ -129,6 +149,10 @@ object UnsafePublication {
             var ctx = LeakingIntHolderContext()
         }
     }) {
+        reset {
+            ctx = LeakingIntHolderContext()
+            outcomeReset()
+        }
         thread {
             ctx.LeakingIntHolder()
         }
@@ -137,7 +161,7 @@ object UnsafePublication {
         }
         spec {
             accept(1)
-            accept(0)
+            interesting(0)
             accept(-1)
         }
     }

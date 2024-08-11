@@ -16,6 +16,11 @@ object LoadBuffering {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             r1 = x
             y = r1
@@ -35,6 +40,11 @@ object LoadBuffering {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             r1 = x
             y = 1
@@ -60,6 +70,11 @@ object LoadBuffering {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             r1 = x
             y = 1
@@ -81,6 +96,11 @@ object LoadBuffering {
             var y = 0
         }
     }) {
+        reset {
+            x = 0
+            y = 0
+            outcomeReset()
+        }
         thread {
             r1 = x
             y = 1 + r1 * 0

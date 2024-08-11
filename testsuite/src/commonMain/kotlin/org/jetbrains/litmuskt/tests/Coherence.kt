@@ -16,6 +16,10 @@ object Coherence {
             var x = 0
         }
     }) {
+        reset {
+            x = 0
+            outcomeReset()
+        }
         thread {
             x = 1
         }
@@ -31,13 +35,18 @@ object Coherence {
         }
     }
 
+    data class IntHolder(var x: Int)
+
     val CSE = litmusTest({
-        data class Holder(var x: Int)
         object : LitmusIIIOutcome() {
-            val holder1 = Holder(0)
-            val holder2 = holder1
+            var holder1 = IntHolder(0)
+            var holder2 = holder1
         }
     }) {
+        reset {
+            holder1 = IntHolder(0)
+            holder2 = holder1
+        }
         thread {
             holder1.x = 1
         }
