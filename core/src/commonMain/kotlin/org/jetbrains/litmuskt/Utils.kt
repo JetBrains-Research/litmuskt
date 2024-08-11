@@ -34,9 +34,15 @@ fun <S> TypedArray(size: Int, init: (Int) -> S): Array<S> = Array<Any?>(size, in
 /**
  * Returns a lazy iterable that iterates over a portion of the underlying array.
  */
-fun <S> Array<S>.view(range: IntRange): Iterable<S> = sequence {
-    for (i in range) yield(this@view[i])
-}.asIterable()
+fun <S> Array<S>.view(range: IntRange): Iterable<S> {
+    return Iterable {
+        object : Iterator<S> {
+            private val delegate = range.iterator()
+            override fun hasNext() = delegate.hasNext()
+            override fun next(): S = this@view[delegate.nextInt()]
+        }
+    }
+}
 
 /**
  * Split a range into [n] parts of equal (+/- 1) length.
