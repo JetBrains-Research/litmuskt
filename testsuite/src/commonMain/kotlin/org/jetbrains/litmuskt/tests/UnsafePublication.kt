@@ -7,7 +7,6 @@ import org.jetbrains.litmuskt.autooutcomes.forbid
 import org.jetbrains.litmuskt.autooutcomes.interesting
 import org.jetbrains.litmuskt.litmusTest
 import kotlin.concurrent.Volatile
-import kotlin.concurrent.AtomicIntArray
 
 @LitmusTestContainer
 object UnsafePublication {
@@ -73,13 +72,14 @@ object UnsafePublication {
         }
     }) {
         thread {
-            arr = Array(10) { 0 }
+            arr = Array(10) { 1 }
         }
         thread {
             r1 = arr?.get(0) ?: -1
         }
         spec {
-            accept(0)
+            accept(1)
+            interesting(0)
             accept(-1)
         }
     }
@@ -102,28 +102,6 @@ object UnsafePublication {
         spec {
             accept(1)
             interesting(0)
-            accept(-1)
-        }
-    }
-
-    @OptIn(kotlin.ExperimentalStdlibApi::class)
-    val PlainAtomicIntArray = litmusTest({
-        object : LitmusIOutcome() {
-            var arr: AtomicIntArray? = null
-        }
-    }) {
-        reset {
-            arr = null
-            outcomeReset()
-        }
-        thread {
-            arr = AtomicIntArray(10)
-        }
-        thread {
-            r1 = arr?.get(0) ?: -1
-        }
-        spec {
-            accept(0)
             accept(-1)
         }
     }
