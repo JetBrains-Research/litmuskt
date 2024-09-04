@@ -27,7 +27,7 @@ Create an executable and run it:
 
 ```bash
 ./gradlew :cli:linkReleaseExecutableLinuxX64
-./build/bin/linuxX64/releaseExecutable/cli.kexe -r pthread 'StoreBuffering.*'
+./cli/build/bin/linuxX64/releaseExecutable/cli.kexe -r pthread 'StoreBuffering.*'
 ```
 
 Depending on what you need, you can:
@@ -49,7 +49,7 @@ A single litmus test consists of the following parts:
 
 * a state shared between threads;
 * code for each thread;
-* an outcome &mdash; a certain value which is the result of running the test;
+* an outcome -- a certain value which is the result of running the test;
 * a specification listing accepted and forbidden outcomes
 
 The tool runs litmus tests with various parameters,
@@ -91,6 +91,12 @@ val StoreBuffering = litmusTest(::StoreBufferingState) {
         accept(listOf(0 to 1, 1 to 0, 1 to 1))
         interesting(listOf(0 to 0))
     }
+  reset {
+    x = 0
+    y = 0
+    r1 = 0
+    r2 = 0
+  }
 }
 ```
 
@@ -113,7 +119,9 @@ Let us describe the litmus test's declaration.
   these lambdas take shared state instance as a receiver.
 * `outcome { ... }` lambda sets up the outcome of a test obtained after all threads have run —
   these lambdas also take shared state instance as a receiver.
-* the `spec { ... }` lambda classifies the outcomes into acceptable, interesting, and forbidden categories.
+* `spec { ... }` lambda classifies the outcomes into acceptable, interesting, and forbidden categories.
+* `reset { ... }` lambda is used to reset the shared state to its original value, so that the test can be run again
+  using the same state instance.
 
 Here are a few additional convenient features.
 
@@ -122,10 +130,13 @@ Here are a few additional convenient features.
   For example, the class `LitmusIIOutcome` with `II` standing for "int, int" expects two integers as an outcome.
   This class have two fields `var r1: Int` and `var r2: Int`.
   These fields should be set inside litmus test's threads, and then they will be automatically used to form an outcome.
-* Additionally, if the state implements `LitmusAutoOutcome`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes. 
+* Additionally, if the state implements `LitmusAutoOutcome`, you can use a shorter syntax for declaring accepted / interesting / forbidden outcomes.
   For example, for `LitmusIIOutcome` you can use `accept(r1: Int, r2: Int)` to add `(r1, r2)` as an accepted outcome.
-* Finally, `LitmusAutoOutcome` is considerably more performant than manually creating any extra outcome object. It is therefore strongly advised to use this interface at all times.
-* Since each test usually has its own specific state, it is quite useful to use anonymous classes for them.
+  Moreover, `r1` and `r2` will be automatically reset after running the test, so you don't need to manually write them
+  in the `reset` section.
+* Finally, `LitmusAutoOutcome` is considerably more performant than manually creating any extra outcome object. It is
+  therefore **strongly advised** to use this interface at all times.
+* Since each test usually has its own specific state, it is quite convenient to use anonymous classes for them.
 
 Using these features, the test from above can be shortened as follows:
 
@@ -150,6 +161,10 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
         accept(1, 1)
         interesting(0, 0)
     }
+  reset {
+    x = 0
+    y = 0
+  }
 }
 ```
 
