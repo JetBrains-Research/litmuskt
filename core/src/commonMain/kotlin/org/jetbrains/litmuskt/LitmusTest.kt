@@ -18,8 +18,6 @@ class LitmusTestScope<S : Any>(
     private val threadFunctions = mutableListOf<S.() -> Unit>()
     private lateinit var outcomeFinalizer: S.() -> LitmusOutcome
     private lateinit var outcomeSpec: LitmusOutcomeSpecScope<S>
-
-    // WARNING: we cannot use `(S as LitmusAutoOutcome).reset()` here. DO NOT FORGET to call it in the runner!
     private lateinit var stateReset: S.() -> Unit
 
     fun thread(function: S.() -> Unit) {
@@ -52,7 +50,11 @@ class LitmusTestScope<S : Any>(
             else -> error("outcome not specified")
         }
         if (!::stateReset.isInitialized) error("reset() not specified")
-        return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build(), stateReset)
+        val resetFunction: S.() -> Unit = {
+            stateReset()
+            (this as? LitmusAutoOutcome)?.outcomeReset()
+        }
+        return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build(), resetFunction)
     }
 }
 

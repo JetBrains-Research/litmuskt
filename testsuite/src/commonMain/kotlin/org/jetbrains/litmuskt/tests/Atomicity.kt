@@ -16,10 +16,6 @@ object Atomicity {
             var x = 0
         }
     }) {
-        reset {
-            x = 0
-            outcomeReset()
-        }
         thread {
             x = -1 // signed 0xFFFFFFFF
         }
@@ -30,6 +26,9 @@ object Atomicity {
             accept(0)
             accept(-1)
         }
+        reset {
+            x = 0
+        }
     }
 
     val Long = litmusTest({
@@ -37,10 +36,6 @@ object Atomicity {
             var x = 0L
         }
     }) {
-        reset {
-            x = 0L
-            outcomeReset()
-        }
         thread {
             x = -1 // signed 0xFFFFFFFF_FFFFFFFF
         }
@@ -52,6 +47,9 @@ object Atomicity {
             accept(-1)
             default(LitmusOutcomeType.INTERESTING)
         }
+        reset {
+            x = 0L
+        }
     }
 
     val LongVolatile = litmusTest({
@@ -60,10 +58,6 @@ object Atomicity {
             var x = 0L
         }
     }) {
-        reset {
-            x = 0L
-            outcomeReset()
-        }
         thread {
             x = -1 // signed 0xFFFFFFFF_FFFFFFFF
         }
@@ -73,6 +67,9 @@ object Atomicity {
         spec {
             accept(0)
             accept(-1)
+        }
+        reset {
+            x = 0L
         }
     }
 }

@@ -17,11 +17,6 @@ object IndependentReadsOfIndependentWrites {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
         }
@@ -40,6 +35,10 @@ object IndependentReadsOfIndependentWrites {
             interesting(1, 0, 1, 0)
             default(LitmusOutcomeType.ACCEPTED)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     // because of Java, tests cannot be named "Volatile"
@@ -52,11 +51,6 @@ object IndependentReadsOfIndependentWrites {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
         }
@@ -74,6 +68,10 @@ object IndependentReadsOfIndependentWrites {
         spec {
             forbid(1, 0, 1, 0)
             default(LitmusOutcomeType.ACCEPTED)
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

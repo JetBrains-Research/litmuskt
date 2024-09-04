@@ -17,12 +17,6 @@ object StoreBuffering {
             var y = 0
         }
     }) {
-        // DO NOT FORGET to call `outcomeReset()`!
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             r1 = y
@@ -38,6 +32,10 @@ object StoreBuffering {
             accept(1, 1)
             interesting(0, 0)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val VolatileAnnotated = litmusTest({
@@ -49,11 +47,6 @@ object StoreBuffering {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             r1 = y
@@ -67,6 +60,10 @@ object StoreBuffering {
             accept(1, 0)
             accept(1, 1)
             forbid(0, 0) // redundant as forbidden is the default
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

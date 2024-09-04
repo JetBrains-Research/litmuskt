@@ -18,10 +18,6 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
-        reset {
-            h = null
-            outcomeReset()
-        }
         thread {
             h = IntHolder()
         }
@@ -31,6 +27,9 @@ object UnsafePublication {
         spec {
             accept(0)
             accept(-1)
+        }
+        reset {
+            h = null
         }
     }
 
@@ -40,10 +39,6 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
-        reset {
-            h = null
-            outcomeReset()
-        }
         thread {
             h = IntHolder()
         }
@@ -54,6 +49,9 @@ object UnsafePublication {
             accept(0)
             accept(-1)
         }
+        reset {
+            h = null
+        }
     }
 
     val PlainWithConstructor = litmusTest({
@@ -61,10 +59,6 @@ object UnsafePublication {
             var h: IntHolder? = null
         }
     }) {
-        reset {
-            h = null
-            outcomeReset()
-        }
         thread {
             h = IntHolder(x = 1)
         }
@@ -76,6 +70,9 @@ object UnsafePublication {
             accept(-1)
             interesting(0) // seeing the default value
         }
+        reset {
+            h = null
+        }
     }
 
     val PlainArray = litmusTest({
@@ -83,10 +80,6 @@ object UnsafePublication {
             var arr: Array<Int>? = null
         }
     }) {
-        reset {
-            arr = null
-            outcomeReset()
-        }
         thread {
             arr = Array(10) { 0 }
         }
@@ -97,6 +90,9 @@ object UnsafePublication {
             accept(0)
             accept(-1)
         }
+        reset {
+            arr = null
+        }
     }
 
     private class RefHolder(val ref: IntHolder)
@@ -106,10 +102,6 @@ object UnsafePublication {
             var h: RefHolder? = null
         }
     }) {
-        reset {
-            h = null
-            outcomeReset()
-        }
         thread {
             val ref = IntHolder(x = 1)
             h = RefHolder(ref)
@@ -130,6 +122,9 @@ object UnsafePublication {
             // as forbidden so that it shows up in CI runs.
             forbid(0)
         }
+        reset {
+            h = null
+        }
     }
 
     private class LeakingIntHolderContext {
@@ -149,10 +144,6 @@ object UnsafePublication {
             var ctx = LeakingIntHolderContext()
         }
     }) {
-        reset {
-            ctx = LeakingIntHolderContext()
-            outcomeReset()
-        }
         thread {
             ctx.LeakingIntHolder()
         }
@@ -163,6 +154,9 @@ object UnsafePublication {
             accept(1)
             interesting(0)
             accept(-1)
+        }
+        reset {
+            ctx = LeakingIntHolderContext()
         }
     }
 

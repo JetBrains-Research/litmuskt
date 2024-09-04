@@ -15,10 +15,6 @@ object WordTearingNative {
             val bs = BitSet()
         }
     }) {
-        reset {
-            bs.clear()
-            outcomeReset()
-        }
         thread {
             bs.set(0)
         }
@@ -34,6 +30,9 @@ object WordTearingNative {
             accept(true, true)
             interesting(true, false)
             interesting(false, true)
+        }
+        reset {
+            bs.clear()
         }
     }
 }

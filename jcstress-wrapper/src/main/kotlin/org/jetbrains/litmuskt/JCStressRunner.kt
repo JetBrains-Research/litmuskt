@@ -127,6 +127,10 @@ class JCStressRunner(
     private fun parseElementData(it: String) = it.dropWhile { it != '>' }.dropLastWhile { it != '<' }.trim('>', '<')
 }
 
+/**
+ * Use this function instead of [runTests] when running multiple tests with JCStress. This function avoids restarting
+ * JCStress for each individual test and instead submits them all at the same time.
+ */
 fun JCStressRunner.runJCStressTests(
     tests: List<LitmusTest<*>>,
     params: LitmusRunParams,

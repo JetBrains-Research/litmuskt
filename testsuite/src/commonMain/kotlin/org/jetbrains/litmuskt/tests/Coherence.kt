@@ -16,10 +16,6 @@ object Coherence {
             var x = 0
         }
     }) {
-        reset {
-            x = 0
-            outcomeReset()
-        }
         thread {
             x = 1
         }
@@ -33,6 +29,9 @@ object Coherence {
             accept(1, 1)
             interesting(1, 0)
         }
+        reset {
+            x = 0
+        }
     }
 
     data class IntHolder(var x: Int)
@@ -43,10 +42,6 @@ object Coherence {
             var holder2 = holder1
         }
     }) {
-        reset {
-            holder1 = IntHolder(0)
-            holder2 = holder1
-        }
         thread {
             holder1.x = 1
         }
@@ -61,6 +56,10 @@ object Coherence {
             interesting(1, 0, 0)
             interesting(1, 1, 0)
             default(LitmusOutcomeType.ACCEPTED)
+        }
+        reset {
+            holder1 = IntHolder(0)
+            holder2 = holder1
         }
     }
 

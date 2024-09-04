@@ -17,11 +17,6 @@ object MessagePassing {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             y = 1
@@ -36,6 +31,10 @@ object MessagePassing {
             accept(1, 1)
             interesting(1, 0)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val VolatileAnnotated = litmusTest({
@@ -47,11 +46,6 @@ object MessagePassing {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             y = 1
@@ -65,6 +59,10 @@ object MessagePassing {
             accept(0, 1)
             accept(1, 1)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val RaceFree = litmusTest({
@@ -75,11 +73,6 @@ object MessagePassing {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             y = 1
@@ -91,6 +84,10 @@ object MessagePassing {
             accept(1)
             accept(-1)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val MissingVolatile = litmusTest({
@@ -99,11 +96,6 @@ object MessagePassing {
             var y = 0
         }
     }) {
-        reset {
-            x = 0
-            y = 0
-            outcomeReset()
-        }
         thread {
             x = 1
             y = 1
@@ -115,6 +107,10 @@ object MessagePassing {
             accept(1)
             accept(-1)
             interesting(0)
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

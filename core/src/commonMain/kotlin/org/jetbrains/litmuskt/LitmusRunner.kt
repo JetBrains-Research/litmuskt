@@ -17,46 +17,6 @@ abstract class LitmusRunner {
         syncPeriod: Int,
         affinityMap: AffinityMap?,
     ): BlockingFuture<LitmusResult>
-
-    protected fun <S : Any> calcStats(
-        states: Iterable<S>,
-        spec: LitmusOutcomeSpec,
-        outcomeFinalizer: (S) -> LitmusOutcome
-    ): LitmusResult {
-        // cannot do `map.getOrPut(key){0L}++` with Long-s, and by getting rid of one
-        // extra put(), we are also getting rid of one extra hashCode()
-        class LongHolder(var value: Long)
-
-        // the absolute majority of outcomes will be declared in spec
-        val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toTypedArray()
-        val specifiedCounts = Array(specifiedOutcomes.size) { 0L }
-        val useFastPath = specifiedOutcomes.size <= 10
-
-        val totalCounts = mutableMapOf<LitmusOutcome, LongHolder>()
-
-        for (s in states) {
-            val outcome = outcomeFinalizer(s)
-            if (useFastPath) {
-                val i = specifiedOutcomes.indexOf(outcome)
-                if (i != -1) {
-                    specifiedCounts[i]++
-                    continue
-                }
-            }
-            totalCounts.getOrPut(outcome) { LongHolder(0L) }.value++
-        }
-        // update totalCounts with fastPathCounts
-        for (i in specifiedCounts.indices) {
-            val count = specifiedCounts[i]
-            if (count > 0) totalCounts
-                .getOrPut(specifiedOutcomes[i]) { LongHolder(0L) }
-                .value = count
-        }
-
-        return totalCounts.map { (outcome, count) ->
-            LitmusOutcomeStats(outcome, count.value, spec.getType(outcome))
-        }
-    }
 }
 
 /**
@@ -115,4 +75,48 @@ inline fun <reified S : Any> LitmusRunner.runTests(
             test, states, params.barrierProducer, params.syncPeriod, params.affinityMap
         ).await()
     }.mergeResults()
+}
+
+/**
+ * This function is only intended to be called from a runner, hence the receiver. It would have been better to
+ * make it `protected` inside [LitmusRunner], but we decided to keep that interface cleaner.
+ */
+fun <S : Any> LitmusRunner.calcStats(
+    states: Iterable<S>,
+    spec: LitmusOutcomeSpec,
+    outcomeFinalizer: (S) -> LitmusOutcome
+): LitmusResult {
+    // cannot do `map.getOrPut(key){0L}++` with Long-s, and by getting rid of one
+    // extra put(), we are also getting rid of one extra hashCode()
+    class LongHolder(var value: Long)
+
+    // the absolute majority of outcomes will be declared in spec
+    val specifiedOutcomes = (spec.accepted + spec.interesting + spec.forbidden).toTypedArray()
+    val specifiedCounts = Array(specifiedOutcomes.size) { 0L }
+    val useFastPath = specifiedOutcomes.size <= 10
+
+    val totalCounts = mutableMapOf<LitmusOutcome, LongHolder>()
+
+    for (s in states) {
+        val outcome = outcomeFinalizer(s)
+        if (useFastPath) {
+            val i = specifiedOutcomes.indexOf(outcome)
+            if (i != -1) {
+                specifiedCounts[i]++
+                continue
+            }
+        }
+        totalCounts.getOrPut(outcome) { LongHolder(0L) }.value++
+    }
+    // update totalCounts with fastPathCounts
+    for (i in specifiedCounts.indices) {
+        val count = specifiedCounts[i]
+        if (count > 0) totalCounts
+            .getOrPut(specifiedOutcomes[i]) { LongHolder(0L) }
+            .value = count
+    }
+
+    return totalCounts.map { (outcome, count) ->
+        LitmusOutcomeStats(outcome, count.value, spec.getType(outcome))
+    }
 }
