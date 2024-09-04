@@ -1,23 +1,23 @@
 package org.jetbrains.litmuskt.tests
 
-import org.jetbrains.litmuskt.autooutcomes.*
-import org.jetbrains.litmuskt.*
+import org.jetbrains.litmuskt.LitmusTestContainer
+import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
+import org.jetbrains.litmuskt.autooutcomes.accept
+import org.jetbrains.litmuskt.autooutcomes.interesting
+import org.jetbrains.litmuskt.litmusTest
 import kotlin.concurrent.AtomicIntArray
 
+@LitmusTestContainer
 object UnsafePublicationNative {
 
-    @OptIn(kotlin.ExperimentalStdlibApi::class)
+    @OptIn(ExperimentalStdlibApi::class)
     val PlainAtomicIntArray = litmusTest({
         object : LitmusIOutcome() {
             var arr: AtomicIntArray? = null
         }
     }) {
-        reset {
-            arr = null
-            outcomeReset()
-        }
         thread {
-            arr = AtomicIntArray(10) { 1 }
+            arr = AtomicIntArray(1) { 1 }
         }
         thread {
             r1 = arr?.get(0) ?: -1

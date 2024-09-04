@@ -1,7 +1,8 @@
 package org.jetbrains.litmuskt
 
-import org.jetbrains.litmuskt.autooutcomes.*
-import org.jetbrains.litmuskt.*
+import org.jetbrains.litmuskt.autooutcomes.LitmusIOutcome
+import org.jetbrains.litmuskt.autooutcomes.accept
+import org.jetbrains.litmuskt.autooutcomes.forbid
 import java.util.concurrent.atomic.AtomicIntegerArray
 
 @LitmusTestContainer
@@ -11,10 +12,6 @@ object UnsafePublicationJvm {
             var arr: AtomicIntegerArray? = null
         }
     }) {
-        reset {
-            arr = null
-            outcomeReset()
-        }
         thread {
             arr = AtomicIntegerArray(intArrayOf(1))
         }
