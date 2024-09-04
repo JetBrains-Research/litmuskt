@@ -94,6 +94,9 @@ object UnsafePublication {
             interesting(0)
             accept(-1)
         }
+        reset {
+            arr = null
+        }
     }
 
     val PlainIntArray = litmusTest({

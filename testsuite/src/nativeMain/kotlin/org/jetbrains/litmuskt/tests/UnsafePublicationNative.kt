@@ -27,5 +27,8 @@ object UnsafePublicationNative {
             interesting(0)
             accept(-1)
         }
+        reset {
+            arr = null
+        }
     }
 }

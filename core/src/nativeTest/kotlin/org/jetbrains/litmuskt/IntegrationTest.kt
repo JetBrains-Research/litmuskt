@@ -13,7 +13,6 @@ class IntegrationTest {
             var x = 0
         }
     }) {
-        // TODO: reset
         thread {
             x = 1
         }
@@ -27,13 +26,18 @@ class IntegrationTest {
             accept(1, 2)
             accept(0, 1) // r1 = 0; x = 2; x = 1 (t1); r2 = 1
         }
+        reset {
+            x = 0
+        }
     }
 
     @Test
     fun testBasic() {
         val runner = PthreadRunner()
+
+        @Suppress("UNCHECKED_CAST")
         val result = runner.runTests(
-            tests = listOf(sampleLitmusTest),
+            tests = listOf(sampleLitmusTest) as List<LitmusTest<Any>>,
             params = LitmusRunParams(
                 batchSize = 1_000_000,
                 syncPeriod = 10,
