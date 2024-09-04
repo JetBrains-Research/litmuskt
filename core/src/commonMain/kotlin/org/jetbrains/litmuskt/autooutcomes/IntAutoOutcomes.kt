@@ -12,6 +12,10 @@ open class LitmusIOutcome(
         return r1 == o.r1
     }
 
+    final override fun outcomeReset() {
+        r1 = 0
+    }
+
     final override fun toList() = listOf(r1)
     final override fun parseOutcome(str: String): LitmusIOutcome {
         val rs = str.split(", ").map(String::toInt)
@@ -37,6 +41,11 @@ open class LitmusIIOutcome(
     final override fun equals(o: Any?): Boolean {
         if (o !is LitmusIIOutcome) return false
         return r1 == o.r1 && r2 == o.r2
+    }
+
+    final override fun outcomeReset() {
+        r1 = 0
+        r2 = 0
     }
 
     final override fun toList() = listOf(r1, r2)
@@ -67,6 +76,12 @@ open class LitmusIIIOutcome(
         return r1 == o.r1 && r2 == o.r2 && r3 == o.r3
     }
 
+    final override fun outcomeReset() {
+        r1 = 0
+        r2 = 0
+        r3 = 0
+    }
+
     final override fun toList() = listOf(r1, r2, r3)
     final override fun parseOutcome(str: String): LitmusIIIOutcome {
         val rs = str.split(", ").map(String::toInt)
@@ -94,6 +109,13 @@ open class LitmusIIIIOutcome(
     final override fun equals(o: Any?): Boolean {
         if (o !is LitmusIIIIOutcome) return false
         return r1 == o.r1 && r2 == o.r2 && r3 == o.r3 && r4 == o.r4
+    }
+
+    final override fun outcomeReset() {
+        r1 = 0
+        r2 = 0
+        r3 = 0
+        r4 = 0
     }
 
     final override fun toList() = listOf(r1, r2, r3, r4)

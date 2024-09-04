@@ -32,5 +32,9 @@ object ArrayVolatile {
             accept(0, 1)
             interesting(1, 0)
         }
+        reset {
+            arr[0] = 0
+            arr[1] = 0
+        }
     }
 }

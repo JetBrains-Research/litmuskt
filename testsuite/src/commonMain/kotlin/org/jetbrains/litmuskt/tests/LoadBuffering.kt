@@ -27,6 +27,10 @@ object LoadBuffering {
         spec {
             accept(0, 0)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val Plain = litmusTest({
@@ -48,6 +52,10 @@ object LoadBuffering {
             accept(1, 0)
             accept(0, 1)
             interesting(1, 1)
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 
@@ -73,6 +81,10 @@ object LoadBuffering {
             accept(1, 0)
             accept(0, 1)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val PlainWithFakeDependencies = litmusTest({
@@ -92,6 +104,10 @@ object LoadBuffering {
         spec {
             accept(0, 0)
             accept(0, 1)
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

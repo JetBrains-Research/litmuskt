@@ -28,9 +28,12 @@ object WordTearing {
         spec {
             accept(true, true)
         }
+        reset {
+            arr[0] = false
+            arr[1] = false
+        }
     }
 
-    // source: https://github.com/openjdk/jcstress/blob/master/tests-custom/src/main/java/org/openjdk/jcstress/tests/tearing/ArrayInterleaveTest.java
     val ArrayInterleave = litmusTest({
         object : LitmusIIIOutcome() {
             val arr = ByteArray(256)
@@ -52,6 +55,9 @@ object WordTearing {
         }
         spec {
             accept(0, 128, 128)
+        }
+        reset {
+            for (i in arr.indices) arr[i] = 0
         }
     }
 }

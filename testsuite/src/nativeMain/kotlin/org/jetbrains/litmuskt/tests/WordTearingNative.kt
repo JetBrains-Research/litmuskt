@@ -31,5 +31,8 @@ object WordTearingNative {
             interesting(true, false)
             interesting(false, true)
         }
+        reset {
+            bs.clear()
+        }
     }
 }

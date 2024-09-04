@@ -32,6 +32,10 @@ object StoreBuffering {
             accept(1, 1)
             interesting(0, 0)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val VolatileAnnotated = litmusTest({
@@ -56,6 +60,10 @@ object StoreBuffering {
             accept(1, 0)
             accept(1, 1)
             forbid(0, 0) // redundant as forbidden is the default
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

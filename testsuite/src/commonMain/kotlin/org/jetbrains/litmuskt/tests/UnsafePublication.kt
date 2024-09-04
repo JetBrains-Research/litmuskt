@@ -28,6 +28,9 @@ object UnsafePublication {
             accept(0)
             accept(-1)
         }
+        reset {
+            h = null
+        }
     }
 
     val VolatileAnnotated = litmusTest({
@@ -46,6 +49,9 @@ object UnsafePublication {
             accept(0)
             accept(-1)
         }
+        reset {
+            h = null
+        }
     }
 
     val PlainWithConstructor = litmusTest({
@@ -63,6 +69,9 @@ object UnsafePublication {
             accept(1)
             accept(-1)
             interesting(0) // seeing the default value
+        }
+        reset {
+            h = null
         }
     }
 
@@ -103,6 +112,9 @@ object UnsafePublication {
             interesting(0)
             accept(-1)
         }
+        reset {
+            arr = null
+        }
     }
 
     private class RefHolder(val ref: IntHolder)
@@ -132,17 +144,20 @@ object UnsafePublication {
             // as forbidden so that it shows up in CI runs.
             forbid(0)
         }
+        reset {
+            h = null
+        }
     }
 
     private class LeakingIntHolderContext {
         var ih: LeakingIntHolder? = null
 
         inner class LeakingIntHolder {
-            val x: Int = 1
-
             init {
                 ih = this
             }
+
+            val x: Int = 1
         }
     }
 
@@ -159,8 +174,11 @@ object UnsafePublication {
         }
         spec {
             accept(1)
-            accept(0)
+            interesting(0)
             accept(-1)
+        }
+        reset {
+            ctx = LeakingIntHolderContext()
         }
     }
 

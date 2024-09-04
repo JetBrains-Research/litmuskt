@@ -19,6 +19,11 @@ open class LitmusZZOutcome(
         return r1 == o.r1 && r2 == o.r2
     }
 
+    final override fun outcomeReset() {
+        r1 = false
+        r2 = false
+    }
+
     final override fun toList() = listOf(r1, r2)
     final override fun parseOutcome(str: String): LitmusZZOutcome {
         val rs = str.split(", ").map(String::toBooleanStrict)

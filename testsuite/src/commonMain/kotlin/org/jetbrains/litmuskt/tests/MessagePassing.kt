@@ -31,6 +31,10 @@ object MessagePassing {
             accept(1, 1)
             interesting(1, 0)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val VolatileAnnotated = litmusTest({
@@ -55,6 +59,10 @@ object MessagePassing {
             accept(0, 1)
             accept(1, 1)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val RaceFree = litmusTest({
@@ -76,6 +84,10 @@ object MessagePassing {
             accept(1)
             accept(-1)
         }
+        reset {
+            x = 0
+            y = 0
+        }
     }
 
     val MissingVolatile = litmusTest({
@@ -95,6 +107,10 @@ object MessagePassing {
             accept(1)
             accept(-1)
             interesting(0)
+        }
+        reset {
+            x = 0
+            y = 0
         }
     }
 

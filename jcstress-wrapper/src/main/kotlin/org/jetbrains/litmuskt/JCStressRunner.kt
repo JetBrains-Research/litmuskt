@@ -29,16 +29,6 @@ class JCStressRunner(
         throw NotImplementedError("jcstress runner should not be called with explicit params like this")
     }
 
-    override fun <S : Any> LitmusRunner.startTestParallel(
-        test: LitmusTest<S>,
-        params: LitmusRunParams,
-        instances: Int
-    ): List<BlockingFuture<LitmusResult>> {
-        throw NotImplementedError(
-            "jcstress runs tests in parallel by default; asking for parallelism explicitly is meaningless"
-        )
-    }
-
     internal fun startTests(
         tests: List<LitmusTest<*>>,
         params: LitmusRunParams
@@ -77,13 +67,6 @@ class JCStressRunner(
                 .associateWith { test -> parseJCStressResults(test) }
                 .filterValues { it != null }
                 .mapValues { (_, result) -> result!! } // remove nullable type
-        }
-    }
-
-    override fun <S : Any> startTest(test: LitmusTest<S>, params: LitmusRunParams): BlockingFuture<LitmusResult> {
-        val future = startTests(listOf(test), params)
-        return BlockingFuture {
-            future.await()[test] ?: error("test $test did not produce a result; perhaps its wrapper is missing?")
         }
     }
 
@@ -144,8 +127,11 @@ class JCStressRunner(
     private fun parseElementData(it: String) = it.dropWhile { it != '>' }.dropLastWhile { it != '<' }.trim('>', '<')
 }
 
-// does NOT shadow the common extension function, but can be accessed directly
-fun JCStressRunner.runTests(
+/**
+ * Use this function instead of [runTests] when running multiple tests with JCStress. This function avoids restarting
+ * JCStress for each individual test and instead submits them all at the same time.
+ */
+fun JCStressRunner.runJCStressTests(
     tests: List<LitmusTest<*>>,
     params: LitmusRunParams,
 ): Map<LitmusTest<*>, LitmusResult> = startTests(tests, params).await()

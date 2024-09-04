@@ -29,13 +29,17 @@ object Coherence {
             accept(1, 1)
             interesting(1, 0)
         }
+        reset {
+            x = 0
+        }
     }
 
+    data class IntHolder(var x: Int)
+
     val CSE = litmusTest({
-        data class Holder(var x: Int)
         object : LitmusIIIOutcome() {
-            val holder1 = Holder(0)
-            val holder2 = holder1
+            var holder1 = IntHolder(0)
+            var holder2 = holder1
         }
     }) {
         thread {
@@ -52,6 +56,10 @@ object Coherence {
             interesting(1, 0, 0)
             interesting(1, 1, 0)
             default(LitmusOutcomeType.ACCEPTED)
+        }
+        reset {
+            holder1 = IntHolder(0)
+            holder2 = holder1
         }
     }
 

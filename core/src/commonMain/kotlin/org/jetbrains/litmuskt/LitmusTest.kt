@@ -6,7 +6,8 @@ data class LitmusTest<S : Any>(
     val stateProducer: () -> S,
     val threadFunctions: List<S.() -> Unit>,
     val outcomeFinalizer: (S.() -> LitmusOutcome),
-    val outcomeSpec: LitmusOutcomeSpec
+    val outcomeSpec: LitmusOutcomeSpec,
+    val resetFunction: S.() -> Unit,
 ) {
     val threadCount = threadFunctions.size
 }
@@ -17,19 +18,25 @@ class LitmusTestScope<S : Any>(
     private val threadFunctions = mutableListOf<S.() -> Unit>()
     private lateinit var outcomeFinalizer: S.() -> LitmusOutcome
     private lateinit var outcomeSpec: LitmusOutcomeSpecScope<S>
+    private lateinit var stateReset: S.() -> Unit
 
     fun thread(function: S.() -> Unit) {
         threadFunctions.add(function)
     }
 
     fun outcome(function: S.() -> LitmusOutcome) {
-        if (::outcomeFinalizer.isInitialized) error("cannot set outcome more than once")
+        if (::outcomeFinalizer.isInitialized) error("cannot declare outcome more than once")
         outcomeFinalizer = function
     }
 
     fun spec(setup: LitmusOutcomeSpecScope<S>.() -> Unit) {
-        if (::outcomeSpec.isInitialized) error("cannot set spec more than once")
+        if (::outcomeSpec.isInitialized) error("cannot declare spec more than once")
         outcomeSpec = LitmusOutcomeSpecScope<S>().apply(setup)
+    }
+
+    fun reset(function: S.() -> Unit) {
+        if (::stateReset.isInitialized) error("cannot declare reset() more than once")
+        stateReset = function
     }
 
     fun build(): LitmusTest<S> {
@@ -40,10 +47,14 @@ class LitmusTestScope<S : Any>(
             stateProducer() is LitmusAutoOutcome -> {
                 { this }
             }
-
             else -> error("outcome not specified")
         }
-        return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build())
+        if (!::stateReset.isInitialized) error("reset() not specified")
+        val resetFunction: S.() -> Unit = {
+            stateReset()
+            (this as? LitmusAutoOutcome)?.outcomeReset()
+        }
+        return LitmusTest(stateProducer, threadFunctions, outcomeFinalizer, outcomeSpec.build(), resetFunction)
     }
 }
 

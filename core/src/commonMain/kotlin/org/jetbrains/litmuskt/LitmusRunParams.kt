@@ -7,6 +7,7 @@ data class LitmusRunParams(
     val barrierProducer: BarrierProducer,
 )
 
+// TODO: rewrite (probably without sequence)
 fun variateRunParams(
     batchSizeSchedule: List<Int>,
     affinityMapSchedule: List<AffinityMap?>,

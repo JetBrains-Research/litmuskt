@@ -26,6 +26,9 @@ object Atomicity {
             accept(0)
             accept(-1)
         }
+        reset {
+            x = 0
+        }
     }
 
     val Long = litmusTest({
@@ -44,6 +47,9 @@ object Atomicity {
             accept(-1)
             default(LitmusOutcomeType.INTERESTING)
         }
+        reset {
+            x = 0L
+        }
     }
 
     val LongVolatile = litmusTest({
@@ -61,6 +67,9 @@ object Atomicity {
         spec {
             accept(0)
             accept(-1)
+        }
+        reset {
+            x = 0L
         }
     }
 }

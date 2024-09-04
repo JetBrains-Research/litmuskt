@@ -1,5 +1,8 @@
 package org.jetbrains.litmuskt
 
+import kotlin.time.Duration
+import kotlin.time.TimeSource
+
 fun List<List<String>>.tableFormat(hasHeader: Boolean = false): String {
     val columnCount = maxOf { it.size }
     val columnSizes = (0..<columnCount).map { i ->
@@ -31,9 +34,15 @@ fun <S> TypedArray(size: Int, init: (Int) -> S): Array<S> = Array<Any?>(size, in
 /**
  * Returns a lazy iterable that iterates over a portion of the underlying array.
  */
-fun <S> Array<S>.view(range: IntRange): Iterable<S> = sequence {
-    for (i in range) yield(this@view[i])
-}.asIterable()
+fun <S> Array<S>.view(range: IntRange): Iterable<S> {
+    return Iterable {
+        object : Iterator<S> {
+            private val delegate = range.iterator()
+            override fun hasNext() = delegate.hasNext()
+            override fun next(): S = this@view[delegate.nextInt()]
+        }
+    }
+}
 
 /**
  * Split a range into [n] parts of equal (+/- 1) length.
@@ -58,4 +67,14 @@ fun IntRange.splitEqual(n: Int): List<IntRange> {
  */
 fun interface BlockingFuture<T> {
     fun await(): T
+}
+
+/**
+ * Repeat a function for at least the given [duration]. Runs the function at least once.
+ */
+inline fun <T> repeatFor(duration: Duration, crossinline f: () -> T): List<T> = buildList {
+    val start = TimeSource.Monotonic.markNow()
+    do {
+        add(f())
+    } while (start.elapsedNow() < duration)
 }

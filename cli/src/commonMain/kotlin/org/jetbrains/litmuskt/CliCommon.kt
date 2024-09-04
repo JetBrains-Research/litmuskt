@@ -98,7 +98,8 @@ abstract class CliCommon : CliktCommand(
         return when (parallelism) {
             PARALLELISM_DISABLED -> {
                 // note: not running all tests here because of changing params
-                runner.runTests(listOf(test), params, duration).first()
+                @Suppress("UNCHECKED_CAST")
+                runner.runTests(listOf(test) as List<LitmusTest<Any>>, params, duration).first()
             }
             PARALLELISM_AUTO -> {
                 runner.runSingleTestParallel(test, params, timeLimit = duration)
