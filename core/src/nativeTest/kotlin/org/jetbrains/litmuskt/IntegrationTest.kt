@@ -2,7 +2,6 @@ package org.jetbrains.litmuskt
 
 import org.jetbrains.litmuskt.autooutcomes.LitmusIIOutcome
 import org.jetbrains.litmuskt.autooutcomes.accept
-import org.jetbrains.litmuskt.autooutcomes.interesting
 import org.jetbrains.litmuskt.barriers.CinteropSpinBarrier
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
@@ -26,11 +25,7 @@ class IntegrationTest {
         spec {
             accept(0, 2)
             accept(1, 2)
-            interesting(0, 1)
-            interesting(1, 1)
-
-            interesting(0, 0)
-            interesting(1, 0)
+            accept(0, 1) // r1 = 0; x = 2; x = 1 (t1); r2 = 1
         }
     }
 
