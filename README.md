@@ -91,12 +91,12 @@ val StoreBuffering = litmusTest(::StoreBufferingState) {
         accept(listOf(0 to 1, 1 to 0, 1 to 1))
         interesting(listOf(0 to 0))
     }
-  reset {
-    x = 0
-    y = 0
-    r1 = 0
-    r2 = 0
-  }
+    reset {
+      x = 0
+      y = 0
+      r1 = 0
+      r2 = 0
+    }
 }
 ```
 
@@ -161,10 +161,10 @@ val StoreBuffering: LitmusTest<*> = litmusTest({
         accept(1, 1)
         interesting(0, 0)
     }
-  reset {
-    x = 0
-    y = 0
-  }
+    reset {
+      x = 0
+      y = 0
+    }
 }
 ```
 
