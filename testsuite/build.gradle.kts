@@ -29,6 +29,7 @@ kotlin {
 publishing {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     publications {
         withType<MavenPublication> {
