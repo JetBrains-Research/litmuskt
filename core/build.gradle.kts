@@ -1,6 +1,8 @@
 plugins {
     kotlin("multiplatform")
     `java-library`
+    `maven-publish`
+    signing
 }
 
 kotlin {
@@ -16,8 +18,6 @@ kotlin {
         withJava()
     }
 
-    val hostOs = System.getProperty("os.name")
-    val affinitySupported = hostOs == "Linux"
     nativeTargets.forEach { target ->
         target.apply {
             compilations.getByName("main") {
@@ -27,6 +27,7 @@ kotlin {
                         headers(project.file("src/nativeInterop/barrier.h"))
                         compilerOpts.addAll(listOf("-Wall", "-Werror"))
                     }
+                    val affinitySupported = target.name.startsWith("linux")
                     if (affinitySupported) {
                         create("affinity") {
                             defFile(project.file("src/nativeInterop/kaffinity.def"))
@@ -48,5 +49,26 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+    }
+}
+
+publishing {
+    repositories {
+        mavenLocal()
+    }
+    publications {
+        withType<MavenPublication> {
+            artifactId = "litmuskt-$artifactId"
+        }
+    }
+}
+
+signing {
+    if (hasProperty("enableSigning")) {
+        val signingPassword = System.getenv("SIGNING_PASSWORD")
+        val signingKey = System.getenv("SIGNING_KEY")
+
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
     }
 }
