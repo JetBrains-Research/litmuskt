@@ -1,8 +1,9 @@
+import java.net.URI
+
 plugins {
     kotlin("multiplatform")
     `java-library`
     `maven-publish`
-    signing
 }
 
 kotlin {
@@ -53,23 +54,18 @@ kotlin {
 }
 
 publishing {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
     publications {
         withType<MavenPublication> {
             artifactId = "litmuskt-$artifactId"
         }
     }
-}
-
-signing {
-    if (hasProperty("enableSigning")) {
-        val signingPassword = System.getenv("SIGNING_PASSWORD")
-        val signingKey = System.getenv("SIGNING_KEY")
-
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications)
+    repositories {
+        maven {
+            url = URI("https://packages.jetbrains.team/maven/p/plan/litmuskt")
+            credentials {
+                username = System.getenv("SPACE_USERNAME")
+                password = System.getenv("SPACE_PASSWORD")
+            }
+        }
     }
 }
