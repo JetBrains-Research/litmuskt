@@ -15,7 +15,6 @@ abstract class ThreadlikeRunner : LitmusRunner() {
         // 2) each thread then resets these states
         barrier.await()
         rangeResult = calcStats(states.view(resultCalcRange), test.outcomeSpec, test.outcomeFinalizer)
-        barrier.await()
         val resetFunction = test.resetFunction
         for (i in resultCalcRange) states[i].resetFunction()
     }
