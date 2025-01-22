@@ -9,8 +9,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray
 @LitmusTestContainer
 object UnsafePublicationJvm {
 
-// TODO: adding new tests or test classes leads to compilation errors 
-/*    val PlainArray = litmusTest({
+    val PlainArray = litmusTest({
         object : LitmusIOutcome() {
             var arr: Array<Int>? = null
         }
@@ -33,7 +32,7 @@ object UnsafePublicationJvm {
             arr = null
         }
     }
-*/
+
     val PlainAtomicIntegerArray = litmusTest({
         object : LitmusIOutcome() {
             var arr: AtomicIntegerArray? = null
