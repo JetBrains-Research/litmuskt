@@ -7,6 +7,8 @@ optimizations (for example, instruction reordering).
 This project is in an **experimental** stage of the development.
 The tool's API is unstable and might be a subject to a further change.
 
+You can find a video presentation of LitmusKt [here](https://youtu.be/oWCZp_Huwss).
+
 ## Setup
 
 Simply clone the project and run `./gradlew build`.
